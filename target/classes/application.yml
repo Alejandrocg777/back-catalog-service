@@ -6,9 +6,9 @@ spring:
     active: ${DB_TYPE:mysql}
 
   datasource:
-    url: jdbc:mysql://148.113.168.53:3306/switchsc_sq_finance
-    username: switchsc_sq_finance
-    password: $iK95;NENSX2
+    url: jdbc:mysql://15.235.119.22:3306/ladrill2_administrative_processes
+    username: ladrill2_ltadmin
+    password: Ladrillera317Transversal12@
     driver-class-name: com.mysql.cj.jdbc.Driver
 app:
   version: 0.0.1
