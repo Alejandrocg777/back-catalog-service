@@ -1,0 +1,37 @@
+server:
+  port: 8081
+
+spring:
+  profiles:
+    active: ${DB_TYPE:mysql}
+
+  datasource:
+    url: jdbc:mysql://148.113.168.53:3306/switchsc_sq_finance
+    username: switchsc_sq_finance
+    password: $iK95;NENSX2
+    driver-class-name: com.mysql.cj.jdbc.Driver
+app:
+  version: 0.0.1
+  name: back-app-catalog-core-service
+  request:
+    prefix: api
+    version: v1
+    mappings: /back-app-catalog-core-service
+
+  springdoc:
+    swagger-ui:
+      path: /api/v1/back-app-catalog-core-service/swagger-ui-custom.html
+    api-docs:
+      path: /api/v1/back-app-catalog-core-service/api-docs
+
+  jpa:
+    show-sql: true
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+
+  config:
+    activate:
+      on-profile: mysql
