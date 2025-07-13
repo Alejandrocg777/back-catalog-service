@@ -1,4 +1,3 @@
-com\asb\backCompanyService\repository\company\BaseRepository.class
 com\asb\backCompanyService\dto\request\CashRegisterRequestDTO.class
 com\asb\backCompanyService\model\AccountingAuxiliaryAccount.class
 com\asb\backCompanyService\model\AccountingAccountGroup$AccountingAccountGroupBuilder.class
@@ -27,6 +26,7 @@ com\asb\backCompanyService\business\Interfaces\CashRegisterBusiness.class
 com\asb\backCompanyService\business\Interfaces\TaxBusiness.class
 com\asb\backCompanyService\dto\responde\NumerationResponseDto.class
 com\asb\backCompanyService\repository\SubAccountingAccountRepository.class
+com\asb\backCompanyService\repository\DepartmentRepository.class
 com\asb\backCompanyService\controller\GenerateInvoiceController.class
 com\asb\backCompanyService\model\City.class
 com\asb\backCompanyService\repository\InventoryAdjustmentRepository.class
@@ -94,6 +94,7 @@ com\asb\backCompanyService\dto\request\MethodPaymentRequestDTO.class
 com\asb\backCompanyService\controller\Sellercontroller.class
 com\asb\backCompanyService\repository\TaxConfigurationRepository.class
 com\asb\backCompanyService\model\Requests.class
+com\asb\backCompanyService\repository\CompanyRepository.class
 com\asb\backCompanyService\business\Interfaces\IBranchBusiness.class
 com\asb\backCompanyService\model\Discount.class
 com\asb\backCompanyService\controller\TaxConfigurationController.class
@@ -101,7 +102,6 @@ com\asb\backCompanyService\dto\request\DeleteSellProductRequstDto.class
 com\asb\backCompanyService\business\Imple\ItemVariantService.class
 com\asb\backCompanyService\dto\request\GenerateInvoiceDto.class
 com\asb\backCompanyService\business\Imple\GenerateInvoiceService.class
-com\asb\backCompanyService\repository\department\BaseRepository.class
 com\asb\backCompanyService\business\Imple\RequestDetailService.class
 com\asb\backCompanyService\controller\WarehouseTypeController.class
 com\asb\backCompanyService\repository\CategoryRepository.class
@@ -123,7 +123,6 @@ com\asb\backCompanyService\dto\request\InventoryAdjustmentDto.class
 com\asb\backCompanyService\business\Imple\NumerationService.class
 com\asb\backCompanyService\dto\responde\BranchDtoResponse$BranchDtoResponseBuilder.class
 com\asb\backCompanyService\business\Imple\PaymentMethodService.class
-com\asb\backCompanyService\repository\company\postgresql\PostgreSqlCompanyRepository.class
 com\asb\backCompanyService\repository\ProductRepository.class
 com\asb\backCompanyService\model\CurrencyType$CurrencyTypeBuilder.class
 com\asb\backCompanyService\model\SubAccountingAccount.class
@@ -146,7 +145,6 @@ com\asb\backCompanyService\business\Interfaces\ICategoryBusiness.class
 com\asb\backCompanyService\model\Category.class
 com\asb\backCompanyService\business\Interfaces\ICurrencyTypeBusiness.class
 com\asb\backCompanyService\controller\AccountingAuxiliaryAccountController.class
-com\asb\backCompanyService\repository\company\mysql\MySqlCompanyRepository.class
 com\asb\backCompanyService\repository\EconomicActivityRepository.class
 com\asb\backCompanyService\dto\SellProducts.class
 com\asb\backCompanyService\dto\StoreDto$StoreDtoBuilder.class
@@ -188,7 +186,6 @@ com\asb\backCompanyService\model\TaxConfiguration.class
 com\asb\backCompanyService\dto\responde\SellProductResponseDTO.class
 com\asb\backCompanyService\business\Imple\MethodPaymentService.class
 com\asb\backCompanyService\model\Branch$BranchBuilder.class
-com\asb\backCompanyService\repository\department\mysql\MySqlDepartmentRepository.class
 com\asb\backCompanyService\business\Imple\InventoryAdjustmentService.class
 com\asb\backCompanyService\dto\request\NumerationDto.class
 com\asb\backCompanyService\model\GenerateInvoice$GenerateInvoiceBuilder.class
@@ -213,7 +210,6 @@ com\asb\backCompanyService\repository\WarehouseRepository.class
 com\asb\backCompanyService\business\Imple\BranchService.class
 com\asb\backCompanyService\repository\MethodPaymentRepository.class
 com\asb\backCompanyService\model\Invoice.class
-com\asb\backCompanyService\repository\department\postgresql\PosgreSqlDepartmentRepository.class
 com\asb\backCompanyService\repository\PaymentMethodRepository.class
 com\asb\backCompanyService\dto\TotalValueDTO.class
 com\asb\backCompanyService\controller\CashRegisterController.class

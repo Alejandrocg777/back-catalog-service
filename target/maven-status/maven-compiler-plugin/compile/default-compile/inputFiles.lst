@@ -3,6 +3,7 @@ C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\mai
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\controller\StoreController.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\controller\RequestDetailController.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\business\Imple\EconomicActivityService.java
+C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\repository\DepartmentRepository.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\dto\request\InventoryAdjustmentDto.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\controller\TaxConfigurationController.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\dto\responde\NumerationResponseDto.java
@@ -21,7 +22,6 @@ C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\mai
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\business\Interfaces\IAccountingAuxiliaryAccountBusiness.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\controller\CurrencyTypeController.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\repository\AccountingAccountGroupRepository.java
-C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\repository\company\mysql\MySqlCompanyRepository.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\dto\TotalValueDTO.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\repository\EconomicActivityRepository.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\model\Invoice.java
@@ -86,7 +86,6 @@ C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\mai
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\business\Imple\CashRegisterService.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\business\Imple\CompanyService.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\model\AccountingDocumentType.java
-C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\repository\department\postgresql\PosgreSqlDepartmentRepository.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\model\Client.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\controller\MethodPaymentController.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\repository\WarehouseTypeRepository.java
@@ -114,7 +113,6 @@ C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\mai
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\business\Imple\InventoryAdjustmentService.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\dto\responde\GenericResponse.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\dto\responde\GenerateInvoiceResponseDto.java
-C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\repository\department\mysql\MySqlDepartmentRepository.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\dto\request\DepartmentDto.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\business\Imple\TaxService.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\business\Interfaces\ICompanyBusiness.java
@@ -127,7 +125,6 @@ C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\mai
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\dto\request\CompanyDto.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\repository\SellerRepository.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\model\AccountingAuxiliaryAccount.java
-C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\repository\department\BaseRepository.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\repository\ProductRepository.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\repository\TaxConfigurationRepository.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\business\Imple\CurrencyTypeService.java
@@ -135,6 +132,7 @@ C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\mai
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\business\Imple\WarehouseService.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\dto\responde\CompanyResponseDto.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\exception\GenericException.java
+C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\repository\CompanyRepository.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\model\GenerateInvoice.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\repository\CityRepository.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\dto\request\InvoiceDto.java
@@ -165,7 +163,6 @@ C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\mai
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\model\AccountingAccountClass.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\model\InventoryAdjustment.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\business\Interfaces\IItemVariantBusiness.java
-C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\repository\company\postgresql\PostgreSqlCompanyRepository.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\repository\AccountingDocumentTypeRepository.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\business\Imple\SellerService.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\dto\request\ProductRequestDTO.java
@@ -204,7 +201,6 @@ C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\mai
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\controller\EconomicActivityController.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\controller\GenerateInvoiceController.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\business\Imple\InvoiceService.java
-C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\repository\company\BaseRepository.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\model\DiscountType.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\controller\PaymentMethodController.java
 C:\Users\UsEr\Documents\trabajo de grado desarrollo\back-catalog-service\src\main\java\com\asb\backCompanyService\exception\CustomExceptionHandler.java
