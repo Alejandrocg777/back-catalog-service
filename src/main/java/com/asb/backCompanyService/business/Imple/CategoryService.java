@@ -117,7 +117,7 @@ public class CategoryService implements ICategoryBusiness {
     }
 
     @Override
-    public Page<Category> getAll(int page, int size, String orders, String sortBy) {
+    public Page<CategoryDto> getAll(int page, int size, String orders, String sortBy) {
         try {
             Sort.Direction direction = Sort.Direction.fromString(orders);
             Pageable pagingSort = PageRequest.of(page, size, Sort.by(direction, sortBy));

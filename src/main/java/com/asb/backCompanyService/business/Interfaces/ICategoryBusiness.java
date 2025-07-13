@@ -17,7 +17,7 @@ public interface ICategoryBusiness {
 
     CategoryDto get(long id);
 
-    Page<Category> getAll(int page, int size, String orders, String sortBy);
+    Page<CategoryDto> getAll(int page, int size, String orders, String sortBy);
 
     Page<Category> searchCustom(Map<String, String> customQuery);
 

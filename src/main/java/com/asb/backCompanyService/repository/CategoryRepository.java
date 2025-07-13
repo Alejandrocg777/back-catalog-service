@@ -1,5 +1,6 @@
 package com.asb.backCompanyService.repository;
 
+import com.asb.backCompanyService.dto.request.CategoryDto;
 import com.asb.backCompanyService.model.Category;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,8 +23,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
             nativeQuery = true)
     Page<Category> searchCategory(String id, String categoryType, String name, String description, String status, Pageable pageable);
 
-    @Query(value = "SELECT * FROM item_category WHERE status = 'ACTIVE'", nativeQuery = true)
-    Page<Category> getActiveCategories(Pageable pageable);
+    @Query(value = "SELECT  new com.asb.backCompanyService.dto.request.CategoryDto(c.id, c.categoryType,c.description,c.status) FROM Category c WHERE c.status = 'ACTIVE'")
+    Page<CategoryDto> getActiveCategories(Pageable pageable);
 
     Page<Category> findByCategoryTypeAndDescriptionContainingIgnoreCase(String categoryType, String description, Pageable pageable);
 }

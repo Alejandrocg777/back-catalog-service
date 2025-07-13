@@ -38,11 +38,11 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<Category>> getAll(@RequestParam(defaultValue = "1") int page,
-                                                 @RequestParam(defaultValue = "10") int size,
+    public ResponseEntity<Page<CategoryDto>> getAll(@RequestParam(defaultValue = "0") int page,
+                                                 @RequestParam(defaultValue = "6") int size,
                                                  @RequestParam(defaultValue = "ASC") String orders,
-                                                 @RequestParam(defaultValue = "category_id") String sortBy) {
-        Page<Category> categories = iCategoryBusiness.getAll(page, size, orders, sortBy);
+                                                 @RequestParam(defaultValue = "id") String sortBy) {
+        Page<CategoryDto> categories = iCategoryBusiness.getAll(page, size, orders, sortBy);
         return ResponseEntity.ok(categories);
     }
 
