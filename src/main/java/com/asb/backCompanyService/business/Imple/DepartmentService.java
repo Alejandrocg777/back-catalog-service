@@ -5,7 +5,7 @@ import com.asb.backCompanyService.dto.request.DepartmentDto;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.exception.CustomErrorException;
 import com.asb.backCompanyService.model.Department;
-import com.asb.backCompanyService.repository.department.BaseRepository;
+import com.asb.backCompanyService.repository.DepartmentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -27,7 +27,7 @@ import java.util.Optional;
 @Slf4j
 public class DepartmentService implements IDepartmentBusiness {
 
-    private final BaseRepository<Department, Long> baseRepository;
+    private final DepartmentRepository departmentRepository;
 
     @Override
     @Transactional
@@ -37,7 +37,7 @@ public class DepartmentService implements IDepartmentBusiness {
             System.out.println("departmentDto.toString() " + departmentDto.toString());
             Boolean objectExists = false;
             if (departmentDto.getId() != null) {
-                objectExists = baseRepository.existsById(departmentDto.getId());
+                objectExists = departmentRepository.existsById(departmentDto.getId());
             }
             DepartmentDto objectDtoVo = new DepartmentDto();
             if (!objectExists) {
@@ -46,7 +46,7 @@ public class DepartmentService implements IDepartmentBusiness {
                 departmentRepo.setDepartmentName(departmentDto.getDepartmentName());
                 departmentRepo.setStatus("ACTIVE");
 
-                Department newObject = baseRepository.save(departmentRepo);
+                Department newObject = departmentRepository.save(departmentRepo);
 
                 BeanUtils.copyProperties(newObject, objectDtoVo);
                 return objectDtoVo;
@@ -69,7 +69,7 @@ public class DepartmentService implements IDepartmentBusiness {
         try {
             log.info("Iniciando método de actualización para Department con ID: {} y DepartmentDto: {}", id, departmentDto);
 
-            Optional<Department> optionalEconomicActivity = baseRepository.findById(id);
+            Optional<Department> optionalEconomicActivity = departmentRepository.findById(id);
             if (!optionalEconomicActivity.isPresent()) {
                 throw new CustomErrorException(HttpStatus.BAD_REQUEST, "El departamento no existe");
             }
@@ -78,7 +78,7 @@ public class DepartmentService implements IDepartmentBusiness {
             BeanUtils.copyProperties(departmentDto, department);
             department.setDepartmentCode(departmentDto.getDepartmentCode());
             department.setDepartmentName(departmentDto.getDepartmentName());
-            baseRepository.save(department);
+            departmentRepository.save(department);
 
             response.setStatusCode(HttpStatus.OK.value());
             response.setMessage("Departamento actualizado");
@@ -92,10 +92,10 @@ public class DepartmentService implements IDepartmentBusiness {
     @Override
     @Transactional
     public boolean delete(Long id) {
-        if (baseRepository.existsById(id)) {
-            Department department = baseRepository.findById(id).get();
+        if (departmentRepository.existsById(id)) {
+            Department department = departmentRepository.findById(id).get();
             department.setStatus("INACTIVE");
-            baseRepository.save(department);
+            departmentRepository.save(department);
             return true;
         } else {
             throw new RuntimeException("El departamento no fue encontrado por el id " + id);
@@ -104,7 +104,7 @@ public class DepartmentService implements IDepartmentBusiness {
 
     @Override
     public DepartmentDto get(Long id) {
-        Optional<Department> departmentOptional = baseRepository.findById(id);
+        Optional<Department> departmentOptional = departmentRepository.findById(id);
         DepartmentDto departmentDto = null;
         if (departmentOptional.isPresent()) {
             departmentDto = new DepartmentDto();
@@ -120,7 +120,7 @@ public class DepartmentService implements IDepartmentBusiness {
         Sort.Direction direction = Sort.Direction.fromString(orders);
         Sort sort = Sort.by(direction, sortBy);
         Pageable pagingSort = PageRequest.of(page, size, sort);
-        return baseRepository.getStatus(pagingSort);
+        return departmentRepository.getStatus(pagingSort);
     }
 
 
@@ -162,7 +162,7 @@ public class DepartmentService implements IDepartmentBusiness {
         log.info("Orders: " + orders);
         log.info("SortBy: " + sortBy);
 
-        Page<Department> searchResult = baseRepository.searchDepartment(id, departmentCode, departmentName, status, pagingSort);
+        Page<Department> searchResult = departmentRepository.searchDepartment(id, departmentCode, departmentName, status, pagingSort);
        log.info("Search results: " + searchResult.getContent());
         return searchResult;
     }
@@ -170,7 +170,7 @@ public class DepartmentService implements IDepartmentBusiness {
     @Override
     public List<Department> getAllDeparment() {
         try {
-            return baseRepository.findAll();
+            return departmentRepository.findAll();
         } catch (Exception e) {
             log.error("Error al obtener el departamento");
             log.error("Causa: {}", e.getCause().toString());

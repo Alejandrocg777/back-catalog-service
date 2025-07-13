@@ -3,12 +3,14 @@ package com.asb.backCompanyService.business.Imple;
 import com.asb.backCompanyService.business.Interfaces.IInvoiceBusiness;
 import com.asb.backCompanyService.dto.SellProducts;
 import com.asb.backCompanyService.dto.request.DeleteSellProductRequstDto;
-import com.asb.backCompanyService.dto.request.DiscountRequestDTO;
 import com.asb.backCompanyService.dto.request.InvoiceDto;
-import com.asb.backCompanyService.dto.request.TaxConfigurationRequestDTO;
-import com.asb.backCompanyService.dto.responde.*;
+import com.asb.backCompanyService.dto.responde.GenericResponse;
+import com.asb.backCompanyService.dto.responde.InvoiceResponseDto;
+import com.asb.backCompanyService.dto.responde.PreliminarInvoice;
+import com.asb.backCompanyService.dto.responde.SellProductResponseDTO;
 import com.asb.backCompanyService.exception.CustomErrorException;
-import com.asb.backCompanyService.model.*;
+import com.asb.backCompanyService.model.Invoice;
+import com.asb.backCompanyService.model.SellProduct;
 import com.asb.backCompanyService.repository.InvoiceRepository;
 import com.asb.backCompanyService.repository.NumerationRepository;
 import com.asb.backCompanyService.repository.SellProductRepository;
@@ -23,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = @Autowired)

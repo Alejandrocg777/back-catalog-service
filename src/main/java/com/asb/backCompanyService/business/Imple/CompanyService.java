@@ -6,8 +6,7 @@ import com.asb.backCompanyService.dto.responde.CompanyResponseDto;
 import com.asb.backCompanyService.exception.CustomErrorException;
 import com.asb.backCompanyService.exception.GenericException;
 import com.asb.backCompanyService.model.Company;
-import com.asb.backCompanyService.model.Department;
-import com.asb.backCompanyService.repository.company.BaseRepository;
+import com.asb.backCompanyService.repository.CompanyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -28,13 +27,13 @@ import java.util.Map;
 @Slf4j
 public class CompanyService implements ICompanyBusiness {
 
-    private final BaseRepository<Company, Long>  repository;
+    private final CompanyRepository companyRepository;
 
 
     @Override
     @Transactional
     public CompanyDto save(CompanyDto companyDto) {
-        if (companyDto.getId() != null && repository.existsById(companyDto.getId())) {
+        if (companyDto.getId() != null && companyRepository.existsById(companyDto.getId())) {
             throw new CustomErrorException(HttpStatus.BAD_REQUEST, "La empresa ya existe");
         }
 
@@ -47,7 +46,7 @@ public class CompanyService implements ICompanyBusiness {
         company.setEconomicActivityId(companyDto.getEconomicActivityId());
         company.setStatus("ACTIVE");
 
-        Company savedCompany = repository.save(company);
+        Company savedCompany = companyRepository.save(company);
         CompanyDto savedCompanyDto = new CompanyDto();
         BeanUtils.copyProperties(savedCompany, savedCompanyDto);
         return savedCompanyDto;
@@ -56,7 +55,7 @@ public class CompanyService implements ICompanyBusiness {
     @Override
     @Transactional
     public CompanyDto update(Long id, CompanyDto companyDto) {
-        Company company = repository.findById(id).orElseThrow(() -> new GenericException("La empresa no fue encontrada por el id " + id, HttpStatus.NOT_FOUND));
+        Company company = companyRepository.findById(id).orElseThrow(() -> new GenericException("La empresa no fue encontrada por el id " + id, HttpStatus.NOT_FOUND));
         company.setCompanyName(companyDto.getCompanyName());
         company.setNit(companyDto.getNit());
         company.setAddress(companyDto.getAddress());
@@ -64,7 +63,7 @@ public class CompanyService implements ICompanyBusiness {
         company.setPhone(companyDto.getPhone());
         company.setEconomicActivityId(companyDto.getEconomicActivityId());
 
-        Company updatedCompany = repository.save(company);
+        Company updatedCompany = companyRepository.save(company);
         CompanyDto updatedCompanyDto = new CompanyDto();
         BeanUtils.copyProperties(updatedCompany, updatedCompanyDto);
         return updatedCompanyDto;
@@ -73,18 +72,18 @@ public class CompanyService implements ICompanyBusiness {
     @Override
     @Transactional
     public boolean delete(Long id) {
-        Company company = repository.findById(id).orElseThrow(() -> new GenericException("La empresa no fue encontrada por el id " + id, HttpStatus.NOT_FOUND));
+        Company company = companyRepository.findById(id).orElseThrow(() -> new GenericException("La empresa no fue encontrada por el id " + id, HttpStatus.NOT_FOUND));
         company.setStatus("INACTIVE");
-        repository.save(company);
+        companyRepository.save(company);
         return true;
     }
 
     @Override
     public CompanyResponseDto get(Long id) {
-        if (!repository.existsById(id)) {
+        if (!companyRepository.existsById(id)) {
             throw new GenericException("No existe la compañia" , HttpStatus.NOT_FOUND);
         }
-        List<Object[]> companys = repository.getCompanyIds(id);
+        List<Object[]> companys = companyRepository.getCompanyIds(id);
         CompanyResponseDto companyDto = new CompanyResponseDto();
         for(Object[] company: companys) {
             companyDto.setId(company[0] != null ? Long.parseLong(company[0].toString()) : null);
@@ -104,9 +103,9 @@ public class CompanyService implements ICompanyBusiness {
     @Override
     @Transactional
     public boolean setStatus(Long id, String status) {
-        Company company = repository.findById(id).orElseThrow(() -> new GenericException("La empresa no fue encontrada por el id " + id, HttpStatus.NOT_FOUND));
+        Company company = companyRepository.findById(id).orElseThrow(() -> new GenericException("La empresa no fue encontrada por el id " + id, HttpStatus.NOT_FOUND));
         company.setStatus(status);
-        repository.save(company);
+        companyRepository.save(company);
         return true;
     }
 
@@ -117,7 +116,7 @@ public class CompanyService implements ICompanyBusiness {
         Sort.Direction direction = Sort.Direction.fromString(orders);
         Sort sort = Sort.by(direction, sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Object[]> results = repository.getStatus(pageable);
+        Page<Object[]> results = companyRepository.getStatus(pageable);
         return results.map(result -> {
             CompanyResponseDto dto = new CompanyResponseDto();
             dto.setId((Long) result[0]);
@@ -141,6 +140,6 @@ public class CompanyService implements ICompanyBusiness {
 
     @Override
     public List<Company> getAllCompany() {
-        return repository.findByStatus("ACTIVE");
+        return companyRepository.findByStatus("ACTIVE");
     }
 }

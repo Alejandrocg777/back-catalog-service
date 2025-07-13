@@ -11,7 +11,6 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 
-@Profile("mysql")  // This repository is for MySQL
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 

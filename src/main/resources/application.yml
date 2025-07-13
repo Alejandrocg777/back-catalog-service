@@ -2,14 +2,19 @@ server:
   port: 8081
 
 spring:
-  profiles:
-    active: ${DB_TYPE:mysql}
 
   datasource:
     url: jdbc:mysql://15.235.119.22:3306/ladrill2_administrative_processes
     username: ladrill2_ltadmin
     password: Ladrillera317Transversal12@
     driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: true
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
 app:
   version: @project.version@
   name: @project.name@
@@ -18,20 +23,12 @@ app:
     version: v1
     mappings: /back-app-catalog-core-service
 
-  springdoc:
-    swagger-ui:
-      path: /api/v1/back-app-catalog-core-service/swagger-ui-custom.html
-    api-docs:
-      path: /api/v1/back-app-catalog-core-service/api-docs
+springdoc:
+   swagger-ui:
+     path: /api/v1/back-app-catalog-core-service/swagger-ui-custom.html
+   api-docs:
+     path: /api/v1/back-app-catalog-core-service/api-docs
 
-  jpa:
-    show-sql: true
-    database-platform: org.hibernate.dialect.MySQL8Dialect
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
-        format_sql: true
 
-  config:
-    activate:
-      on-profile: mysql
+
+
