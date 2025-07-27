@@ -31,11 +31,6 @@ public class CategoryController {
         return ResponseEntity.ok(savedCategory);
     }
 
-    @GetMapping("/get/{id}")
-    public ResponseEntity<CategoryDto> get(@PathVariable("id") long id) {
-        CategoryDto categoryDto = iCategoryBusiness.get(id);
-        return ResponseEntity.ok(categoryDto);
-    }
 
     @GetMapping
     public ResponseEntity<Page<CategoryDto>> getAll(@RequestParam(defaultValue = "0") int page,
@@ -47,8 +42,8 @@ public class CategoryController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Page<Category>> search(@RequestParam Map<String, String> customQuery) {
-        Page<Category> categories = iCategoryBusiness.searchCustom(customQuery);
+    public ResponseEntity<Page<CategoryDto>> search(@RequestParam Map<String, String> customQuery) {
+        Page<CategoryDto> categories = iCategoryBusiness.searchCustom(customQuery);
         return ResponseEntity.ok(categories);
     }
 
@@ -66,12 +61,6 @@ public class CategoryController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/no-page/getCategory")
-    public ResponseEntity<ListGenericResponse> getAllCategories(@RequestParam Map<String, String> customQuery) {
-        log.info("El endpoint para obtener una lista de categorías ha sido iniciado");
-        ListGenericResponse response = (ListGenericResponse) iCategoryBusiness.getAllCategories(customQuery);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
 
     @GetMapping("/no-page/getAllCategories")
     public ResponseEntity<List<Category>> getAllCategories() {

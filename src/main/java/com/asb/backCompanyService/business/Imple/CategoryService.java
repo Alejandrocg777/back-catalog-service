@@ -35,8 +35,9 @@ public class CategoryService implements ICategoryBusiness {
         try {
 
             Category category = new Category();
-            category.setCategoryType(categoryDto.getCategoryType());
-            category.setDescription(categoryDto.getDescription());
+            category.setNameCategory(categoryDto.getNameCategory());
+            category.setSoldOutValue(categoryDto.getSoldOutValue());
+            category.setFewUnits(categoryDto.getFewUnits());
             category.setStatus("ACTIVE");
 
             Category newCategory = repository.save(category);
@@ -55,16 +56,15 @@ public class CategoryService implements ICategoryBusiness {
     public GenericResponse update(long id, CategoryDto categoryDto) {
         GenericResponse response = new GenericResponse();
         try {
-            // Buscar la categoría existente
             Optional<Category> optionalCategory = repository.findById(id);
             if (!optionalCategory.isPresent()) {
                 throw new CustomErrorException(HttpStatus.BAD_REQUEST, "La categoría no existe");
             }
 
-            // Actualizar la categoría
             Category category = optionalCategory.get();
-            if (categoryDto.getCategoryType() != null) category.setCategoryType(categoryDto.getCategoryType());
-            if (categoryDto.getDescription() != null) category.setDescription(categoryDto.getDescription());
+            if (categoryDto.getNameCategory() != null) category.setNameCategory(categoryDto.getNameCategory());
+            if (categoryDto.getSoldOutValue() != null) category.setSoldOutValue(categoryDto.getSoldOutValue());
+            if (categoryDto.getFewUnits() != null) category.setFewUnits(categoryDto.getFewUnits());
             if (categoryDto.getStatus() != null) category.setStatus(categoryDto.getStatus());
 
             repository.save(category);
@@ -82,13 +82,11 @@ public class CategoryService implements ICategoryBusiness {
     @Transactional
     public boolean delete(Long id) {
         try {
-            // Verificar existencia de la categoría
             Optional<Category> categoryOptional = repository.findById(id);
             if (!categoryOptional.isPresent()) {
                 throw new RuntimeException("La categoría no fue encontrada por el id " + id);
             }
 
-            // Cambiar estado a "INACTIVE" en lugar de eliminación física
             Category category = categoryOptional.get();
             category.setStatus("INACTIVE");
             repository.save(category);
@@ -127,55 +125,77 @@ public class CategoryService implements ICategoryBusiness {
             throw new RuntimeException("Error al obtener todas las categorías", e);
         }
     }
-
     @Override
-    public Page<Category> searchCustom(Map<String, String> customQuery) {
-        try {
-            // Establecer valores predeterminados y buscar filtros
-            String orders = customQuery.getOrDefault("orders", "ASC");
-            String sortBy = customQuery.getOrDefault("sortBy", "category_id");
-            int page = Integer.parseInt(customQuery.getOrDefault("page", "0"));
-            int size = Integer.parseInt(customQuery.getOrDefault("size", "10"));
-            String id = customQuery.containsKey("id") ? "%" + customQuery.get("id") + "%" : null;
-            String categoryType = customQuery.containsKey("categoryType") ? "%" + customQuery.get("categoryType") + "%" : null;
-            String name = customQuery.containsKey("name") ? "%" + customQuery.get("name") + "%" : null;
-            String description = customQuery.containsKey("description") ? "%" + customQuery.get("description") + "%" : null;
-            String status = customQuery.containsKey("status") ? "%" + customQuery.get("status") + "%" : null;
+    public Page<CategoryDto> searchCustom(Map<String, String> customQuery) {
+        String orders = "ASC";
+        String sortBy = "id";
+        int page = 0;
+        int size = 6;
+        String id = null;
+        String nameCategory = null;
+        String soldOutValue = null;
+        String fewUnits = null;
 
-            Pageable pagingSort = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(orders), sortBy));
-            return repository.searchCategory(id, categoryType, name, description, status, pagingSort);
-        } catch (Exception e) {
-            log.error("Error en la búsqueda personalizada de categorías", e);
-            throw new RuntimeException("Error en la búsqueda personalizada de categorías", e);
+        if (customQuery.containsKey("orders")) {
+            orders = customQuery.get("orders");
         }
+
+        if (customQuery.containsKey("sortBy")) {
+            sortBy = customQuery.get("sortBy");
+        }
+
+        if (customQuery.containsKey("page")) {
+            page = Integer.parseInt(customQuery.get("page"));
+        }
+
+        if (customQuery.containsKey("size")) {
+            size = Integer.parseInt(customQuery.get("size"));
+        }
+
+        if (customQuery.containsKey("id")) {
+            id = "%" + customQuery.get("id") + "%";
+        }
+
+        if (customQuery.containsKey("nameCategory")) {
+            nameCategory = "%" + customQuery.get("nameCategory") + "%";
+        }
+
+        if (customQuery.containsKey("soldOutValue")) {
+            soldOutValue = "%" + customQuery.get("soldOutValue") + "%";
+        }
+
+        if (customQuery.containsKey("fewUnits")) {
+            fewUnits = "%" + customQuery.get("fewUnits") + "%";
+        }
+
+        Sort.Direction direction = Sort.Direction.fromString(orders);
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pagingSort = PageRequest.of(page, size, sort);
+
+        log.info("id: {}", id);
+        log.info("nameCategory: {}", nameCategory);
+        log.info("soldOutValue: {}", soldOutValue);
+        log.info("fewUnits: {}", fewUnits);
+        log.info("page: {}", page);
+        log.info("size: {}", size);
+        log.info("orders: {}", orders);
+        log.info("sortBy: {}", sortBy);
+
+        Page<CategoryDto> result = repository.search(id, nameCategory, soldOutValue, fewUnits, pagingSort);
+        log.info("Resultados encontrados: {}", result.getContent());
+        return result;
     }
 
-    @Override
-    public List<Category> getAllCategories(Map<String, String> customQuery) {
-        try {
-            String description = customQuery.getOrDefault("description", "");
-            String categoryType = customQuery.get("categoryType");
-            Pageable pagingSort = PageRequest.of(
-                    Integer.parseInt(customQuery.getOrDefault("offset", "0")),
-                    Integer.parseInt(customQuery.getOrDefault("limit", "10"))
-            );
 
-            Page<Category> entityPage = repository.findByCategoryTypeAndDescriptionContainingIgnoreCase(categoryType, description, pagingSort);
-
-            return entityPage.getContent();
-        } catch (Exception e) {
-            log.error("Error al obtener categorías con filtros", e);
-            throw new RuntimeException("Error al obtener categorías con filtros", e);
-        }
-    }
 
     @Override
     public List<Category> getAllCategories() {
         try {
-            return repository.findAll();
+            return repository.findByStatus("ACTIVE");
         } catch (Exception e) {
-            log.error("Error al obtener todas las categorías", e);
-            throw new RuntimeException("No se pueden recuperar las categorías", e);
+            log.error("Error al obtener categorías activas", e);
+            throw new RuntimeException("No se pueden recuperar las categorías activas", e);
         }
     }
+
 }
