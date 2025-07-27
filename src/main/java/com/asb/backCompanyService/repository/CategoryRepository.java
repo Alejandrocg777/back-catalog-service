@@ -6,25 +6,34 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
-    @Query(value = "SELECT * FROM item_category " +
-            "WHERE CAST(category_id AS char) LIKE :id " +
-            "OR UPPER(category_type) LIKE UPPER(:categoryType) " +
-            "OR UPPER(name) LIKE UPPER(:name) " +
-            "OR UPPER(description) LIKE UPPER(:description) " +
-            "OR UPPER(status) LIKE UPPER(:status) ",
-            countQuery = "SELECT COUNT(*) FROM item_category " +
-                    "WHERE CAST(category_id AS char) LIKE :id " +
-                    "OR UPPER(category_type) LIKE UPPER(:categoryType) " +
-                    "OR UPPER(name) LIKE UPPER(:name) " +
-                    "OR UPPER(description) LIKE UPPER(:description) " +
-                    "OR UPPER(status) LIKE UPPER(:status) ",
-            nativeQuery = true)
-    Page<Category> searchCategory(String id, String categoryType, String name, String description, String status, Pageable pageable);
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.request.CategoryDto(" + "c.id, c.nameCategory, c.soldOutValue, c.fewUnits, c.status) " +
+            "FROM Category c " +
+            "WHERE c.status = 'ACTIVE' " +
+            "AND (:id IS NULL OR CAST(c.id AS string) LIKE :id) " +
+            "AND (:nameCategory IS NULL OR UPPER(c.nameCategory) LIKE UPPER(:nameCategory)) " +
+            "AND (:soldOutValue IS NULL OR STR(c.soldOutValue) LIKE :soldOutValue)" +
+            "AND (:fewUnits IS NULL OR STR(c.fewUnits) LIKE :fewUnits)" ,
+            countQuery = "SELECT COUNT(c) FROM Category c " +
+                    "WHERE c.status = 'ACTIVE' " +
+                    "AND (:id IS NULL OR CAST(c.id AS string) LIKE :id) " +
+                    "AND (:nameCategory IS NULL OR UPPER(c.nameCategory) LIKE UPPER(:nameCategory)) " +
+                    "AND (:soldOutValue IS NULL OR STR(c.soldOutValue) LIKE :soldOutValue)" +
+                    "AND (:fewUnits IS NULL OR STR(c.fewUnits) LIKE :fewUnits)" )
+    Page<CategoryDto> search(String id, String nameCategory, String soldOutValue, String fewUnits, Pageable pageable);
 
-    @Query(value = "SELECT  new com.asb.backCompanyService.dto.request.CategoryDto(c.id, c.categoryType,c.description,c.status) FROM Category c WHERE c.status = 'ACTIVE'")
+
+    @Query(value = "SELECT  new com.asb.backCompanyService.dto.request.CategoryDto(c.id, c.nameCategory,c.soldOutValue,c.fewUnits, c.status) " +
+            "FROM Category c WHERE c.status = 'ACTIVE'")
     Page<CategoryDto> getActiveCategories(Pageable pageable);
 
-    Page<Category> findByCategoryTypeAndDescriptionContainingIgnoreCase(String categoryType, String description, Pageable pageable);
+    List<Category> findByStatus(String status);
+
+
+
 }

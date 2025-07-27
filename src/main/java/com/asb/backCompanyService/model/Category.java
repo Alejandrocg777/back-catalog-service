@@ -14,21 +14,24 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "item_category")
+@Table(name = "category")
 public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "item_category_id")
+    @Column(name = "category_id")
     private Long id;
 
-    @Column(name = "category_type", nullable = false)
-    private String categoryType;
+    @Column(name = "name_category")
+    private String nameCategory;
 
-    @Column(name = "description", nullable = true)
-    private String description;
+    @Column(name = "sold_out_value")
+    private Double soldOutValue;
 
-    @Column(name = "status", nullable = false)
+    @Column(name = "few_units")
+    private Double fewUnits;
+
+    @Column(name = "status")
     private String status;
 
     @CreationTimestamp
