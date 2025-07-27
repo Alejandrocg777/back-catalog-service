@@ -1,22 +1,18 @@
 package com.asb.backCompanyService.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 @Table(name = "company")
-public class Company {
+@Getter
+@Setter
+public class EntityCompany {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,5 +48,12 @@ public class Company {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    public EntityCompany() {
+    }
 
+    public EntityCompany(long id, String companyName) {
+        this.id = id;
+        this.companyName = companyName;
+
+    }
 }
