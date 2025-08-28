@@ -30,12 +30,12 @@ springdoc:
      path: /api/v1/back-app-catalog-core-service/api-docs
 
 
-claudinary:
- api:
-   key: 341545146697844
-   secret: PvB8b7BMSd0lihsjuMeLImEsbz4
- cloud:
-   name: dfotyo6jc
+cloudinary:
+  api:
+    key: 341545146697844
+    secret: PvB8b7BMSd0lihsjuMeLImEsbz4
+  cloud:
+    name: dfotyo6jc
 
 
 

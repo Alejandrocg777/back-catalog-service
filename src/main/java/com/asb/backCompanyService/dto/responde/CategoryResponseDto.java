@@ -1,14 +1,13 @@
-package com.asb.backCompanyService.dto.request;
+package com.asb.backCompanyService.dto.responde;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoryDto {
+public class CategoryResponseDto {
     private Long id;
     private String nameCategory;
     private Double soldOutValue;

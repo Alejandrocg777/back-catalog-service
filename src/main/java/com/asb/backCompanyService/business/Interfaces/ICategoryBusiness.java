@@ -1,6 +1,7 @@
 package com.asb.backCompanyService.business.Interfaces;
 
 import com.asb.backCompanyService.dto.request.CategoryDto;
+import com.asb.backCompanyService.dto.responde.CategoryResponseDto;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.model.Category;
 import org.springframework.data.domain.Page;
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface ICategoryBusiness {
-    CategoryDto save(CategoryDto categoryDto, MultipartFile image);
+    CategoryDto save(CategoryDto categoryDto);
 
     GenericResponse update(long id, CategoryDto categoryDto);
 
@@ -18,9 +19,9 @@ public interface ICategoryBusiness {
 
     CategoryDto get(long id);
 
-    Page<CategoryDto> getAll(int page, int size, String orders, String sortBy);
+    Page<CategoryResponseDto> getAll(int page, int size, String orders, String sortBy);
 
-    Page<CategoryDto> searchCustom(Map<String, String> customQuery);
+    Page<CategoryResponseDto> searchCustom(Map<String, String> customQuery);
 
 
     List<Category> getAllCategories();

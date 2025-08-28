@@ -2,12 +2,12 @@ package com.asb.backCompanyService.business.Imple;
 
 import com.asb.backCompanyService.business.Interfaces.ICategoryBusiness;
 import com.asb.backCompanyService.dto.request.CategoryDto;
+import com.asb.backCompanyService.dto.responde.CategoryResponseDto;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.exception.CustomErrorException;
 import com.asb.backCompanyService.model.Category;
 import com.asb.backCompanyService.repository.CategoryRepository;
 import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -19,7 +19,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -35,14 +34,12 @@ public class CategoryService implements ICategoryBusiness {
 
     @Override
     @Transactional
-    public CategoryDto save(CategoryDto categoryDto, MultipartFile image) {
+    public CategoryDto save(CategoryDto categoryDto) {
         try {
 
-            Map uploadResult = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
-            String imageUrl = (String) uploadResult.get("url");
 
             Category category = new Category();
-            category.setImage(imageUrl);
+            category.setImage(categoryDto.getImage());
             category.setNameCategory(categoryDto.getNameCategory());
             category.setSoldOutValue(categoryDto.getSoldOutValue());
             category.setFewUnits(categoryDto.getFewUnits());
@@ -74,10 +71,7 @@ public class CategoryService implements ICategoryBusiness {
             if (categoryDto.getSoldOutValue() != null) category.setSoldOutValue(categoryDto.getSoldOutValue());
             if (categoryDto.getFewUnits() != null) category.setFewUnits(categoryDto.getFewUnits());
             if (categoryDto.getStatus() != null) category.setStatus(categoryDto.getStatus());
-
-            Map uploadResult = cloudinary.uploader().upload(categoryDto.getImage().getBytes(), ObjectUtils.asMap("resource_type", "auto"));
-            String imageUrl = (String) uploadResult.get("url");
-            if (imageUrl != null) category.setImage(imageUrl);
+            if (categoryDto.getImage() != null) category.setImage(categoryDto.getImage());
 
             repository.save(category);
 
@@ -127,7 +121,7 @@ public class CategoryService implements ICategoryBusiness {
     }
 
     @Override
-    public Page<CategoryDto> getAll(int page, int size, String orders, String sortBy) {
+    public Page<CategoryResponseDto> getAll(int page, int size, String orders, String sortBy) {
         try {
             Sort.Direction direction = Sort.Direction.fromString(orders);
             Pageable pagingSort = PageRequest.of(page, size, Sort.by(direction, sortBy));
@@ -138,7 +132,7 @@ public class CategoryService implements ICategoryBusiness {
         }
     }
     @Override
-    public Page<CategoryDto> searchCustom(Map<String, String> customQuery) {
+    public Page<CategoryResponseDto> searchCustom(Map<String, String> customQuery) {
         String orders = "ASC";
         String sortBy = "id";
         int page = 0;
@@ -193,7 +187,7 @@ public class CategoryService implements ICategoryBusiness {
         log.info("orders: {}", orders);
         log.info("sortBy: {}", sortBy);
 
-        Page<CategoryDto> result = repository.search(id, nameCategory, soldOutValue, fewUnits, pagingSort);
+        Page<CategoryResponseDto> result = repository.search(id, nameCategory, soldOutValue, fewUnits, pagingSort);
         log.info("Resultados encontrados: {}", result.getContent());
         return result;
     }
