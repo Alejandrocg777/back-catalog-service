@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -26,8 +27,9 @@ public class CategoryController {
     private final ICategoryBusiness iCategoryBusiness;
 
     @PostMapping("/create")
-    public ResponseEntity<CategoryDto> save(@RequestBody CategoryDto categoryDto) {
-        CategoryDto savedCategory = iCategoryBusiness.save(categoryDto);
+    public ResponseEntity<CategoryDto> save(@RequestBody CategoryDto categoryDto,
+                                            @RequestParam("logo") MultipartFile image) {
+        CategoryDto savedCategory = iCategoryBusiness.save(categoryDto, image);
         return ResponseEntity.ok(savedCategory);
     }
 

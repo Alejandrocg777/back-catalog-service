@@ -34,6 +34,9 @@ public class Category {
     @Column(name = "status")
     private String status;
 
+    @Column(name = "image")
+    private String image;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

@@ -6,6 +6,8 @@ import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.exception.CustomErrorException;
 import com.asb.backCompanyService.model.Category;
 import com.asb.backCompanyService.repository.CategoryRepository;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -17,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -28,13 +31,18 @@ import java.util.Optional;
 public class CategoryService implements ICategoryBusiness {
 
     private final CategoryRepository repository;
+    private final Cloudinary cloudinary;
 
     @Override
     @Transactional
-    public CategoryDto save(CategoryDto categoryDto) {
+    public CategoryDto save(CategoryDto categoryDto, MultipartFile image) {
         try {
 
+            Map uploadResult = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
+            String imageUrl = (String) uploadResult.get("url");
+
             Category category = new Category();
+            category.setImage(imageUrl);
             category.setNameCategory(categoryDto.getNameCategory());
             category.setSoldOutValue(categoryDto.getSoldOutValue());
             category.setFewUnits(categoryDto.getFewUnits());
@@ -66,6 +74,10 @@ public class CategoryService implements ICategoryBusiness {
             if (categoryDto.getSoldOutValue() != null) category.setSoldOutValue(categoryDto.getSoldOutValue());
             if (categoryDto.getFewUnits() != null) category.setFewUnits(categoryDto.getFewUnits());
             if (categoryDto.getStatus() != null) category.setStatus(categoryDto.getStatus());
+
+            Map uploadResult = cloudinary.uploader().upload(categoryDto.getImage().getBytes(), ObjectUtils.asMap("resource_type", "auto"));
+            String imageUrl = (String) uploadResult.get("url");
+            if (imageUrl != null) category.setImage(imageUrl);
 
             repository.save(category);
 

@@ -4,12 +4,13 @@ import com.asb.backCompanyService.dto.request.CategoryDto;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.model.Category;
 import org.springframework.data.domain.Page;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
 
 public interface ICategoryBusiness {
-    CategoryDto save(CategoryDto categoryDto);
+    CategoryDto save(CategoryDto categoryDto, MultipartFile image);
 
     GenericResponse update(long id, CategoryDto categoryDto);
 
