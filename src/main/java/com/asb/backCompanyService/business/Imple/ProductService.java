@@ -2,6 +2,7 @@ package com.asb.backCompanyService.business.Imple;
 
 import com.asb.backCompanyService.business.Interfaces.ProductBusiness;
 import com.asb.backCompanyService.dto.request.ProductRequestDTO;
+import com.asb.backCompanyService.dto.responde.CategoryResponseDto;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.dto.responde.ProductResponseDTO;
 import com.asb.backCompanyService.exception.CustomErrorException;
@@ -22,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -40,9 +42,6 @@ public class ProductService implements ProductBusiness {
                 throw new GenericException("El categoryId es requerido para calcular el statusProduct", HttpStatus.BAD_REQUEST);
             }
 
-            // Buscar la categoría por ID
-            Category category = categoryRepository.findById(request.getCategoryId())
-                    .orElseThrow(() -> new GenericException("Categoría no encontrada con ID: " + request.getCategoryId(), HttpStatus.BAD_REQUEST));
 
             // Crear el producto desde DTO
             Product product = new Product();
@@ -54,25 +53,7 @@ public class ProductService implements ProductBusiness {
             product.setDescription(request.getDescription()); // Si aplica
             product.setStatus("ACTIVE");
 
-            // Calcular statusProduct basado en quantity y valores de categoría
-            Long quantity = product.getQuantity();
-            Double soldOutValue = category.getSoldOutValue();
-            Double fewUnits = category.getFewUnits();
-
-            if (quantity == null || soldOutValue == null || fewUnits == null) {
-                throw new GenericException("Valores requeridos (quantity, soldOutValue, fewUnits) no pueden ser nulos", HttpStatus.BAD_REQUEST);
-            }
-
-            String statusProduct;
-            if (quantity >= 0 && quantity <= soldOutValue) {
-                statusProduct = "agotado";
-            } else if (quantity > soldOutValue && quantity <= fewUnits) {
-                statusProduct = "pocas unidades";
-            } else {
-                statusProduct = "disponible";
-            }
-
-            product.setStatusProduct(statusProduct);
+            product.setStatusProduct(calculateProductStatus(request));
 
             // Guardar el producto
             Product newProduct = productRepository.save(product);
@@ -88,6 +69,32 @@ public class ProductService implements ProductBusiness {
         }
     }
 
+    public String calculateProductStatus(ProductRequestDTO request){
+
+        // Buscar la categoría por ID
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new GenericException("Categoría no encontrada con ID: " + request.getCategoryId(), HttpStatus.BAD_REQUEST));
+
+        // Calcular statusProduct basado en quantity y valores de categoría
+        Long quantity = request.getQuantity();
+        Double soldOutValue = category.getSoldOutValue();
+        Double fewUnits = category.getFewUnits();
+
+        if (quantity == null || soldOutValue == null || fewUnits == null) {
+            throw new GenericException("Valores requeridos (quantity, soldOutValue, fewUnits) no pueden ser nulos", HttpStatus.BAD_REQUEST);
+        }
+
+        String statusProduct;
+        if (quantity >= 0 && quantity <= soldOutValue) {
+            statusProduct = "agotado";
+        } else if (quantity > soldOutValue && quantity <= fewUnits) {
+            statusProduct = "pocas unidades";
+        } else {
+            statusProduct = "disponible";
+        }
+
+        return statusProduct;
+    }
 
 
     @Override
@@ -97,10 +104,19 @@ public class ProductService implements ProductBusiness {
         Optional<Product> productOptional = productRepository.findById(id);
 
         Product product = productOptional.get();
-        product.setProductName(request.getProductName());
-        product.setPrice(request.getPrice());
-        product.setStatus(request.getStatus());
-        productRepository.save(product);
+       if (request.getProductName() != null)  product.setProductName(request.getProductName());
+       if (request.getPrice() != null) product.setPrice(request.getPrice());
+       if (request.getQuantity() != null) {
+
+           product.setQuantity(request.getQuantity());
+           product.setStatusProduct(calculateProductStatus(request));
+       }
+       if (request.getCategoryId() != null)  product.setCategoryId(request.getCategoryId());
+       if (request.getImage() != null)  product.setImgProduct(request.getImage());
+       if (request.getDescription() != null)  product.setDescription(request.getDescription());
+       if (request.getStatus() != null)  product.setStatus(request.getStatus());
+
+       productRepository.save(product);
 
         return new GenericResponse("product actualizado con exito", 200);
     }
@@ -135,8 +151,75 @@ public class ProductService implements ProductBusiness {
         response.setId(productOptional.get().getId());
         response.setProductName(productOptional.get().getProductName());
         response.setPrice(productOptional.get().getPrice());
+        response.setDescription(productOptional.get().getDescription());
+        response.setCategoryId(productOptional.get().getCategoryId());
+        response.setQuantity(productOptional.get().getQuantity());
+        response.setImage(productOptional.get().getImgProduct());
+        response.setProductStatus(productOptional.get().getStatusProduct());
         response.setStatus(productOptional.get().getStatus());
         return response;
+    }
+
+    @Override
+    public Page<ProductResponseDTO> searchCustom(Map<String, String> customQuery) {
+        String orders = "ASC";
+        String sortBy = "id";
+        int page = 0;
+        int size = 6;
+        String id = null;
+        String productName = null;
+        String price = null;
+        String description = null;
+        String categoryName = null;
+        String quantity = null;
+
+        if (customQuery.containsKey("orders")) {
+            orders = customQuery.get("orders");
+        }
+
+        if (customQuery.containsKey("sortBy")) {
+            sortBy = customQuery.get("sortBy");
+        }
+
+        if (customQuery.containsKey("page")) {
+            page = Integer.parseInt(customQuery.get("page"));
+        }
+
+        if (customQuery.containsKey("size")) {
+            size = Integer.parseInt(customQuery.get("size"));
+        }
+
+        if (customQuery.containsKey("id")) {
+            id = "%" + customQuery.get("id") + "%";
+        }
+
+        if (customQuery.containsKey("productName")) {
+            productName = "%" + customQuery.get("productName") + "%";
+        }
+
+        if (customQuery.containsKey("price")) {
+            price = "%" + customQuery.get("price") + "%";
+        }
+
+        if (customQuery.containsKey("description")) {
+            description = "%" + customQuery.get("description") + "%";
+        }
+
+         if (customQuery.containsKey("categoryName")) {
+             categoryName = "%" + customQuery.get("categoryName") + "%";
+        }
+
+         if (customQuery.containsKey("quantity")) {
+             quantity = "%" + customQuery.get("quantity") + "%";
+        }
+
+         Sort.Direction direction = Sort.Direction.fromString(orders);
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pagingSort = PageRequest.of(page, size, sort);
+
+        Page<ProductResponseDTO> result = productRepository.search(id, quantity, productName, description, categoryName, price, pagingSort);
+        log.info("Resultados encontrados: {}", result.getContent());
+        return result;
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.asb.backCompanyService.controller;
 import com.asb.backCompanyService.business.Interfaces.ProductBusiness;
 import com.asb.backCompanyService.dto.request.ProductRequestDTO;
 import com.asb.backCompanyService.dto.request.SellerRequestDTO;
+import com.asb.backCompanyService.dto.responde.CategoryResponseDto;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.dto.responde.ProductResponseDTO;
 import com.asb.backCompanyService.model.Product;
@@ -63,9 +64,29 @@ public class ProductController {
 
     @PostMapping("/update/{id}")
     public ResponseEntity<GenericResponse> update(@PathVariable("id") Long id,
-                                                  @RequestBody ProductRequestDTO requestDTO) {
-        log.info("Iniciando actualización para City con ID: {} y DTO: {}", id, requestDTO);
-        GenericResponse response = productBusiness.update(id, requestDTO);
+                                                  @RequestParam(value = "productName", required = false) String productName,
+                                                  @RequestParam(value = "price", required = false) Double price,
+                                                  @RequestParam(value = "description",required = false) String description,
+                                                  @RequestParam(value = "categoryId", required = false) Long categoryId,
+                                                  @RequestParam(value = "quantity", required = false) Long quantity,
+                                                  @RequestParam(value = "image",required = false)MultipartFile image) {
+        log.info("Iniciando actualización para City con ID: {}", id);
+        ProductRequestDTO productRequestDTO = new ProductRequestDTO();
+        productRequestDTO.setProductName(productName);
+        productRequestDTO.setPrice(price);
+        productRequestDTO.setDescription(description);
+        productRequestDTO.setCategoryId(categoryId);
+        productRequestDTO.setQuantity(quantity);
+        if(image != null) {
+            try {
+                Map uploadResult = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
+                String imageUrl = (String) uploadResult.get("url");
+                productRequestDTO.setImage(imageUrl);
+            } catch (IOException e) {
+                throw new RuntimeException("Error al subir la imagen", e);
+            }
+        }
+        GenericResponse response = productBusiness.update(id, productRequestDTO);
         return ResponseEntity.ok(response);
     }
 
@@ -85,9 +106,15 @@ public class ProductController {
     }
 
     @GetMapping("/get/{id}")
-    public ResponseEntity<ProductResponseDTO> get(@PathVariable("id") long id) {
+    public ResponseEntity<ProductResponseDTO> get(@PathVariable("id") Long id) {
         ProductResponseDTO requestDTO = productBusiness.get(id);
         return ResponseEntity.ok(requestDTO);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<ProductResponseDTO>> search(@RequestParam Map<String, String> customQuery) {
+        Page<ProductResponseDTO> products = productBusiness.searchCustom(customQuery);
+        return ResponseEntity.ok(products);
     }
 
     @GetMapping("/no-page/getAllProduct")

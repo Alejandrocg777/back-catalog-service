@@ -2,6 +2,7 @@ package com.asb.backCompanyService.business.Interfaces;
 
 import com.asb.backCompanyService.dto.request.ProductRequestDTO;
 import com.asb.backCompanyService.dto.request.SellerRequestDTO;
+import com.asb.backCompanyService.dto.responde.CategoryResponseDto;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.dto.responde.ProductResponseDTO;
 import com.asb.backCompanyService.model.Product;
@@ -9,6 +10,7 @@ import com.asb.backCompanyService.model.Seller;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ProductBusiness {
 
@@ -17,5 +19,6 @@ public interface ProductBusiness {
     Boolean delete(Long id);
     Page<ProductResponseDTO> getAll(int page, int size, String orders, String sortBy);
     ProductResponseDTO get(Long id);
+    Page<ProductResponseDTO> searchCustom(Map<String, String> customQuery);
     List<Product> getAllNoPage();
 }
