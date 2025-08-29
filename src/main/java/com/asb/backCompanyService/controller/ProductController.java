@@ -62,7 +62,7 @@ public class ProductController {
         return ResponseEntity.ok(savedSeller);
     }
 
-    @PostMapping("/update/{id}")
+    @PutMapping("/update/{id}")
     public ResponseEntity<GenericResponse> update(@PathVariable("id") Long id,
                                                   @RequestParam(value = "productName", required = false) String productName,
                                                   @RequestParam(value = "price", required = false) Double price,
