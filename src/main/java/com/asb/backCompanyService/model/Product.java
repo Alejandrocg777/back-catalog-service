@@ -26,17 +26,26 @@ public class Product {
     @Column(name = "product_name")
     private String productName;
 
-    @Column(name = "discount_id")
-    private Long discountId;
+    @Column(name = "img_product")
+    private String imgProduct;
 
-    @Column(name = "tax_configuration_id")
-    private Long taxConfigurationId;
+    @Column(name = "quantity")
+    private Long quantity;
+
+    @Column(name = "category_id")
+    private Long categoryId;
 
     @Column(name = "price")
     private Double price;
 
+    @Column(name = "description")
+    private String description;
+
     @Column(name = "status", nullable = false)
     private String status;
+
+    @Column(name = "status_product")
+    private String statusProduct;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

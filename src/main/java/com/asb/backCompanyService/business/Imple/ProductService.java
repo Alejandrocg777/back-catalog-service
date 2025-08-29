@@ -5,7 +5,10 @@ import com.asb.backCompanyService.dto.request.ProductRequestDTO;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.dto.responde.ProductResponseDTO;
 import com.asb.backCompanyService.exception.CustomErrorException;
+import com.asb.backCompanyService.exception.GenericException;
+import com.asb.backCompanyService.model.Category;
 import com.asb.backCompanyService.model.Product;
+import com.asb.backCompanyService.repository.CategoryRepository;
 import com.asb.backCompanyService.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,39 +30,65 @@ import java.util.Optional;
 public class ProductService implements ProductBusiness {
 
     private final ProductRepository productRepository;
-    private final DiscountService discountService;
-    private final TaxService taxService;
+    private final CategoryRepository categoryRepository;
 
     @Override
     public ProductRequestDTO save(ProductRequestDTO request) {
-        Product product = new Product();
-        product.setProductName(request.getProductName());
-        product.setPrice(request.getPrice());
-        product.setStatus(request.getStatus());
-        Product newProduct = productRepository.save(product);
+        try {
+            // Validar que categoryId esté presente
+            if (request.getCategoryId() == null) {
+                throw new GenericException("El categoryId es requerido para calcular el statusProduct", HttpStatus.BAD_REQUEST);
+            }
 
-        ProductRequestDTO response = new ProductRequestDTO();
-        BeanUtils.copyProperties(newProduct, response);
-        return response;
+            // Buscar la categoría por ID
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new GenericException("Categoría no encontrada con ID: " + request.getCategoryId(), HttpStatus.BAD_REQUEST));
+
+            // Crear el producto desde DTO
+            Product product = new Product();
+            product.setProductName(request.getProductName());
+            product.setPrice(request.getPrice());
+            product.setQuantity(request.getQuantity()); // Asumiendo que DTO tiene quantity
+            product.setCategoryId(request.getCategoryId());
+            product.setImgProduct(request.getImage()); // Si aplica
+            product.setDescription(request.getDescription()); // Si aplica
+            product.setStatus("ACTIVE");
+
+            // Calcular statusProduct basado en quantity y valores de categoría
+            Long quantity = product.getQuantity();
+            Double soldOutValue = category.getSoldOutValue();
+            Double fewUnits = category.getFewUnits();
+
+            if (quantity == null || soldOutValue == null || fewUnits == null) {
+                throw new GenericException("Valores requeridos (quantity, soldOutValue, fewUnits) no pueden ser nulos", HttpStatus.BAD_REQUEST);
+            }
+
+            String statusProduct;
+            if (quantity >= 0 && quantity <= soldOutValue) {
+                statusProduct = "agotado";
+            } else if (quantity > soldOutValue && quantity <= fewUnits) {
+                statusProduct = "pocas unidades";
+            } else {
+                statusProduct = "disponible";
+            }
+
+            product.setStatusProduct(statusProduct);
+
+            // Guardar el producto
+            Product newProduct = productRepository.save(product);
+
+            // Mapear de vuelta a DTO
+            ProductRequestDTO response = new ProductRequestDTO();
+            BeanUtils.copyProperties(newProduct, response);
+            return response;
+
+        } catch (Exception e) {
+            log.error("Error al guardar el producto", e);
+            throw new RuntimeException("Error al guardar el producto", e);
+        }
     }
 
 
-    public Double getDiscount(Long productId, Long quantity){
-        if (!productRepository.existsById(productId)) throw new CustomErrorException(HttpStatus.BAD_REQUEST, "producto no existe");
-
-        Product product = productRepository.findById(productId).get();
-        return  discountService.calculatePriceLessDiscount(product.getDiscountId(),product.getPrice(),quantity);
-
-
-    }
-
-    public  Double getTax(Long productId, Double value){
-        if (!productRepository.existsById(productId)) throw new CustomErrorException(HttpStatus.BAD_REQUEST, "producto no existe");
-        Product product = productRepository.findById(productId).get();
-        return taxService.calculatePricePlusTax(product.getTaxConfigurationId(),value);
-
-
-    }
 
     @Override
     public GenericResponse update(Long id, ProductRequestDTO request) {
@@ -105,8 +134,6 @@ public class ProductService implements ProductBusiness {
         ProductResponseDTO response = new ProductResponseDTO();
         response.setId(productOptional.get().getId());
         response.setProductName(productOptional.get().getProductName());
-        response.setDiscountId(productOptional.get().getDiscountId());
-        response.setTaxConfigurationId(productOptional.get().getTaxConfigurationId());
         response.setPrice(productOptional.get().getPrice());
         response.setStatus(productOptional.get().getStatus());
         return response;

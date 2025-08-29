@@ -7,6 +7,8 @@ import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.dto.responde.ProductResponseDTO;
 import com.asb.backCompanyService.model.Product;
 import com.asb.backCompanyService.model.Seller;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +16,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/${app.request.prefix}/${app.request.version}${app.request.mappings}/product")
@@ -25,10 +30,34 @@ import java.util.List;
 public class ProductController {
 
     private final ProductBusiness productBusiness;
+    private final Cloudinary cloudinary;
 
     @PostMapping("/create")
-    public ResponseEntity<ProductRequestDTO> save(@RequestBody ProductRequestDTO requestDTO) {
-        ProductRequestDTO savedSeller = productBusiness.save(requestDTO);
+    public ResponseEntity<ProductRequestDTO> save(@RequestParam("productName") String productName,
+                                                  @RequestParam("price") Double price,
+                                                  @RequestParam("description") String description,
+                                                  @RequestParam("categoryId") Long categoryId,
+                                                  @RequestParam("quantity") Long quantity,
+                                                  @RequestParam("image")MultipartFile image) {
+
+        ProductRequestDTO productRequestDTO = new ProductRequestDTO();
+        productRequestDTO.setProductName(productName);
+        productRequestDTO.setPrice(price);
+        productRequestDTO.setDescription(description);
+        productRequestDTO.setCategoryId(categoryId);
+        productRequestDTO.setQuantity(quantity);
+        if(image != null) {
+            try {
+                Map uploadResult = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
+                String imageUrl = (String) uploadResult.get("url");
+                productRequestDTO.setImage(imageUrl);
+            } catch (IOException e) {
+                throw new RuntimeException("Error al subir la imagen", e);
+            }
+        }else{
+            productRequestDTO.setImage("");
+        }
+        ProductRequestDTO savedSeller = productBusiness.save(productRequestDTO);
         return ResponseEntity.ok(savedSeller);
     }
 

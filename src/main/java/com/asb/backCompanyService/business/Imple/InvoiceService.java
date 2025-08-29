@@ -93,10 +93,6 @@ public class InvoiceService implements IInvoiceBusiness {
         sellProduct.setInvoiceId(product.getInvoiceId());
         sellProduct.setProductId(product.getProductId());
         sellProduct.setQuantity(product.getQuantity());
-        Double priceWithDiscount =  productService.getDiscount(product.getProductId(), product.getQuantity());
-        Double priceWithTax = productService.getTax(product.getProductId(),priceWithDiscount);
-        sellProduct.setTotal(priceWithTax);
-        sellProduct.setValue(priceWithDiscount);
         sellProduct.setStatus("ACTIVE");
         sellProductRepository.save(sellProduct);
 
@@ -122,10 +118,6 @@ public class InvoiceService implements IInvoiceBusiness {
             sellProduct.setInvoiceId(invoiceId);
             sellProduct.setProductId(sellProduct1.getProductId());
             sellProduct.setQuantity(sellProduct1.getQuantity());
-            Double priceWithDiscount =  productService.getDiscount(sellProduct1.getProductId(), sellProduct1.getQuantity());
-            Double priceWithTax = productService.getTax(sellProduct1.getProductId(),priceWithDiscount);
-            sellProduct.setTotal(priceWithTax);
-            sellProduct.setValue(priceWithDiscount);
             sellProduct.setStatus("ACTIVE");
             sellProductRepository.save(sellProduct);
         });

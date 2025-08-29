@@ -50,6 +50,8 @@ public class CategoryController {
             } catch (IOException e) {
                 throw new RuntimeException("Error al subir la imagen", e);
             }
+        }else{
+            categoryDto.setImage("");
         }
         CategoryDto savedCategory = iCategoryBusiness.save(categoryDto);
         return ResponseEntity.ok(savedCategory);

@@ -1,6 +1,5 @@
 package com.asb.backCompanyService.dto.request;
 
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,16 +15,16 @@ public class ProductRequestDTO {
 
     private Double price;
 
-    private Integer quantity;
+    private String description;
 
-    private Long discountId;
+    private Long categoryId;
 
-    private Long taxConfigurationId;
+    private Long quantity;
 
-    private Double taxValue;
+     private String image;
 
     private String status;
 
-    private Double totalValue;
+    private String statusProduct;
 
 }

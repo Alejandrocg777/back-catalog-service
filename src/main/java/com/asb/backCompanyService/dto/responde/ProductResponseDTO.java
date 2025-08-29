@@ -15,13 +15,5 @@ public class ProductResponseDTO {
 
     private Double price;
 
-    private Double discountAmount;
-
-    private Long discountId;
-
-    private Long taxConfigurationId;
-
-    private String taxConfigurationName;
-
     private String status;
 }

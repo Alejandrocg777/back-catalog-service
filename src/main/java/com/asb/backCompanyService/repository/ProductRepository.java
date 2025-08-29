@@ -10,15 +10,11 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface ProductRepository extends CrudRepository<Product, Long> {
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ProductResponseDTO(c.id, c.productName, c.price, d.amount , c.discountId, c.taxConfigurationId,  t.taxCode,  c.status) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ProductResponseDTO(c.id, c.productName, c.price,  c.status) " +
             "FROM Product c " +
-            "INNER JOIN TaxConfiguration t ON c.taxConfigurationId = t.id " +
-            "INNER JOIN Discount d ON c.discountId = d.id " +
             "WHERE c.status = 'ACTIVE'",
             countQuery = "SELECT COUNT(*) " +
                     "FROM Product c " +
-                    "INNER JOIN TaxConfiguration t ON c.taxConfigurationId = t.id " +
-                    "INNER JOIN Discount d ON c.discountId = d.id " +
                     "WHERE c.status = 'ACTIVE'")
     Page<ProductResponseDTO> getStatus(Pageable pageable);
 }
