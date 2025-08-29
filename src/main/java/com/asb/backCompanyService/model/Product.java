@@ -45,7 +45,7 @@ public class Product {
     private String status;
 
     @Column(name = "status_product")
-    private String statusProduct;
+    private String productStatus;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

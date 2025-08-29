@@ -2,7 +2,6 @@ package com.asb.backCompanyService.business.Imple;
 
 import com.asb.backCompanyService.business.Interfaces.ProductBusiness;
 import com.asb.backCompanyService.dto.request.ProductRequestDTO;
-import com.asb.backCompanyService.dto.responde.CategoryResponseDto;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.dto.responde.ProductResponseDTO;
 import com.asb.backCompanyService.exception.CustomErrorException;
@@ -53,7 +52,7 @@ public class ProductService implements ProductBusiness {
             product.setDescription(request.getDescription()); // Si aplica
             product.setStatus("ACTIVE");
 
-            product.setStatusProduct(calculateProductStatus(request));
+            product.setProductStatus(calculateProductStatus(request));
 
             // Guardar el producto
             Product newProduct = productRepository.save(product);
@@ -109,7 +108,7 @@ public class ProductService implements ProductBusiness {
        if (request.getQuantity() != null) {
 
            product.setQuantity(request.getQuantity());
-           product.setStatusProduct(calculateProductStatus(request));
+           product.setProductStatus(calculateProductStatus(request));
        }
        if (request.getCategoryId() != null)  product.setCategoryId(request.getCategoryId());
        if (request.getImage() != null)  product.setImgProduct(request.getImage());
@@ -155,7 +154,7 @@ public class ProductService implements ProductBusiness {
         response.setCategoryId(productOptional.get().getCategoryId());
         response.setQuantity(productOptional.get().getQuantity());
         response.setImage(productOptional.get().getImgProduct());
-        response.setProductStatus(productOptional.get().getStatusProduct());
+        response.setProductStatus(productOptional.get().getProductStatus());
         response.setStatus(productOptional.get().getStatus());
         return response;
     }
@@ -172,6 +171,7 @@ public class ProductService implements ProductBusiness {
         String description = null;
         String categoryName = null;
         String quantity = null;
+        String productStatus = null;
 
         if (customQuery.containsKey("orders")) {
             orders = customQuery.get("orders");
@@ -213,11 +213,16 @@ public class ProductService implements ProductBusiness {
              quantity = "%" + customQuery.get("quantity") + "%";
         }
 
+
+        if (customQuery.containsKey("productStatus")) {
+            productStatus = "%" + customQuery.get("productStatus") + "%";
+        }
+
          Sort.Direction direction = Sort.Direction.fromString(orders);
         Sort sort = Sort.by(direction, sortBy);
         Pageable pagingSort = PageRequest.of(page, size, sort);
 
-        Page<ProductResponseDTO> result = productRepository.search(id, quantity, productName, description, categoryName, price, pagingSort);
+        Page<ProductResponseDTO> result = productRepository.search(id, quantity, productName, description, categoryName, price, productStatus, pagingSort);
         log.info("Resultados encontrados: {}", result.getContent());
         return result;
     }
