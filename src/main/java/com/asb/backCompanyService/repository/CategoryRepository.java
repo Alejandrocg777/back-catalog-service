@@ -1,6 +1,5 @@
 package com.asb.backCompanyService.repository;
 
-import com.asb.backCompanyService.dto.request.CategoryDto;
 import com.asb.backCompanyService.dto.responde.CategoryResponseDto;
 import com.asb.backCompanyService.model.Category;
 import org.springframework.data.domain.Page;
@@ -28,7 +27,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     Page<CategoryResponseDto> search(String id, String nameCategory, String soldOutValue, String fewUnits, Pageable pageable);
 
 
-    @Query(value = "SELECT  new com.asb.backCompanyService.dto.responde.CategoryResponseDto(c.id, c.nameCategory,c.soldOutValue,c.fewUnits, c.status, c.nameCategory) " +
+    @Query(value = "SELECT  new com.asb.backCompanyService.dto.responde.CategoryResponseDto(c.id, c.nameCategory,c.soldOutValue,c.fewUnits, c.status, c.image) " +
             "FROM Category c WHERE c.status = 'ACTIVE'")
     Page<CategoryResponseDto> getActiveCategories(Pageable pageable);
 
