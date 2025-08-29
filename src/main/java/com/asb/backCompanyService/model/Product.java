@@ -27,7 +27,7 @@ public class Product {
     private String productName;
 
     @Column(name = "img_product")
-    private String imgProduct;
+    private String image;
 
     @Column(name = "quantity")
     private Long quantity;

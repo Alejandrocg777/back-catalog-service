@@ -10,7 +10,7 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface ProductRepository extends CrudRepository<Product, Long> {
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ProductResponseDTO(c.id, c.productName, c.price, c.description,c.categoryId, a.nameCategory, c.quantity, c.imgProduct, c.status, c.productStatus) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ProductResponseDTO(c.id, c.productName, c.price, c.description,c.categoryId, a.nameCategory, c.quantity, c.image, c.status, c.productStatus) " +
             "FROM Product c " +
             "INNER JOIN Category a ON c.categoryId = a.id " +
             "WHERE c.status = 'ACTIVE'",
@@ -21,7 +21,7 @@ public interface ProductRepository extends CrudRepository<Product, Long> {
 
 
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ProductResponseDTO(c.id, c.productName, c.price, c.description,c.categoryId, a.nameCategory, c.quantity, c.imgProduct, c.status, c.productStatus) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ProductResponseDTO(c.id, c.productName, c.price, c.description,c.categoryId, a.nameCategory, c.quantity, c.image, c.status, c.productStatus) " +
             "FROM Product c " +
             "INNER JOIN Category a ON c.categoryId = a.id " +
             "WHERE c.status = 'ACTIVE'" +

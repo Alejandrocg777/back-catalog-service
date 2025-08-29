@@ -48,7 +48,7 @@ public class ProductService implements ProductBusiness {
             product.setPrice(request.getPrice());
             product.setQuantity(request.getQuantity()); // Asumiendo que DTO tiene quantity
             product.setCategoryId(request.getCategoryId());
-            product.setImgProduct(request.getImage()); // Si aplica
+            product.setImage(request.getImage()); // Si aplica
             product.setDescription(request.getDescription()); // Si aplica
             product.setStatus("ACTIVE");
 
@@ -111,7 +111,7 @@ public class ProductService implements ProductBusiness {
            product.setProductStatus(calculateProductStatus(request));
        }
        if (request.getCategoryId() != null)  product.setCategoryId(request.getCategoryId());
-       if (request.getImage() != null)  product.setImgProduct(request.getImage());
+       if (request.getImage() != null)  product.setImage(request.getImage());
        if (request.getDescription() != null)  product.setDescription(request.getDescription());
        if (request.getStatus() != null)  product.setStatus(request.getStatus());
 
@@ -153,7 +153,7 @@ public class ProductService implements ProductBusiness {
         response.setDescription(productOptional.get().getDescription());
         response.setCategoryId(productOptional.get().getCategoryId());
         response.setQuantity(productOptional.get().getQuantity());
-        response.setImage(productOptional.get().getImgProduct());
+        response.setImage(productOptional.get().getImage());
         response.setProductStatus(productOptional.get().getProductStatus());
         response.setStatus(productOptional.get().getStatus());
         return response;
