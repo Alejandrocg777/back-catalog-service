@@ -35,8 +35,8 @@ public interface ProductRepository extends CrudRepository<Product, Long> {
             "AND (:productStatus IS NULL OR UPPER(c.productStatus) LIKE UPPER(:productStatus)) " +
             "AND (:description IS NULL OR UPPER(c.description) LIKE UPPER(:description)) " +
             "AND (:categoryName IS NULL OR UPPER(a.nameCategory) LIKE UPPER(:categoryName)) " +
-            "AND (:purchasePrice IS NULL OR STR(c.price) LIKE UPPER(:price)) " +
-            "AND (:price IS NULL OR STR(c.purchasePrice) LIKE UPPER(:purchasePrice)) ",
+            "AND (:purchasePrice IS NULL OR STR(c.purchasePrice) LIKE UPPER(:purchasePrice)) " +
+            "AND (:price IS NULL OR STR(c.price) LIKE UPPER(:price)) ",
             countQuery = "SELECT COUNT(*) " +
                     "FROM Product c " +
                     "INNER JOIN Category a ON c.categoryId = a.id " +
@@ -47,7 +47,7 @@ public interface ProductRepository extends CrudRepository<Product, Long> {
                     "AND (:productStatus IS NULL OR UPPER(c.productStatus) LIKE UPPER(:productStatus)) " +
                     "AND (:description IS NULL OR UPPER(c.description) LIKE UPPER(:description)) " +
                     "AND (:categoryName IS NULL OR UPPER(a.nameCategory) LIKE UPPER(:categoryName)) " +
-                    "AND (:purchasePrice IS NULL OR STR(c.price) LIKE UPPER(:price)) " +
+                    "AND (:purchasePrice IS NULL OR STR(c.purchasePrice) LIKE UPPER(:purchasePrice)) " +
                     "AND (:price IS NULL OR STR(c.price) LIKE UPPER(:price)) ")
     Page<ProductResponseDTO> search(String id, String quantity, String productName, String description, String categoryName, String price, String productStatus, String purchasePrice, Pageable pageable);
 }
