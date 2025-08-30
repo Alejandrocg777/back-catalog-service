@@ -72,7 +72,8 @@ public class ProductController {
                                                   @RequestParam(value = "description",required = false) String description,
                                                   @RequestParam(value = "categoryId", required = false) Long categoryId,
                                                   @RequestParam(value = "quantity", required = false) Long quantity,
-                                                  @RequestParam(value = "image",required = false)MultipartFile image) {
+                                                  @RequestParam(value = "image",required = false)MultipartFile image,
+                                                  @RequestParam("purchasePrice") Double purchasePrice) {
         log.info("Iniciando actualización para City con ID: {}", id);
         ProductRequestDTO productRequestDTO = new ProductRequestDTO();
         productRequestDTO.setProductName(productName);
@@ -80,6 +81,7 @@ public class ProductController {
         productRequestDTO.setDescription(description);
         productRequestDTO.setCategoryId(categoryId);
         productRequestDTO.setQuantity(quantity);
+        productRequestDTO.setPurchasePrice(purchasePrice);
         if(image != null) {
             try {
                 Map uploadResult = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
