@@ -46,10 +46,9 @@ public class ProductService implements ProductBusiness {
             Product product = new Product();
             product.setProductName(request.getProductName());
             product.setPrice(request.getPrice());
-            product.setQuantity(request.getQuantity()); // Asumiendo que DTO tiene quantity
             product.setCategoryId(request.getCategoryId());
-            product.setImage(request.getImage()); // Si aplica
-            product.setDescription(request.getDescription()); // Si aplica
+            product.setImage(request.getImage());
+            product.setDescription(request.getDescription());
             product.setStatus("ACTIVE");
 
             product.setProductStatus(calculateProductStatus(request));

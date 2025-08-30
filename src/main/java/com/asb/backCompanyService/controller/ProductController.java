@@ -38,7 +38,6 @@ public class ProductController {
                                                   @RequestParam("price") Double price,
                                                   @RequestParam("description") String description,
                                                   @RequestParam("categoryId") Long categoryId,
-                                                  @RequestParam("quantity") Long quantity,
                                                   @RequestParam("image")MultipartFile image) {
 
         ProductRequestDTO productRequestDTO = new ProductRequestDTO();
@@ -46,7 +45,6 @@ public class ProductController {
         productRequestDTO.setPrice(price);
         productRequestDTO.setDescription(description);
         productRequestDTO.setCategoryId(categoryId);
-        productRequestDTO.setQuantity(quantity);
         if(image != null) {
             try {
                 Map uploadResult = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
