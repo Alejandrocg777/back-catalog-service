@@ -47,6 +47,9 @@ public class Product {
     @Column(name = "status_product")
     private String productStatus;
 
+    @Column(name = "purchase_price")
+    private Double purchasePrice;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

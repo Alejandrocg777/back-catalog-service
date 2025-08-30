@@ -50,8 +50,11 @@ public class ProductService implements ProductBusiness {
             product.setCategoryId(request.getCategoryId());
             product.setImage(request.getImage());
             product.setDescription(request.getDescription());
-            product.setQuantity(0L);
+            product.setQuantity(request.getQuantity());
+            product.setPurchasePrice(request.getPurchasePrice());
             product.setStatus("ACTIVE");
+
+            product.setProductStatus(calculateProductStatus(request.getCategoryId(), request.getQuantity()));
 
             // Guardar el producto
             Product newProduct = productRepository.save(product);
@@ -112,6 +115,7 @@ public class ProductService implements ProductBusiness {
        if (request.getImage() != null)  product.setImage(request.getImage());
        if (request.getDescription() != null)  product.setDescription(request.getDescription());
        if (request.getStatus() != null)  product.setStatus(request.getStatus());
+       if (request.getPurchasePrice() != null)  product.setPurchasePrice(request.getPurchasePrice());
 
        productRepository.save(product);
 
@@ -170,6 +174,7 @@ public class ProductService implements ProductBusiness {
         String categoryName = null;
         String quantity = null;
         String productStatus = null;
+        String purchasePrice = null;
 
         if (customQuery.containsKey("orders")) {
             orders = customQuery.get("orders");
@@ -216,11 +221,16 @@ public class ProductService implements ProductBusiness {
             productStatus = "%" + customQuery.get("productStatus") + "%";
         }
 
+         if (customQuery.containsKey("purchasePrice")) {
+             purchasePrice = "%" + customQuery.get("purchasePrice") + "%";
+        }
+
+
          Sort.Direction direction = Sort.Direction.fromString(orders);
         Sort sort = Sort.by(direction, sortBy);
         Pageable pagingSort = PageRequest.of(page, size, sort);
 
-        Page<ProductResponseDTO> result = productRepository.search(id, quantity, productName, description, categoryName, price, productStatus, pagingSort);
+        Page<ProductResponseDTO> result = productRepository.search(id, quantity, productName, description, categoryName, price, productStatus, purchasePrice, pagingSort);
         log.info("Resultados encontrados: {}", result.getContent());
         return result;
     }

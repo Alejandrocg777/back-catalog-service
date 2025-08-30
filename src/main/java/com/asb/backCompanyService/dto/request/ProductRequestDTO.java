@@ -27,4 +27,6 @@ public class ProductRequestDTO {
 
     private String statusProduct;
 
+    private Double purchasePrice;
+
 }

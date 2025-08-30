@@ -39,11 +39,15 @@ public class ProductController {
                                                   @RequestParam("price") Double price,
                                                   @RequestParam("description") String description,
                                                   @RequestParam("categoryId") Long categoryId,
-                                                  @RequestParam("image")MultipartFile image) {
+                                                  @RequestParam("image")MultipartFile image,
+                                                  @RequestParam("purchasePrice") Double purchasePrice,
+                                                  @RequestParam("quantity") Long quantity) throws IOException {
 
         ProductRequestDTO productRequestDTO = new ProductRequestDTO();
         productRequestDTO.setProductName(productName);
         productRequestDTO.setPrice(price);
+        productRequestDTO.setPurchasePrice(purchasePrice);
+        productRequestDTO.setQuantity(quantity);
         productRequestDTO.setDescription(description);
         productRequestDTO.setCategoryId(categoryId);
         if(image != null) {

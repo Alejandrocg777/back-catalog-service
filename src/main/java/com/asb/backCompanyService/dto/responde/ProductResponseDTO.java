@@ -28,4 +28,6 @@ public class ProductResponseDTO {
     private String status;
 
     private String productStatus;
+
+    private Double purchasePrice;
 }
