@@ -8,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
+import java.util.List;
+
 public interface ProductRepository extends CrudRepository<Product, Long> {
 
     @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ProductResponseDTO(c.id, c.productName, c.price, c.description,c.categoryId, a.nameCategory, c.quantity, c.image, c.status, c.productStatus) " +
@@ -18,6 +20,8 @@ public interface ProductRepository extends CrudRepository<Product, Long> {
                     "FROM Product c " +
                     "WHERE c.status = 'ACTIVE'")
     Page<ProductResponseDTO> getStatus(Pageable pageable);
+
+    List<Product>findAllByStatus(String status);
 
 
 

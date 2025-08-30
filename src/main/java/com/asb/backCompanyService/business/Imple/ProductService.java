@@ -228,7 +228,7 @@ public class ProductService implements ProductBusiness {
     @Override
     public List<Product> getAllNoPage() {
         try {
-            return (List<Product>) productRepository.findAll();
+            return  productRepository.findAllByStatus("ACTIVE");
         } catch (Exception e) {
             log.error("Error al obtener el seller");
             log.error("Causa: {}", e.getCause().toString());
