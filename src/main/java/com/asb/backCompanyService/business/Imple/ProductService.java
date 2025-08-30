@@ -51,8 +51,6 @@ public class ProductService implements ProductBusiness {
             product.setDescription(request.getDescription());
             product.setStatus("ACTIVE");
 
-            product.setProductStatus(calculateProductStatus(request));
-
             // Guardar el producto
             Product newProduct = productRepository.save(product);
 
