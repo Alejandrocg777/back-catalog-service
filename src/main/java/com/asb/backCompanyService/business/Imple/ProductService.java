@@ -2,6 +2,7 @@ package com.asb.backCompanyService.business.Imple;
 
 import com.asb.backCompanyService.business.Interfaces.ProductBusiness;
 import com.asb.backCompanyService.dto.request.ProductRequestDTO;
+import com.asb.backCompanyService.dto.request.updateProductQuantityDTO;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.dto.responde.ProductResponseDTO;
 import com.asb.backCompanyService.exception.CustomErrorException;
@@ -49,6 +50,7 @@ public class ProductService implements ProductBusiness {
             product.setCategoryId(request.getCategoryId());
             product.setImage(request.getImage());
             product.setDescription(request.getDescription());
+            product.setQuantity(0L);
             product.setStatus("ACTIVE");
 
             // Guardar el producto
@@ -65,14 +67,13 @@ public class ProductService implements ProductBusiness {
         }
     }
 
-    public String calculateProductStatus(ProductRequestDTO request){
+    public String calculateProductStatus(Long categoryId, Long quantity){
 
         // Buscar la categoría por ID
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new GenericException("Categoría no encontrada con ID: " + request.getCategoryId(), HttpStatus.BAD_REQUEST));
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new GenericException("Categoría no encontrada con ID: " + categoryId, HttpStatus.BAD_REQUEST));
 
         // Calcular statusProduct basado en quantity y valores de categoría
-        Long quantity = request.getQuantity();
         Double soldOutValue = category.getSoldOutValue();
         Double fewUnits = category.getFewUnits();
 
@@ -105,7 +106,7 @@ public class ProductService implements ProductBusiness {
        if (request.getQuantity() != null) {
 
            product.setQuantity(request.getQuantity());
-           product.setProductStatus(calculateProductStatus(request));
+           product.setProductStatus(calculateProductStatus(request.getCategoryId(), request.getQuantity()));
        }
        if (request.getCategoryId() != null)  product.setCategoryId(request.getCategoryId());
        if (request.getImage() != null)  product.setImage(request.getImage());
@@ -233,5 +234,31 @@ public class ProductService implements ProductBusiness {
             log.error("Causa: {}", e.getCause().toString());
             throw new RuntimeException("No se puede recuperar el seller", e);
         }
+    }
+
+    @Override
+    public GenericResponse addQuantity(updateProductQuantityDTO quantity) {
+        if (!productRepository.existsById(quantity.getId())) throw new CustomErrorException(HttpStatus.BAD_REQUEST, "producto no existe");
+        Optional<Product> productOptional = productRepository.findById(quantity.getId());
+        Long currentAmount = productOptional.get().getQuantity();
+        Long newQuantity = currentAmount + quantity.getQuantity();
+        productOptional.get().setQuantity(newQuantity);
+        productOptional.get().setProductStatus(calculateProductStatus(productOptional.get().getCategoryId(), quantity.getQuantity()));
+        productRepository.save(productOptional.get());
+
+        return new GenericResponse("Suma realizada con exito", 200);
+    }
+
+    @Override
+    public GenericResponse subtractQuantity(updateProductQuantityDTO quantity) {
+        if (!productRepository.existsById(quantity.getId())) throw new CustomErrorException(HttpStatus.BAD_REQUEST, "producto no existe");
+        Optional<Product> productOptional = productRepository.findById(quantity.getId());
+        Long currentAmount = productOptional.get().getQuantity();
+        Long newQuantity = currentAmount - quantity.getQuantity();
+        productOptional.get().setQuantity(newQuantity);
+        productOptional.get().setProductStatus(calculateProductStatus(productOptional.get().getCategoryId(), newQuantity));
+        productRepository.save(productOptional.get());
+
+        return new GenericResponse("Resta realizada con exito", 200);
     }
 }

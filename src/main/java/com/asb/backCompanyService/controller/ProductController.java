@@ -3,6 +3,7 @@ package com.asb.backCompanyService.controller;
 import com.asb.backCompanyService.business.Interfaces.ProductBusiness;
 import com.asb.backCompanyService.dto.request.ProductRequestDTO;
 import com.asb.backCompanyService.dto.request.SellerRequestDTO;
+import com.asb.backCompanyService.dto.request.updateProductQuantityDTO;
 import com.asb.backCompanyService.dto.responde.CategoryResponseDto;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.dto.responde.ProductResponseDTO;
@@ -121,4 +122,18 @@ public class ProductController {
         List<Product> response = productBusiness.getAllNoPage();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @PutMapping("/add-quantity")
+    public ResponseEntity<GenericResponse>addQuantity(@RequestBody updateProductQuantityDTO quantity){
+        log.info("servicio para sumar cantidad a los productos");
+        return new ResponseEntity<>(productBusiness.addQuantity(quantity), HttpStatus.OK);
+    }
+
+
+    @PutMapping("/subtract-quantity")
+    public ResponseEntity<GenericResponse>subtractQuantity(@RequestBody updateProductQuantityDTO quantity){
+        log.info("servicio para restar cantidad a los productos");
+        return new ResponseEntity<>(productBusiness.subtractQuantity(quantity), HttpStatus.OK);
+    }
+
 }
