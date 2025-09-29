@@ -3,6 +3,7 @@ package com.asb.backCompanyService.business.Imple;
 import com.asb.backCompanyService.business.Interfaces.TransactionBusiness;
 import com.asb.backCompanyService.dto.responde.ProductResponseDTO;
 import com.asb.backCompanyService.dto.responde.TransactionResponseDTO;
+import com.asb.backCompanyService.model.Transaction;
 import com.asb.backCompanyService.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -109,4 +110,15 @@ public class TransactionsService implements TransactionBusiness {
         log.info("Resultados encontrados: {}", result.getContent());
         return result;
     }
+
+
+    public void insertTransaction(String transactionType, Long productId, Long userId, String status) {
+        Transaction transaction = new Transaction();
+        transaction.setTransactionType(transactionType);
+        transaction.setProductId(productId);
+        transaction.setUserId(userId);
+        transaction.setStatus(status != null ? status : "ACTIVE");
+        transactionRepository.save(transaction);
+    }
+
 }

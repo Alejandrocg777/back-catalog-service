@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface ProductRepository extends CrudRepository<Product, Long> {
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ProductResponseDTO(c.id, c.productName, c.price, c.description,c.categoryId, a.nameCategory, c.quantity, c.image, c.status, c.productStatus, c.purchasePrice) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ProductResponseDTO(c.id, c.productName, c.price, c.description,c.categoryId, a.nameCategory, c.quantity, c.image, c.status, c.productStatus) " +
             "FROM Product c " +
             "INNER JOIN Category a ON c.categoryId = a.id " +
             "WHERE c.status = 'ACTIVE'",
@@ -25,7 +25,7 @@ public interface ProductRepository extends CrudRepository<Product, Long> {
 
 
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ProductResponseDTO(c.id, c.productName, c.price, c.description,c.categoryId, a.nameCategory, c.quantity, c.image, c.status, c.productStatus, c.purchasePrice) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ProductResponseDTO(c.id, c.productName, c.price, c.description,c.categoryId, a.nameCategory, c.quantity, c.image, c.status, c.productStatus) " +
             "FROM Product c " +
             "INNER JOIN Category a ON c.categoryId = a.id " +
             "WHERE c.status = 'ACTIVE'" +
@@ -35,7 +35,6 @@ public interface ProductRepository extends CrudRepository<Product, Long> {
             "AND (:productStatus IS NULL OR UPPER(c.productStatus) LIKE UPPER(:productStatus)) " +
             "AND (:description IS NULL OR UPPER(c.description) LIKE UPPER(:description)) " +
             "AND (:categoryName IS NULL OR UPPER(a.nameCategory) LIKE UPPER(:categoryName)) " +
-            "AND (:purchasePrice IS NULL OR STR(c.purchasePrice) LIKE UPPER(:purchasePrice)) " +
             "AND (:price IS NULL OR STR(c.price) LIKE UPPER(:price)) ",
             countQuery = "SELECT COUNT(*) " +
                     "FROM Product c " +
@@ -47,7 +46,6 @@ public interface ProductRepository extends CrudRepository<Product, Long> {
                     "AND (:productStatus IS NULL OR UPPER(c.productStatus) LIKE UPPER(:productStatus)) " +
                     "AND (:description IS NULL OR UPPER(c.description) LIKE UPPER(:description)) " +
                     "AND (:categoryName IS NULL OR UPPER(a.nameCategory) LIKE UPPER(:categoryName)) " +
-                    "AND (:purchasePrice IS NULL OR STR(c.purchasePrice) LIKE UPPER(:purchasePrice)) " +
                     "AND (:price IS NULL OR STR(c.price) LIKE UPPER(:price)) ")
-    Page<ProductResponseDTO> search(String id, String quantity, String productName, String description, String categoryName, String price, String productStatus, String purchasePrice, Pageable pageable);
+    Page<ProductResponseDTO> search(String id, String quantity, String productName, String description, String categoryName, String price, String productStatus, Pageable pageable);
 }

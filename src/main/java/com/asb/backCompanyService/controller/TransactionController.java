@@ -1,6 +1,7 @@
 package com.asb.backCompanyService.controller;
 
 import com.asb.backCompanyService.business.Interfaces.TransactionBusiness;
+import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.dto.responde.ProductResponseDTO;
 import com.asb.backCompanyService.dto.responde.TransactionResponseDTO;
 import lombok.RequiredArgsConstructor;
@@ -37,4 +38,12 @@ public class TransactionController {
         Page<TransactionResponseDTO> products = transactionBusiness.searchCustom(customQuery);
         return ResponseEntity.ok(products);
     }
+
+/*
+    @PostMapping("/create")
+    public ResponseEntity<GenericResponse>create(){
+        return new ResponseEntity<>()
+    }
+    
+ */
 }

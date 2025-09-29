@@ -33,6 +33,7 @@ public class ProductService implements ProductBusiness {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final TransactionsService transactionsService;
 
     @Override
     public ProductRequestDTO save(ProductRequestDTO request) {
@@ -51,7 +52,6 @@ public class ProductService implements ProductBusiness {
             product.setImage(request.getImage());
             product.setDescription(request.getDescription());
             product.setQuantity(request.getQuantity());
-            product.setPurchasePrice(request.getPurchasePrice());
             product.setStatus("ACTIVE");
 
             product.setProductStatus(calculateProductStatus(request.getCategoryId(), request.getQuantity()));
@@ -115,7 +115,6 @@ public class ProductService implements ProductBusiness {
        if (request.getImage() != null)  product.setImage(request.getImage());
        if (request.getDescription() != null)  product.setDescription(request.getDescription());
        if (request.getStatus() != null)  product.setStatus(request.getStatus());
-       if (request.getPurchasePrice() != null)  product.setPurchasePrice(request.getPurchasePrice());
 
        productRepository.save(product);
 
@@ -174,7 +173,6 @@ public class ProductService implements ProductBusiness {
         String categoryName = null;
         String quantity = null;
         String productStatus = null;
-        String purchasePrice = null;
 
         if (customQuery.containsKey("orders")) {
             orders = customQuery.get("orders");
@@ -221,16 +219,13 @@ public class ProductService implements ProductBusiness {
             productStatus = "%" + customQuery.get("productStatus") + "%";
         }
 
-         if (customQuery.containsKey("purchasePrice")) {
-             purchasePrice = "%" + customQuery.get("purchasePrice") + "%";
-        }
 
 
          Sort.Direction direction = Sort.Direction.fromString(orders);
         Sort sort = Sort.by(direction, sortBy);
         Pageable pagingSort = PageRequest.of(page, size, sort);
 
-        Page<ProductResponseDTO> result = productRepository.search(id, quantity, productName, description, categoryName, price, productStatus, purchasePrice, pagingSort);
+        Page<ProductResponseDTO> result = productRepository.search(id, quantity, productName, description, categoryName, price, productStatus, pagingSort);
         log.info("Resultados encontrados: {}", result.getContent());
         return result;
     }
@@ -256,6 +251,8 @@ public class ProductService implements ProductBusiness {
         productOptional.get().setProductStatus(calculateProductStatus(productOptional.get().getCategoryId(), quantity.getQuantity()));
         productRepository.save(productOptional.get());
 
+        transactionsService.insertTransaction("ENTRADA", quantity.getId(), null, "ACTIVE");
+
         return new GenericResponse("Suma realizada con exito", 200);
     }
 
@@ -268,6 +265,8 @@ public class ProductService implements ProductBusiness {
         productOptional.get().setQuantity(newQuantity);
         productOptional.get().setProductStatus(calculateProductStatus(productOptional.get().getCategoryId(), newQuantity));
         productRepository.save(productOptional.get());
+
+        transactionsService.insertTransaction("SALIDA", quantity.getId(), null, "ACTIVE");
 
         return new GenericResponse("Resta realizada con exito", 200);
     }
