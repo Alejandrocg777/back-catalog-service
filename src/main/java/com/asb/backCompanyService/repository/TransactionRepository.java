@@ -11,9 +11,10 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
 
     @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.TransactionResponseDTO(t.id, p.productName, t.transactionType, p.quantity, t.transactionDate, r.name, u.name,p.price, t.status) " +
                     "FROM Transaction t " +
-                    "JOIN Product p ON t.productId = p.id " +
-                    "JOIN User u ON t.userId = u.id " +
-                    "JOIN Rol r ON r.id = u.rolId ")
+                    "LEFT JOIN Product p ON t.productId = p.id " +
+                    "LEFT JOIN User u ON t.userId = u.id " +
+                    "LEFT JOIN Rol r ON r.id = u.rolId " +
+                    "WHERE t.status = 'ACTIVE' ")
     Page<TransactionResponseDTO> getActiveTransactions(Pageable pageable);
 
 

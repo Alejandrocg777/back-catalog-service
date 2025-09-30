@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 
@@ -111,7 +112,7 @@ public class TransactionsService implements TransactionBusiness {
         return result;
     }
 
-
+    @Transactional
     public void insertTransaction(String transactionType, Long productId, Long userId, String status) {
         Transaction transaction = new Transaction();
         transaction.setTransactionType(transactionType);
