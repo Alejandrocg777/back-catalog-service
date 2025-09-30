@@ -26,8 +26,8 @@ public class WarehouseController {
     private final IWarehouseBusiness iWarehouseBusiness;
 
     @PostMapping("/create")
-    public ResponseEntity<WarehouseDto> save(@RequestBody WarehouseDto warehouseDto) {
-        WarehouseDto savedWarehouse = iWarehouseBusiness.save(warehouseDto);
+    public ResponseEntity<Warehouse> save(@RequestBody WarehouseDto warehouseDto) {
+        Warehouse savedWarehouse = iWarehouseBusiness.save(warehouseDto);
         return ResponseEntity.ok(savedWarehouse);
     }
 

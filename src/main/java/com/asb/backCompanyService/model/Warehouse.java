@@ -26,20 +26,15 @@ public class Warehouse {
     @Column(name = "warehouse_name", nullable = false)
     private String warehouseName;
 
-    @Column(name = "warehouse_type")
-    private Integer warehouseType;
-
     @Column(name = "description", nullable = true)
-    private String description; // Nueva columna para la descripción
+    private String description;
 
-    @Column(name = "owner", nullable = false)
-    private String owner;
-
-    @Column(name = "email", nullable = false)
-    private String email;
 
     @Column(name = "address", nullable = false)
     private String address;
+
+    @Column(name = "status")
+    private String status;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

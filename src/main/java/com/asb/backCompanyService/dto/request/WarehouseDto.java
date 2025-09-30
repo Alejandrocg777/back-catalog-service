@@ -1,9 +1,8 @@
 package com.asb.backCompanyService.dto.request;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -11,11 +10,6 @@ import java.time.LocalDateTime;
 public class WarehouseDto {
     private Long id;
     private String warehouseName;
-    private Integer warehouseType;
-    private String description; // Nueva columna
-    private String owner; // Reemplazo de responsible
-    private String email;
+    private String description;
     private String address;
-    private LocalDateTime createdAt; // Fecha de creación
-    private LocalDateTime updatedAt; // Fecha de última actualización
 }

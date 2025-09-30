@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface IWarehouseBusiness {
-    WarehouseDto save(WarehouseDto warehouseDto);
+    Warehouse save(WarehouseDto warehouseDto);
 
     GenericResponse update(Long id, WarehouseDto warehouseDto);
 

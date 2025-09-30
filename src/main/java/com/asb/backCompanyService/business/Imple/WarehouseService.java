@@ -31,56 +31,49 @@ public class WarehouseService implements IWarehouseBusiness {
 
     @Override
     @Transactional
-    public WarehouseDto save(WarehouseDto warehouseDto) {
-        try {
+    public Warehouse save(WarehouseDto warehouseDto) {
+
             log.info("Guardando Warehouse: {}", warehouseDto);
             Warehouse warehouse = new Warehouse();
-            BeanUtils.copyProperties(warehouseDto, warehouse);
-
-            // Guardar los nuevos campos: owner y description
-            warehouse.setOwner(warehouseDto.getOwner());
+            warehouse.setWarehouseName(warehouseDto.getWarehouseName());
+            warehouse.setAddress(warehouseDto.getAddress());
             warehouse.setDescription(warehouseDto.getDescription());
+            warehouse.setStatus("ACTIVE");
 
-            Warehouse newWarehouse = repository.save(warehouse);
-            WarehouseDto savedWarehouseDto = new WarehouseDto();
-            BeanUtils.copyProperties(newWarehouse, savedWarehouseDto);
-            return savedWarehouseDto;
-
-        } catch (Exception e) {
-            log.error("Error al guardar Warehouse", e);
-            throw new RuntimeException("Error al guardar la bodega", e);
-        }
+            return repository.save(warehouse);
     }
 
     @Override
     @Transactional
     public GenericResponse update(Long id, WarehouseDto warehouseDto) {
+
         GenericResponse response = new GenericResponse();
-        try {
-            log.info("Iniciando actualización para Warehouse con ID: {} y WarehouseDto: {}", id, warehouseDto);
+        log.info("Iniciando actualización para Warehouse con ID: {} y WarehouseDto: {}", id, warehouseDto);
 
-            Optional<Warehouse> optionalWarehouse = repository.findById(id);
-            if (!optionalWarehouse.isPresent()) {
-                throw new CustomErrorException(HttpStatus.BAD_REQUEST, "La bodega no existe");
-            }
-
-            Warehouse warehouse = optionalWarehouse.get();
-            BeanUtils.copyProperties(warehouseDto, warehouse);
-
-            // Actualizar los nuevos campos: owner y description
-            warehouse.setOwner(warehouseDto.getOwner());
-            warehouse.setDescription(warehouseDto.getDescription());
-
-            repository.save(warehouse);
-
-            response.setStatusCode(HttpStatus.OK.value());
-            response.setMessage("Bodega actualizada correctamente");
-        } catch (Exception e) {
-            log.error("Error al actualizar la bodega: {}", e.getMessage());
-            response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            response.setMessage("Error al actualizar la bodega");
-            return response;
+        Optional<Warehouse> optionalWarehouse = repository.findById(id);
+        if (!optionalWarehouse.isPresent()) {
+            throw new CustomErrorException(HttpStatus.BAD_REQUEST, "La bodega no existe");
         }
+
+        Warehouse warehouse = optionalWarehouse.get();
+
+        if (warehouseDto.getWarehouseName() != null) {
+            warehouse.setWarehouseName(warehouseDto.getWarehouseName());
+        }
+
+        if (warehouseDto.getAddress() != null) {
+            warehouse.setAddress(warehouseDto.getAddress());
+        }
+
+        if (warehouseDto.getDescription() != null) {
+            warehouse.setDescription(warehouseDto.getDescription());
+        }
+
+        repository.save(warehouse);
+
+        response.setStatusCode(HttpStatus.OK.value());
+        response.setMessage("Bodega actualizada correctamente");
+
         return response;
     }
 
@@ -90,7 +83,8 @@ public class WarehouseService implements IWarehouseBusiness {
         if (repository.existsById(id)) {
             Warehouse warehouse = repository.findById(id).orElseThrow(() ->
                     new RuntimeException("La bodega no fue encontrada por el ID " + id));
-            repository.delete(warehouse);
+            warehouse.setStatus("INCATIVE");
+            repository.save(warehouse);
             return true;
         } else {
             throw new RuntimeException("La bodega no fue encontrada por el ID " + id);
@@ -120,19 +114,71 @@ public class WarehouseService implements IWarehouseBusiness {
 
     @Override
     public Page<Warehouse> searchWarehouses(Map<String, String> customQuery) {
-        String id = "%" + customQuery.getOrDefault("id", "") + "%";
-        String warehouseName = "%" + customQuery.getOrDefault("warehouseName", "") + "%";
-        String email = "%" + customQuery.getOrDefault("email", "") + "%";
-        String address = "%" + customQuery.getOrDefault("address", "") + "%";
-        String description = "%" + customQuery.getOrDefault("description", "") + "%";
-        String owner = "%" + customQuery.getOrDefault("owner", "") + "%";
+            String orders = "ASC";
+            String sortBy = "id";
+            int page = 0;
+            int size = 10;
+            String id = null;
+            String warehouseName = null;
+            String description = null;
+            String address = null;
+            String status = null;
 
-        Sort.Direction direction = Sort.Direction.fromString("ASC");
-        Sort sort = Sort.by(direction, "id");
-        Pageable pagingSort = PageRequest.of(0, 5, sort);
+            if (customQuery.containsKey("orders")) {
+                orders = customQuery.get("orders");
+            }
 
-        return repository.searchWarehouses(id, warehouseName, email, address, description, owner, pagingSort);
-    }
+            if (customQuery.containsKey("sortBy")) {
+                sortBy = customQuery.get("sortBy");
+            }
+
+            if (customQuery.containsKey("page")) {
+                page = Integer.parseInt(customQuery.get("page"));
+            }
+
+            if (customQuery.containsKey("size")) {
+                size = Integer.parseInt(customQuery.get("size"));
+            }
+
+            if (customQuery.containsKey("id")) {
+                id = "%" + customQuery.get("id") + "%";
+            }
+
+            if (customQuery.containsKey("warehouseName")) {
+                warehouseName = "%" + customQuery.get("warehouseName").toUpperCase() + "%";
+            }
+
+            if (customQuery.containsKey("description")) {
+                description = "%" + customQuery.get("description").toUpperCase() + "%";
+            }
+
+            if (customQuery.containsKey("address")) {
+                address = "%" + customQuery.get("address").toUpperCase() + "%";
+            }
+
+            if (customQuery.containsKey("status")) {
+                status = "%" + customQuery.get("status").toUpperCase() + "%";
+            }
+
+            Sort.Direction direction = Sort.Direction.fromString(orders);
+            Sort sort = Sort.by(direction, sortBy);
+
+            Pageable pagingSort = PageRequest.of(page, size, sort);
+
+            log.info("id: " + id);
+            log.info("warehouseName: " + warehouseName);
+            log.info("description: " + description);
+            log.info("address: " + address);
+            log.info("status: " + status);
+            log.info("Page: " + page);
+            log.info("Size: " + size);
+            log.info("Orders: " + orders);
+            log.info("SortBy: " + sortBy);
+
+            Page<Warehouse> searchResult = repository.searchWarehouses(id, warehouseName, description, address, status, pagingSort);
+            log.info("Search results: " + searchResult.getContent());
+            return searchResult;
+        }
 
     @Override
     public List<Warehouse> getAllWarehouses() {
@@ -143,4 +189,5 @@ public class WarehouseService implements IWarehouseBusiness {
             throw new RuntimeException("No se pueden recuperar las bodegas", e);
         }
     }
+
 }
