@@ -1,5 +1,6 @@
 package com.asb.backCompanyService.dto.responde;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,6 +16,7 @@ public class TransactionResponseDTO {
     private String productName;
     private String transactionType;
     private Long quantity;
+    @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDateTime date;
     private String typeUser;
     private String userName;

@@ -34,6 +34,9 @@ public class Transaction {
     @Column(name = "transaction_date")
     private LocalDateTime transactionDate;
 
+    @Column(name = "observation")
+    private String observation;
+
     @Column(name = "status")
     private String status;
 

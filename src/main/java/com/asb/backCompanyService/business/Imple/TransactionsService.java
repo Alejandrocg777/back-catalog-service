@@ -15,6 +15,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Map;
 
 @Service
@@ -113,11 +117,23 @@ public class TransactionsService implements TransactionBusiness {
     }
 
     @Transactional
-    public void insertTransaction(String transactionType, Long productId, Long userId, String status) {
+    public void insertTransaction(String transactionType, Long productId, Long userId, String date, String observation, String status) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate parsedDate;
+        try {
+            parsedDate = LocalDate.parse(date, formatter);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Formato de fecha inválido: debe ser 'yyyy-MM-dd'", e);
+        }
+
+        LocalDateTime transactionDate = parsedDate.atStartOfDay();
+
         Transaction transaction = new Transaction();
         transaction.setTransactionType(transactionType);
         transaction.setProductId(productId);
         transaction.setUserId(userId);
+        transaction.setTransactionDate(transactionDate);
+        transaction.setObservation(observation);
         transaction.setStatus(status != null ? status : "ACTIVE");
         transactionRepository.save(transaction);
     }

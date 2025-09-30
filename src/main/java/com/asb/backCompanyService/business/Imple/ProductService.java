@@ -251,7 +251,7 @@ public class ProductService implements ProductBusiness {
         productOptional.get().setProductStatus(calculateProductStatus(productOptional.get().getCategoryId(), quantity.getQuantity()));
         productRepository.save(productOptional.get());
 
-        transactionsService.insertTransaction("ENTRADA", quantity.getId(), null, "ACTIVE");
+        transactionsService.insertTransaction("ENTRADA", quantity.getId(), null, quantity.getDate(), quantity.getObservation(), "ACTIVE");
 
         return new GenericResponse("Suma realizada con exito", 200);
     }
@@ -266,7 +266,7 @@ public class ProductService implements ProductBusiness {
         productOptional.get().setProductStatus(calculateProductStatus(productOptional.get().getCategoryId(), newQuantity));
         productRepository.save(productOptional.get());
 
-        transactionsService.insertTransaction("SALIDA", quantity.getId(), null, "ACTIVE");
+        transactionsService.insertTransaction("SALIDA", quantity.getId(), null, quantity.getDate(), quantity.getObservation(), "ACTIVE");
 
         return new GenericResponse("Resta realizada con exito", 200);
     }
