@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Integer> {
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.TransactionResponseDTO(t.id, p.productName, t.transactionType, p.quantity, t.transactionDate, r.name, u.name,p.price, t.status) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.TransactionResponseDTO(t.id, p.productName, t.transactionType, p.quantity, t.transactionDate, r.name, u.name,p.price, t.status, t.observation) " +
                     "FROM Transaction t " +
                     "LEFT JOIN Product p ON t.productId = p.id " +
                     "LEFT JOIN User u ON t.userId = u.id " +
@@ -19,7 +19,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
 
 
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.TransactionResponseDTO(t.id, p.productName, t.transactionType, p.quantity, t.transactionDate, r.name, u.name,p.price, t.status) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.TransactionResponseDTO(t.id, p.productName, t.transactionType, p.quantity, t.transactionDate, r.name, u.name,p.price, t.status,t.observation) " +
             "FROM Transaction t " +
             "JOIN Product p ON t.productId = p.id " +
             "JOIN User u ON t.userId = u.id " +

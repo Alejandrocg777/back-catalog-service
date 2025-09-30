@@ -22,5 +22,6 @@ public class TransactionResponseDTO {
     private String userName;
     private Double value;
     private String status;
+    private String observation;
 
 }
