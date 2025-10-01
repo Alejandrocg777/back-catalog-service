@@ -109,7 +109,7 @@ public class WarehouseService implements IWarehouseBusiness {
         Sort.Direction direction = Sort.Direction.fromString(orders);
         Sort sort = Sort.by(direction, sortBy);
         Pageable pagingSort = PageRequest.of(page, size, sort);
-        return repository.findAll(pagingSort);
+        return repository.getActive(pagingSort);
     }
 
     @Override
@@ -183,7 +183,7 @@ public class WarehouseService implements IWarehouseBusiness {
     @Override
     public List<Warehouse> getAllWarehouses() {
         try {
-            return repository.findAll();
+            return repository.findByStatus("ACTIVE");
         } catch (Exception e) {
             log.error("Error al obtener las bodegas");
             throw new RuntimeException("No se pueden recuperar las bodegas", e);

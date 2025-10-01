@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
+
 public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
 
     @Query(value = "SELECT w " +
@@ -23,4 +25,10 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
                     "OR UPPER(w.address) LIKE UPPER(:address) " +
                     "OR UPPER(w.status) LIKE UPPER(:status)")
     Page<Warehouse> searchWarehouses(String id, String warehouseName, String description, String address, String status, Pageable pageable);
+
+
+    @Query(value = " select w from Warehouse w where w.status = 'ACTIVE' ")
+    Page<Warehouse> getActive(Pageable pageable);
+
+    List<Warehouse> findByStatus(String warehouseName);
 }
