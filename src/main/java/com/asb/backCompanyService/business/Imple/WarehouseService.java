@@ -175,7 +175,7 @@ public class WarehouseService implements IWarehouseBusiness {
             log.info("Orders: " + orders);
             log.info("SortBy: " + sortBy);
 
-            Page<Warehouse> searchResult = repository.searchWarehouses(id, warehouseName, description, address, status, pagingSort);
+            Page<Warehouse> searchResult = repository.searchWarehouses(id, warehouseName, description, address, pagingSort);
             log.info("Search results: " + searchResult.getContent());
             return searchResult;
         }

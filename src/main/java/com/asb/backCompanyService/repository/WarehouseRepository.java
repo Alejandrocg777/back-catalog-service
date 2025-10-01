@@ -12,20 +12,19 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
 
     @Query(value = "SELECT w " +
             "FROM Warehouse w " +
-            "WHERE CAST(w.id AS string) LIKE :id " +
+            "WHERE (CAST(w.id AS string) LIKE :id " +
             "OR UPPER(w.warehouseName) LIKE UPPER(:warehouseName) " +
             "OR UPPER(w.description) LIKE UPPER(:description) " +
-            "OR UPPER(w.address) LIKE UPPER(:address) " +
-            "OR UPPER(w.status) LIKE UPPER(:status)",
+            "OR UPPER(w.address) LIKE UPPER(:address)) " +
+            "AND w.status = 'ACTIVE'",
             countQuery = "SELECT COUNT(*) " +
                     "FROM Warehouse w " +
-                    "WHERE CAST(w.id AS string) LIKE :id " +
+                    "WHERE (CAST(w.id AS string) LIKE :id " +
                     "OR UPPER(w.warehouseName) LIKE UPPER(:warehouseName) " +
                     "OR UPPER(w.description) LIKE UPPER(:description) " +
-                    "OR UPPER(w.address) LIKE UPPER(:address) " +
-                    "OR UPPER(w.status) LIKE UPPER(:status)")
-    Page<Warehouse> searchWarehouses(String id, String warehouseName, String description, String address, String status, Pageable pageable);
-
+                    "OR UPPER(w.address) LIKE UPPER(:address)) " +
+                    "AND w.status = 'ACTIVE'")
+    Page<Warehouse> searchWarehouses(String id, String warehouseName, String description, String address, Pageable pageable);
 
     @Query(value = " select w from Warehouse w where w.status = 'ACTIVE' ")
     Page<Warehouse> getActive(Pageable pageable);
