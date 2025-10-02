@@ -9,6 +9,7 @@ import com.asb.backCompanyService.dto.responde.SupplierProductDtoResponse;
 import com.asb.backCompanyService.exception.GenericException;
 import com.asb.backCompanyService.model.Supplier;
 import com.asb.backCompanyService.model.SupplierProduct;
+import com.asb.backCompanyService.repository.ProductRepository;
 import com.asb.backCompanyService.repository.SupplierProductRepository;
 import com.asb.backCompanyService.repository.SupplierRepository;
 import jakarta.transaction.Transactional;
@@ -36,6 +37,7 @@ public class SupplierService implements SupplierBusiness {
 
     private final SupplierRepository supplierRepository;
     private final SupplierProductRepository supplierProductRepository;
+    private final ProductRepository productRepository;
     private final WarehouseRepository warehpuseRepository;
 
 
@@ -68,8 +70,7 @@ public class SupplierService implements SupplierBusiness {
             throw new GenericException("Supplier con ID " + addDTO.getProductId() + " no existe", HttpStatus.BAD_REQUEST);
         }
 
-        // Validar que el productId exista (opcional)
-        if (!supplierProductRepository.existsById(addDTO.getProductId())) {
+        if (!productRepository.existsById(addDTO.getProductId())) {
             throw new GenericException("Producto con ID " + addDTO.getProductId() + " no existe", HttpStatus.BAD_REQUEST);
         }
 

@@ -45,4 +45,6 @@ public interface SupplierProductRepository extends JpaRepository<SupplierProduct
     Page<SupplierProductDtoResponse> searchSupplierProducts(Long supplierId, String supplierProductId, String productId, String productName, String purchasePrice, String status, Pageable pageable);
 
     List<SupplierProduct> findBySupplierId(Long supplierId);
+
+    Boolean existsByProductId(Long productId);
 }

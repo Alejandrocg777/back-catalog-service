@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface SupplierRepository extends JpaRepository<Supplier, Long> {
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.SupplierDtoResponse(s.id, s.name, s.email, s.phone, s.categoryId, w.warehouseName, s.status) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.SupplierDtoResponse(s.id, s.name, s.email, s.phone, s.categoryId, w.warehouseName, w.id, s.status) " +
             "FROM Supplier s " +
             "JOIN Warehouse w ON s.warehouseId = w.id " +
             "WHERE s.status = 'ACTIVE'",
@@ -20,7 +20,7 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
     Page<SupplierDtoResponse> getActiveSuppliers(Pageable pageable);
 
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.SupplierDtoResponse(s.id, s.name, s.email, s.phone, s.categoryId, w.warehouseName, s.status) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.SupplierDtoResponse(s.id, s.name, s.email, s.phone, s.categoryId, w.warehouseName, w.id, s.status) " +
             "FROM Supplier s " +
             "JOIN Warehouse w ON s.warehouseId = w.id " +
             "WHERE CAST(s.id AS string) LIKE :supplierId " +

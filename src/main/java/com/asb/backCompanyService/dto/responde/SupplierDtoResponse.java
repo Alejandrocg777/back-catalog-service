@@ -14,5 +14,6 @@ public class SupplierDtoResponse {
     private String phone;
     private Long categoryId;
     private String warehouseName;
+    private Long warehouseId;
     private String status;
 }
