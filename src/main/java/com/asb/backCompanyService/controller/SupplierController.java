@@ -36,6 +36,13 @@ public class SupplierController {
         return new ResponseEntity<>(createdSupplier, HttpStatus.CREATED);
     }
 
+    @PutMapping("/update/{supplierId}")
+    public ResponseEntity<Supplier> updateSupplier(@PathVariable Long supplierId, @RequestBody SupplierCreateDTO updateDTO) {
+        log.info("Iniciando el endpoint para actualizar proveedor con ID: {}", supplierId);
+        Supplier updatedSupplier = supplierService.updateSupplier(supplierId, updateDTO);
+        return new ResponseEntity<>(updatedSupplier, HttpStatus.OK);
+    }
+
     @PostMapping("/addProductsBySupplier/{supplierId}")
     public ResponseEntity<SupplierProduct> addProductToSupplier(@PathVariable Long supplierId,
                                                                 @RequestBody SupplierProductDTO addDTO) {

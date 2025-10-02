@@ -11,6 +11,7 @@ import com.asb.backCompanyService.model.Supplier;
 import com.asb.backCompanyService.model.SupplierProduct;
 import com.asb.backCompanyService.repository.SupplierProductRepository;
 import com.asb.backCompanyService.repository.SupplierRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import com.asb.backCompanyService.repository.WarehouseRepository;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -33,6 +36,7 @@ public class SupplierService implements SupplierBusiness {
 
     private final SupplierRepository supplierRepository;
     private final SupplierProductRepository supplierProductRepository;
+    private final WarehouseRepository warehpuseRepository;
 
 
     @Override
@@ -43,6 +47,10 @@ public class SupplierService implements SupplierBusiness {
         supplier.setEmail(createDTO.getEmail());
         supplier.setPhone(createDTO.getPhone());
         supplier.setCategoryId(createDTO.getCategoryId());
+
+        if (!warehpuseRepository.existsById(createDTO.getWarehouseId())){
+            throw new GenericException("Bodega no existe" , HttpStatus.BAD_REQUEST);
+        }
         supplier.setWarehouseId(createDTO.getWarehouseId());
         supplier.setStatus("ACTIVE");
         supplier.setCreatedAt(LocalDateTime.now());
@@ -50,6 +58,8 @@ public class SupplierService implements SupplierBusiness {
 
         return supplierRepository.save(supplier);
     }
+
+
 
     @Override
     public SupplierProduct addProductToSupplier(Long supplierId, SupplierProductDTO addDTO) {
@@ -268,6 +278,38 @@ public class SupplierService implements SupplierBusiness {
         supplierProductRepository.save(detail);
 
         return new GenericResponse("Borrado con exito", 200);
+    }
+
+    @Override
+    @Transactional
+    public Supplier updateSupplier(Long supplierId, SupplierCreateDTO updateDTO) {
+        Supplier supplier = supplierRepository.findById(supplierId)
+                .orElseThrow(() -> new RuntimeException("Proveedor con ID " + supplierId + " no existe"));
+
+        // Actualizar solo si el valor no es null
+        if (updateDTO.getName() != null) {
+            supplier.setName(updateDTO.getName());
+        }
+        if (updateDTO.getEmail() != null) {
+            supplier.setEmail(updateDTO.getEmail());
+        }
+        if (updateDTO.getPhone() != null) {
+            supplier.setPhone(updateDTO.getPhone());
+        }
+        if (updateDTO.getCategoryId() != null) {
+            supplier.setCategoryId(updateDTO.getCategoryId());
+        }
+        if (updateDTO.getWarehouseId() != null) {
+            if (!warehpuseRepository.existsById(updateDTO.getWarehouseId())){
+                throw new GenericException("Bodega no existe" , HttpStatus.BAD_REQUEST);
+            }
+
+            supplier.setWarehouseId(updateDTO.getWarehouseId());
+        }
+        // Actualizar timestamp
+        supplier.setUpdatedAt(LocalDateTime.now());
+
+        return supplierRepository.save(supplier);
     }
 
 }
