@@ -73,7 +73,7 @@ public class SupplierController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "ASC") String orders,
-            @RequestParam(defaultValue = "supplierProductId") String sortBy) {
+            @RequestParam(defaultValue = "id") String sortBy) {
         Page<SupplierProductDtoResponse> products = supplierService.getAllProductsBySupplier(supplierId, page, size, orders, sortBy);
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
