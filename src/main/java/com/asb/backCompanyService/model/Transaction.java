@@ -22,10 +22,8 @@ public class Transaction {
     @Column(name = "transaction_type")
     private String transactionType;
 
-
-    @Column(name = "product_id")
-    private Long productId;
-
+    @Column(name = "total")
+    private Double total;
 
     @Column(name = "user_id")
     private Long userId;

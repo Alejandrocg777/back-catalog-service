@@ -4,16 +4,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.util.Date;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class updateProductQuantityDTO {
+public class UpdateProductQuantityDTO {
 
     private Long id;
     private Long quantity;
     private String date;
     private String observation;
+    private Double purchasePrice;
+    private Double total;
+    private Double transactionTotal;
+    private Long userId;
 }

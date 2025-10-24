@@ -1,13 +1,11 @@
 package com.asb.backCompanyService.business.Interfaces;
 
+import com.asb.backCompanyService.dto.request.ListUpdateProductQuantity;
 import com.asb.backCompanyService.dto.request.ProductRequestDTO;
-import com.asb.backCompanyService.dto.request.SellerRequestDTO;
-import com.asb.backCompanyService.dto.request.updateProductQuantityDTO;
-import com.asb.backCompanyService.dto.responde.CategoryResponseDto;
+import com.asb.backCompanyService.dto.request.UpdateProductQuantityDTO;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.dto.responde.ProductResponseDTO;
 import com.asb.backCompanyService.model.Product;
-import com.asb.backCompanyService.model.Seller;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -22,6 +20,6 @@ public interface ProductBusiness {
     ProductResponseDTO get(Long id);
     Page<ProductResponseDTO> searchCustom(Map<String, String> customQuery);
     List<Product> getAllNoPage();
-    GenericResponse addQuantity(updateProductQuantityDTO quantity);
-    GenericResponse subtractQuantity(updateProductQuantityDTO quantity);
+    GenericResponse addQuantity(ListUpdateProductQuantity quantity);
+    GenericResponse subtractQuantity(ListUpdateProductQuantity quantity);
 }

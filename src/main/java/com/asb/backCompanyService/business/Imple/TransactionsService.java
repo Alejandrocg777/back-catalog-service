@@ -117,7 +117,8 @@ public class TransactionsService implements TransactionBusiness {
     }
 
     @Transactional
-    public void insertTransaction(String transactionType, Long productId, Long userId, String date, String observation, String status) {
+    public Transaction insertTransaction(String transactionType, Double total, Long userId,
+                                         String date, String observation, String status) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate parsedDate;
         try {
@@ -130,12 +131,13 @@ public class TransactionsService implements TransactionBusiness {
 
         Transaction transaction = new Transaction();
         transaction.setTransactionType(transactionType);
-        transaction.setProductId(productId);
+        transaction.setTotal(total);
         transaction.setUserId(userId);
         transaction.setTransactionDate(transactionDate);
         transaction.setObservation(observation);
         transaction.setStatus(status != null ? status : "ACTIVE");
-        transactionRepository.save(transaction);
+
+        return transactionRepository.save(transaction);
     }
 
 }

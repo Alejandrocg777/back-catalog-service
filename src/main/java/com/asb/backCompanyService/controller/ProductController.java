@@ -1,14 +1,12 @@
 package com.asb.backCompanyService.controller;
 
 import com.asb.backCompanyService.business.Interfaces.ProductBusiness;
+import com.asb.backCompanyService.dto.request.ListUpdateProductQuantity;
 import com.asb.backCompanyService.dto.request.ProductRequestDTO;
-import com.asb.backCompanyService.dto.request.SellerRequestDTO;
-import com.asb.backCompanyService.dto.request.updateProductQuantityDTO;
-import com.asb.backCompanyService.dto.responde.CategoryResponseDto;
+import com.asb.backCompanyService.dto.request.UpdateProductQuantityDTO;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.dto.responde.ProductResponseDTO;
 import com.asb.backCompanyService.model.Product;
-import com.asb.backCompanyService.model.Seller;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import lombok.RequiredArgsConstructor;
@@ -130,14 +128,14 @@ public class ProductController {
     }
 
     @PutMapping("/add-quantity")
-    public ResponseEntity<GenericResponse>addQuantity(@RequestBody updateProductQuantityDTO quantity){
+    public ResponseEntity<GenericResponse>addQuantity(@RequestBody ListUpdateProductQuantity quantity){
         log.info("servicio para sumar cantidad a los productos");
         return new ResponseEntity<>(productBusiness.addQuantity(quantity), HttpStatus.OK);
     }
 
 
     @PutMapping("/subtract-quantity")
-    public ResponseEntity<GenericResponse>subtractQuantity(@RequestBody updateProductQuantityDTO quantity){
+    public ResponseEntity<GenericResponse>subtractQuantity(@RequestBody ListUpdateProductQuantity quantity){
         log.info("servicio para restar cantidad a los productos");
         return new ResponseEntity<>(productBusiness.subtractQuantity(quantity), HttpStatus.OK);
     }

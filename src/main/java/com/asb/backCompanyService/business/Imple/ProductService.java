@@ -1,16 +1,20 @@
 package com.asb.backCompanyService.business.Imple;
 
 import com.asb.backCompanyService.business.Interfaces.ProductBusiness;
+import com.asb.backCompanyService.dto.request.ListUpdateProductQuantity;
 import com.asb.backCompanyService.dto.request.ProductRequestDTO;
-import com.asb.backCompanyService.dto.request.updateProductQuantityDTO;
+import com.asb.backCompanyService.dto.request.UpdateProductQuantityDTO;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.dto.responde.ProductResponseDTO;
 import com.asb.backCompanyService.exception.CustomErrorException;
 import com.asb.backCompanyService.exception.GenericException;
 import com.asb.backCompanyService.model.Category;
 import com.asb.backCompanyService.model.Product;
+import com.asb.backCompanyService.model.Transaction;
+import com.asb.backCompanyService.model.TransactionProduct;
 import com.asb.backCompanyService.repository.CategoryRepository;
 import com.asb.backCompanyService.repository.ProductRepository;
+import com.asb.backCompanyService.repository.TransactionProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -34,6 +38,7 @@ public class ProductService implements ProductBusiness {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final TransactionsService transactionsService;
+    private final TransactionProductRepository transactionProductRepository;
 
     @Override
     public ProductRequestDTO save(ProductRequestDTO request) {
@@ -242,32 +247,112 @@ public class ProductService implements ProductBusiness {
     }
 
     @Override
-    public GenericResponse addQuantity(updateProductQuantityDTO quantity) {
-        if (!productRepository.existsById(quantity.getId())) throw new CustomErrorException(HttpStatus.BAD_REQUEST, "producto no existe");
-        Optional<Product> productOptional = productRepository.findById(quantity.getId());
-        Long currentAmount = productOptional.get().getQuantity();
-        Long newQuantity = currentAmount + quantity.getQuantity();
-        productOptional.get().setQuantity(newQuantity);
-        productOptional.get().setProductStatus(calculateProductStatus(productOptional.get().getCategoryId(), quantity.getQuantity()));
-        productRepository.save(productOptional.get());
+    public GenericResponse addQuantity(ListUpdateProductQuantity quantityList) {
+        List<UpdateProductQuantityDTO> products = quantityList.getProductQuantity();
 
-        transactionsService.insertTransaction("ENTRADA", quantity.getId(), null, quantity.getDate(), quantity.getObservation(), "ACTIVE");
+        if (products == null || products.isEmpty()) {
+            throw new CustomErrorException(HttpStatus.BAD_REQUEST, "La lista de productos no puede estar vacía");
+        }
 
-        return new GenericResponse("Suma realizada con exito", 200);
+        String transactionDate = products.get(0).getDate();
+        Long userId = products.get(0).getUserId();
+        String observation = products.get(0).getObservation();
+
+        Double transactionTotal = products.stream()
+                .mapToDouble(p -> p.getTotal() != null ? p.getTotal() : 0.0)
+                .sum();
+
+        // Crear transacción principal
+        Transaction transaction = transactionsService.insertTransaction(
+                "ENTRADA",
+                transactionTotal,
+                userId,
+                transactionDate,
+                observation,
+                "ACTIVE"
+        );
+
+        // Procesar cada producto
+        for (UpdateProductQuantityDTO productDTO : products) {
+            // Validar producto
+            if (!productRepository.existsById(productDTO.getId())) {
+                throw new CustomErrorException(HttpStatus.BAD_REQUEST,
+                        "Producto no existe: " + productDTO.getId());
+            }
+
+            Product product = productRepository.findById(productDTO.getId())
+                    .orElseThrow(() -> new CustomErrorException(HttpStatus.NOT_FOUND, "Producto no encontrado"));
+
+            // Actualizar cantidad
+            Long newQuantity = product.getQuantity() + productDTO.getQuantity();
+            product.setQuantity(newQuantity);
+            product.setProductStatus(calculateProductStatus(product.getCategoryId(), newQuantity));
+            productRepository.save(product);
+
+            // Insertar en transaction_product
+            TransactionProduct tp = new TransactionProduct();
+            tp.setTransactionId(transaction.getId());
+            tp.setProductId(product.getId());
+            tp.setPurchasePrice(productDTO.getPurchasePrice());
+            tp.setTotal(productDTO.getTotal());
+            transactionProductRepository.save(tp);
+        }
+
+        return new GenericResponse("Entradas registradas con éxito", 200);
     }
 
     @Override
-    public GenericResponse subtractQuantity(updateProductQuantityDTO quantity) {
-        if (!productRepository.existsById(quantity.getId())) throw new CustomErrorException(HttpStatus.BAD_REQUEST, "producto no existe");
-        Optional<Product> productOptional = productRepository.findById(quantity.getId());
-        Long currentAmount = productOptional.get().getQuantity();
-        Long newQuantity = currentAmount - quantity.getQuantity();
-        productOptional.get().setQuantity(newQuantity);
-        productOptional.get().setProductStatus(calculateProductStatus(productOptional.get().getCategoryId(), newQuantity));
-        productRepository.save(productOptional.get());
+    public GenericResponse subtractQuantity(ListUpdateProductQuantity quantityList) {
+        List<UpdateProductQuantityDTO> products = quantityList.getProductQuantity();
 
-        transactionsService.insertTransaction("SALIDA", quantity.getId(), null, quantity.getDate(), quantity.getObservation(), "ACTIVE");
+        if (products == null || products.isEmpty()) {
+            throw new CustomErrorException(HttpStatus.BAD_REQUEST, "La lista de productos no puede estar vacía");
+        }
 
-        return new GenericResponse("Resta realizada con exito", 200);
+        String transactionDate = products.get(0).getDate();
+        Long userId = products.get(0).getUserId();
+        String observation = products.get(0).getObservation();
+
+        Double transactionTotal = products.stream()
+                .mapToDouble(p -> p.getTotal() != null ? p.getTotal() : 0.0)
+                .sum();
+
+        // Crear transacción principal
+        Transaction transaction = transactionsService.insertTransaction(
+                "PERDIDA",
+                transactionTotal,
+                userId,
+                transactionDate,
+                observation,
+                "ACTIVE"
+        );
+
+        // Procesar cada producto
+        for (UpdateProductQuantityDTO productDTO : products) {
+            // Validar producto
+            if (!productRepository.existsById(productDTO.getId())) {
+                throw new CustomErrorException(HttpStatus.BAD_REQUEST,
+                        "Producto no existe: " + productDTO.getId());
+            }
+
+            Product product = productRepository.findById(productDTO.getId())
+                    .orElseThrow(() -> new CustomErrorException(HttpStatus.NOT_FOUND, "Producto no encontrado"));
+
+            // Actualizar cantidad
+            Long newQuantity = product.getQuantity() - productDTO.getQuantity();
+            product.setQuantity(newQuantity);
+            product.setProductStatus(calculateProductStatus(product.getCategoryId(), newQuantity));
+            productRepository.save(product);
+
+            // Insertar en transaction_product
+            TransactionProduct tp = new TransactionProduct();
+            tp.setTransactionId(transaction.getId());
+            tp.setProductId(product.getId());
+            tp.setPurchasePrice(productDTO.getPurchasePrice());
+            tp.setTotal(productDTO.getTotal());
+            transactionProductRepository.save(tp);
+        }
+
+        return new GenericResponse("Perdida registradas con éxito", 200);
     }
 }
