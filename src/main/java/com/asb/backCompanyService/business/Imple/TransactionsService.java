@@ -132,6 +132,7 @@ public class TransactionsService implements TransactionBusiness {
         String date = null;
         String typeUser = null;
         String userName = null;
+        String observation = null;
 
         if (customQuery.containsKey("orders")) {
             orders = customQuery.get("orders");
@@ -169,12 +170,16 @@ public class TransactionsService implements TransactionBusiness {
             userName = "%" + customQuery.get("userName") + "%";
         }
 
+        if (customQuery.containsKey("observation")) {
+            userName = "%" + customQuery.get("observation") + "%";
+        }
+
 
         Sort.Direction direction = Sort.Direction.fromString(orders);
         Sort sort = Sort.by(direction, sortBy);
         Pageable pagingSort = PageRequest.of(page, size, sort);
 
-        Page<TransactionResponseNewDTO> result = transactionRepository.searchTransaction(transactionType,  typeUser, userName, pagingSort);
+        Page<TransactionResponseNewDTO> result = transactionRepository.searchTransaction(transactionType,  typeUser, userName, observation, pagingSort);
         log.info("Resultados encontrados: {}", result.getContent());
         return result;
     }

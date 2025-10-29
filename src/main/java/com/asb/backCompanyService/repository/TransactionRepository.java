@@ -47,7 +47,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             "AND (:observation IS NULL OR UPPER(t.observation) LIKE UPPER(:observation)) " +
             "AND (:typeUser IS NULL OR UPPER(r.name) LIKE UPPER(:typeUser)) " +
             "AND (:userName IS NULL OR UPPER(u.name) LIKE UPPER(:userName)) ")
-    Page<TransactionResponseNewDTO> searchTransaction(String transactionType, String typeUser, String userName, Pageable pageable);
+    Page<TransactionResponseNewDTO> searchTransaction(String transactionType, String typeUser, String userName, String observation,Pageable pageable);
 
 
 
