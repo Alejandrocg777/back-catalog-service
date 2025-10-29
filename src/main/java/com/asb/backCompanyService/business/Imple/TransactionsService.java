@@ -1,10 +1,12 @@
 package com.asb.backCompanyService.business.Imple;
 
 import com.asb.backCompanyService.business.Interfaces.TransactionBusiness;
+import com.asb.backCompanyService.dto.responde.ProductOfTransactionDTO;
 import com.asb.backCompanyService.dto.responde.ProductResponseDTO;
 import com.asb.backCompanyService.dto.responde.TransactionResponseDTO;
 import com.asb.backCompanyService.dto.responde.TransactionResponseNewDTO;
 import com.asb.backCompanyService.model.Transaction;
+import com.asb.backCompanyService.repository.ProductRepository;
 import com.asb.backCompanyService.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,8 @@ import java.util.Map;
 public class TransactionsService implements TransactionBusiness {
 
     private final TransactionRepository transactionRepository;
+    private final ProductRepository productRepository;
+
     @Override
     public Page<TransactionResponseNewDTO> getTransactions(Integer page,
                                                            Integer size,
@@ -36,6 +40,13 @@ public class TransactionsService implements TransactionBusiness {
         Sort.Direction direction = Sort.Direction.fromString(orders);
         Pageable pagingSort = PageRequest.of(page, size, Sort.by(direction, sortBy));
         return transactionRepository.getActiveTransactionsMaster(pagingSort);
+    }
+
+    @Override
+    public Page<ProductOfTransactionDTO> getProductsOfTransaction(Long userId, Integer page, Integer size, String orders, String sortBy) {
+        Sort.Direction direction = Sort.Direction.fromString(orders);
+        Pageable pagingSort = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        return productRepository.getProductOfTransaction(userId,pagingSort);
     }
 
     /*
@@ -183,6 +194,64 @@ public class TransactionsService implements TransactionBusiness {
         log.info("Resultados encontrados: {}", result.getContent());
         return result;
     }
+
+    @Override
+    public Page<ProductOfTransactionDTO> searchProducts(Long userId, Map<String, String> customQuery) {
+        String orders = "ASC";
+        String sortBy = "id";
+        int page = 0;
+        int size = 6;
+        String id = null;
+        String productName = null;
+        String purchasePrice = null;
+        String total = null;
+
+        if (customQuery.containsKey("orders")) {
+            orders = customQuery.get("orders");
+        }
+
+        if (customQuery.containsKey("sortBy")) {
+            sortBy = customQuery.get("sortBy");
+        }
+
+        if (customQuery.containsKey("page")) {
+            page = Integer.parseInt(customQuery.get("page"));
+        }
+
+        if (customQuery.containsKey("size")) {
+            size = Integer.parseInt(customQuery.get("size"));
+        }
+
+
+
+        if (customQuery.containsKey("id")) {
+            id = "%" + customQuery.get("id") + "%";
+        }
+
+        if (customQuery.containsKey("productName")) {
+            productName = "%" + customQuery.get("productName") + "%";
+        }
+
+        if (customQuery.containsKey("purchasePrice")) {
+            purchasePrice = "%" + customQuery.get("purchasePrice") + "%";
+        }
+
+
+
+        if (customQuery.containsKey("total")) {
+            total = "%" + customQuery.get("total") + "%";
+        }
+
+
+        Sort.Direction direction = Sort.Direction.fromString(orders);
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pagingSort = PageRequest.of(page, size, sort);
+
+        Page<ProductOfTransactionDTO> result = productRepository.searchProductsTransaction(userId, id,  productName, purchasePrice, total, pagingSort);
+        log.info("Resultados encontrados: {}", result.getContent());
+        return result;
+    }
+
 
     @Transactional
     public Transaction insertTransaction(String transactionType, Double total, Long userId,

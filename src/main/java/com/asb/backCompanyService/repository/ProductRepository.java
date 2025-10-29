@@ -1,6 +1,7 @@
 package com.asb.backCompanyService.repository;
 
 
+import com.asb.backCompanyService.dto.responde.ProductOfTransactionDTO;
 import com.asb.backCompanyService.dto.responde.ProductResponseDTO;
 import com.asb.backCompanyService.model.Product;
 import org.springframework.data.domain.Page;
@@ -48,4 +49,27 @@ public interface ProductRepository extends CrudRepository<Product, Long> {
                     "AND (:categoryName IS NULL OR UPPER(a.nameCategory) LIKE UPPER(:categoryName)) " +
                     "AND (:price IS NULL OR STR(c.price) LIKE UPPER(:price)) ")
     Page<ProductResponseDTO> search(String id, String quantity, String productName, String description, String categoryName, String price, String productStatus, Pageable pageable);
+
+
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ProductOfTransactionDTO(p.id, p.productName, tp.purchasePrice, tp.total) " +
+            "FROM Product p " +
+            "JOIN TransactionProduct tp ON p.id = tp.productId " +
+            "JOIN Transaction t ON tp.transactionId = t.id " +
+            "WHERE t.userId = :id " +
+            "AND t.status = 'ACTIVE' ")
+    Page<ProductOfTransactionDTO> getProductOfTransaction(Long id, Pageable pageable);
+
+
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ProductOfTransactionDTO(p.id, p.productName, tp.purchasePrice, tp.total) " +
+            "FROM Product p " +
+            "JOIN TransactionProduct tp ON p.id = tp.productId " +
+            "JOIN Transaction t ON tp.transactionId = t.id " +
+            "WHERE t.userId = :userId " +
+            "AND (:id IS NULL OR CAST(t.userId AS string) LIKE :id)" +
+            "AND (:productName IS NULL OR UPPER(p.productName) LIKE UPPER(:productName)) " +
+            "AND (:purchasePrice IS NULL OR STR(tp.purchasePrice) LIKE UPPER(:purchasePrice)) " +
+            "AND (:total IS NULL OR STR(tp.total) LIKE UPPER(:total)) " +
+            "AND t.status = 'ACTIVE' ")
+    Page<ProductOfTransactionDTO> searchProductsTransaction(Long userId, String id, String productName, String purchasePrice, String total,Pageable pageable);
+
 }

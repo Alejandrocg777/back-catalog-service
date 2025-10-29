@@ -1,10 +1,7 @@
 package com.asb.backCompanyService.controller;
 
 import com.asb.backCompanyService.business.Interfaces.TransactionBusiness;
-import com.asb.backCompanyService.dto.responde.GenericResponse;
-import com.asb.backCompanyService.dto.responde.ProductResponseDTO;
-import com.asb.backCompanyService.dto.responde.TransactionResponseDTO;
-import com.asb.backCompanyService.dto.responde.TransactionResponseNewDTO;
+import com.asb.backCompanyService.dto.responde.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +41,21 @@ public class TransactionController {
         return new ResponseEntity<>(transactionBusiness.getTransactions(page, size, orders, sortBy), HttpStatus.OK);
     }
 
+    @GetMapping("/getProductsByUser/{userId}")
+    public ResponseEntity<Page<ProductOfTransactionDTO>> getProductsOfTransaction(@RequestParam(defaultValue = "0") Integer page,
+                                                                                  @RequestParam(defaultValue = "6") Integer size,
+                                                                                  @RequestParam(defaultValue = "ASC") String orders,
+                                                                                  @RequestParam(defaultValue = "id") String sortBy,
+                                                                                  @PathVariable("userId")Long userId) {
+        return new ResponseEntity<>(transactionBusiness.getProductsOfTransaction(userId,page, size, orders, sortBy), HttpStatus.OK);
+    }
+
+
+    @GetMapping("/search/getProductsByUser/{userId}")
+    public ResponseEntity<Page<ProductOfTransactionDTO>> searchProducts(@RequestParam Map<String, String> customQuery, @PathVariable("userId")Long userId) {
+        Page<ProductOfTransactionDTO> products = transactionBusiness.searchProducts(userId, customQuery);
+        return ResponseEntity.ok(products);
+    }
 
 
     @GetMapping("/search")

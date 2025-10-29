@@ -1,5 +1,6 @@
 package com.asb.backCompanyService.business.Interfaces;
 
+import com.asb.backCompanyService.dto.responde.ProductOfTransactionDTO;
 import com.asb.backCompanyService.dto.responde.TransactionResponseDTO;
 import com.asb.backCompanyService.dto.responde.TransactionResponseNewDTO;
 import org.springframework.data.domain.Page;
@@ -13,6 +14,15 @@ public interface TransactionBusiness {
                                                     String orders,
                                                     String sortBy);
 
+    Page<ProductOfTransactionDTO> getProductsOfTransaction(Long userId,
+                                                           Integer page,
+                                                           Integer size,
+                                                           String orders,
+                                                           String sortBy);
+
     Page<TransactionResponseNewDTO> searchCustom(Map<String, String> customQuery);
+
+
+    Page<ProductOfTransactionDTO> searchProducts(Long userId, Map<String, String> customQuery);
 
 }
