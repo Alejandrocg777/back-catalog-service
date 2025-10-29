@@ -3,6 +3,7 @@ package com.asb.backCompanyService.business.Imple;
 import com.asb.backCompanyService.business.Interfaces.TransactionBusiness;
 import com.asb.backCompanyService.dto.responde.ProductResponseDTO;
 import com.asb.backCompanyService.dto.responde.TransactionResponseDTO;
+import com.asb.backCompanyService.dto.responde.TransactionResponseNewDTO;
 import com.asb.backCompanyService.model.Transaction;
 import com.asb.backCompanyService.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,14 +29,16 @@ public class TransactionsService implements TransactionBusiness {
 
     private final TransactionRepository transactionRepository;
     @Override
-    public Page<TransactionResponseDTO> getTransactions(Integer page,
-                                                        Integer size,
-                                                        String orders,
-                                                        String sortBy){
+    public Page<TransactionResponseNewDTO> getTransactions(Integer page,
+                                                           Integer size,
+                                                           String orders,
+                                                           String sortBy){
         Sort.Direction direction = Sort.Direction.fromString(orders);
         Pageable pagingSort = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        return transactionRepository.getActiveTransactions(pagingSort);
+        return transactionRepository.getActiveTransactionsMaster(pagingSort);
     }
+
+    /*
 
     @Override
     public Page<TransactionResponseDTO> searchCustom(Map<String, String> customQuery) {
@@ -112,6 +115,66 @@ public class TransactionsService implements TransactionBusiness {
         Pageable pagingSort = PageRequest.of(page, size, sort);
 
         Page<TransactionResponseDTO> result = transactionRepository.search( id,  productName,  transactionType,  quantity,  typeUser, userName, value, status, pagingSort);
+        log.info("Resultados encontrados: {}", result.getContent());
+        return result;
+    }
+
+     */
+
+
+    @Override
+    public Page<TransactionResponseNewDTO> searchCustom(Map<String, String> customQuery) {
+        String orders = "ASC";
+        String sortBy = "id";
+        int page = 0;
+        int size = 6;
+        String transactionType = null;
+        String date = null;
+        String typeUser = null;
+        String userName = null;
+
+        if (customQuery.containsKey("orders")) {
+            orders = customQuery.get("orders");
+        }
+
+        if (customQuery.containsKey("sortBy")) {
+            sortBy = customQuery.get("sortBy");
+        }
+
+        if (customQuery.containsKey("page")) {
+            page = Integer.parseInt(customQuery.get("page"));
+        }
+
+        if (customQuery.containsKey("size")) {
+            size = Integer.parseInt(customQuery.get("size"));
+        }
+
+
+
+        if (customQuery.containsKey("transactionType")) {
+            transactionType = "%" + customQuery.get("transactionType") + "%";
+        }
+
+        if (customQuery.containsKey("date")) {
+            date = "%" + customQuery.get("date") + "%";
+        }
+
+        if (customQuery.containsKey("typeUser")) {
+            typeUser = "%" + customQuery.get("typeUser") + "%";
+        }
+
+
+
+        if (customQuery.containsKey("userName")) {
+            userName = "%" + customQuery.get("userName") + "%";
+        }
+
+
+        Sort.Direction direction = Sort.Direction.fromString(orders);
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pagingSort = PageRequest.of(page, size, sort);
+
+        Page<TransactionResponseNewDTO> result = transactionRepository.searchTransaction(transactionType,  typeUser, userName, pagingSort);
         log.info("Resultados encontrados: {}", result.getContent());
         return result;
     }
