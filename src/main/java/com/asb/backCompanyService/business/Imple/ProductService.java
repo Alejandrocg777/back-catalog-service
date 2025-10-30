@@ -295,6 +295,7 @@ public class ProductService implements ProductBusiness {
             tp.setProductId(product.getId());
             tp.setPurchasePrice(productDTO.getPurchasePrice());
             tp.setTotal(productDTO.getTotal());
+            tp.setQuantity(productDTO.getQuantity());
             transactionProductRepository.save(tp);
         }
 

@@ -30,4 +30,7 @@ public class TransactionProduct {
     @Column(name = "total")
     private Double total;
 
+    @Column(name = "quantity")
+    private Long quantity;
+
 }

@@ -12,5 +12,6 @@ public class ProductOfTransactionDTO {
     private Long id;
     private String productName;
     private Double purchasePrice;
+    private Long quantity;
     private Double total;
 }

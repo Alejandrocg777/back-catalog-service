@@ -51,7 +51,7 @@ public interface ProductRepository extends CrudRepository<Product, Long> {
     Page<ProductResponseDTO> search(String id, String quantity, String productName, String description, String categoryName, String price, String productStatus, Pageable pageable);
 
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ProductOfTransactionDTO(p.id, p.productName, tp.purchasePrice, tp.total) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ProductOfTransactionDTO(p.id, p.productName, tp.purchasePrice, tp.quantity,tp.total) " +
             "FROM Product p " +
             "JOIN TransactionProduct tp ON p.id = tp.productId " +
             "JOIN Transaction t ON tp.transactionId = t.id " +
@@ -60,7 +60,7 @@ public interface ProductRepository extends CrudRepository<Product, Long> {
     Page<ProductOfTransactionDTO> getProductOfTransaction(Long id, Pageable pageable);
 
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ProductOfTransactionDTO(p.id, p.productName, tp.purchasePrice, tp.total) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ProductOfTransactionDTO(p.id, p.productName, tp.purchasePrice, tp.quantity, tp.total) " +
             "FROM Product p " +
             "JOIN TransactionProduct tp ON p.id = tp.productId " +
             "JOIN Transaction t ON tp.transactionId = t.id " +
