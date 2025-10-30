@@ -43,10 +43,10 @@ public class TransactionsService implements TransactionBusiness {
     }
 
     @Override
-    public Page<ProductOfTransactionDTO> getProductsOfTransaction(Long userId, Integer page, Integer size, String orders, String sortBy) {
+    public Page<ProductOfTransactionDTO> getProductsOfTransaction(Long transactionId, Integer page, Integer size, String orders, String sortBy) {
         Sort.Direction direction = Sort.Direction.fromString(orders);
         Pageable pagingSort = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        return productRepository.getProductOfTransaction(userId,pagingSort);
+        return productRepository.getProductOfTransaction(transactionId,pagingSort);
     }
 
     /*
@@ -196,7 +196,7 @@ public class TransactionsService implements TransactionBusiness {
     }
 
     @Override
-    public Page<ProductOfTransactionDTO> searchProducts(Long userId, Map<String, String> customQuery) {
+    public Page<ProductOfTransactionDTO> searchProducts(Long transactionId, Map<String, String> customQuery) {
         String orders = "ASC";
         String sortBy = "id";
         int page = 0;
@@ -247,7 +247,7 @@ public class TransactionsService implements TransactionBusiness {
         Sort sort = Sort.by(direction, sortBy);
         Pageable pagingSort = PageRequest.of(page, size, sort);
 
-        Page<ProductOfTransactionDTO> result = productRepository.searchProductsTransaction(userId, id,  productName, purchasePrice, total, pagingSort);
+        Page<ProductOfTransactionDTO> result = productRepository.searchProductsTransaction(transactionId, id,  productName, purchasePrice, total, pagingSort);
         log.info("Resultados encontrados: {}", result.getContent());
         return result;
     }

@@ -14,7 +14,7 @@ public interface TransactionBusiness {
                                                     String orders,
                                                     String sortBy);
 
-    Page<ProductOfTransactionDTO> getProductsOfTransaction(Long userId,
+    Page<ProductOfTransactionDTO> getProductsOfTransaction(Long transactionId,
                                                            Integer page,
                                                            Integer size,
                                                            String orders,
@@ -23,6 +23,6 @@ public interface TransactionBusiness {
     Page<TransactionResponseNewDTO> searchCustom(Map<String, String> customQuery);
 
 
-    Page<ProductOfTransactionDTO> searchProducts(Long userId, Map<String, String> customQuery);
+    Page<ProductOfTransactionDTO> searchProducts(Long transactionId, Map<String, String> customQuery);
 
 }

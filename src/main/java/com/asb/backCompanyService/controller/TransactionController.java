@@ -41,19 +41,19 @@ public class TransactionController {
         return new ResponseEntity<>(transactionBusiness.getTransactions(page, size, orders, sortBy), HttpStatus.OK);
     }
 
-    @GetMapping("/getProductsByUser/{userId}")
+    @GetMapping("/getProductsByUser/{transactionId}")
     public ResponseEntity<Page<ProductOfTransactionDTO>> getProductsOfTransaction(@RequestParam(defaultValue = "0") Integer page,
                                                                                   @RequestParam(defaultValue = "6") Integer size,
                                                                                   @RequestParam(defaultValue = "ASC") String orders,
                                                                                   @RequestParam(defaultValue = "id") String sortBy,
-                                                                                  @PathVariable("userId")Long userId) {
-        return new ResponseEntity<>(transactionBusiness.getProductsOfTransaction(userId,page, size, orders, sortBy), HttpStatus.OK);
+                                                                                  @PathVariable("transactionId")Long transactionId) {
+        return new ResponseEntity<>(transactionBusiness.getProductsOfTransaction(transactionId,page, size, orders, sortBy), HttpStatus.OK);
     }
 
 
-    @GetMapping("/search/getProductsByUser/{userId}")
-    public ResponseEntity<Page<ProductOfTransactionDTO>> searchProducts(@RequestParam Map<String, String> customQuery, @PathVariable("userId")Long userId) {
-        Page<ProductOfTransactionDTO> products = transactionBusiness.searchProducts(userId, customQuery);
+    @GetMapping("/search/getProductsByUser/{transactionId}")
+    public ResponseEntity<Page<ProductOfTransactionDTO>> searchProducts(@RequestParam Map<String, String> customQuery, @PathVariable("transactionId")Long transactionId) {
+        Page<ProductOfTransactionDTO> products = transactionBusiness.searchProducts(transactionId, customQuery);
         return ResponseEntity.ok(products);
     }
 

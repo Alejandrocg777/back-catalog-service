@@ -39,7 +39,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
 
 
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.TransactionResponseNewDTO(r.name, u.name, t.transactionDate, t.transactionType, t.observation) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.TransactionResponseNewDTO(t.id,r.name, u.name, t.transactionDate, t.transactionType, t.observation) " +
             "FROM User u " +
             "JOIN Rol r ON u.rolId = r.id " +
             "JOIN Transaction t ON u.id = t.userId " +
@@ -51,7 +51,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
 
 
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.TransactionResponseNewDTO(t.userId, r.name, u.name, t.transactionDate, t.transactionType, t.observation) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.TransactionResponseNewDTO(t.id, r.name, u.name, t.transactionDate, t.transactionType, t.observation) " +
             "FROM User u " +
             "JOIN Rol r ON u.rolId = r.id " +
             "JOIN Transaction t ON u.id = t.userId " +

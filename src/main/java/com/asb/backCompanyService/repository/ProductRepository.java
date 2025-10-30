@@ -55,7 +55,7 @@ public interface ProductRepository extends CrudRepository<Product, Long> {
             "FROM Product p " +
             "JOIN TransactionProduct tp ON p.id = tp.productId " +
             "JOIN Transaction t ON tp.transactionId = t.id " +
-            "WHERE t.userId = :id " +
+            "WHERE t.id = :id " +
             "AND t.status = 'ACTIVE' ")
     Page<ProductOfTransactionDTO> getProductOfTransaction(Long id, Pageable pageable);
 
@@ -64,12 +64,12 @@ public interface ProductRepository extends CrudRepository<Product, Long> {
             "FROM Product p " +
             "JOIN TransactionProduct tp ON p.id = tp.productId " +
             "JOIN Transaction t ON tp.transactionId = t.id " +
-            "WHERE t.userId = :userId " +
+            "WHERE t.id = :transactionId " +
             "AND (:id IS NULL OR CAST(t.userId AS string) LIKE :id)" +
             "AND (:productName IS NULL OR UPPER(p.productName) LIKE UPPER(:productName)) " +
             "AND (:purchasePrice IS NULL OR STR(tp.purchasePrice) LIKE UPPER(:purchasePrice)) " +
             "AND (:total IS NULL OR STR(tp.total) LIKE UPPER(:total)) " +
             "AND t.status = 'ACTIVE' ")
-    Page<ProductOfTransactionDTO> searchProductsTransaction(Long userId, String id, String productName, String purchasePrice, String total,Pageable pageable);
+    Page<ProductOfTransactionDTO> searchProductsTransaction(Long transactionId, String id, String productName, String purchasePrice, String total,Pageable pageable);
 
 }
