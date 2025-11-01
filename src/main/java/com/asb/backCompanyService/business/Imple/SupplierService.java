@@ -42,6 +42,7 @@ public class SupplierService implements SupplierBusiness {
 
 
     @Override
+    @Transactional
     public Supplier createSupplier(SupplierCreateDTO createDTO) {
 
         Supplier supplier = new Supplier();
@@ -58,7 +59,27 @@ public class SupplierService implements SupplierBusiness {
         supplier.setCreatedAt(LocalDateTime.now());
         supplier.setUpdatedAt(LocalDateTime.now());
 
-        return supplierRepository.save(supplier);
+        Supplier savedSupplier = supplierRepository.save(supplier);
+
+        if (createDTO.getProducts() != null && !createDTO.getProducts().isEmpty()) {
+            for (SupplierProductDTO addDTO : createDTO.getProducts()) {
+                if (!productRepository.existsById(addDTO.getProductId())) {
+                    throw new GenericException("Producto con ID " + addDTO.getProductId() + " no existe", HttpStatus.BAD_REQUEST);
+                }
+
+                SupplierProduct detail = new SupplierProduct();
+                detail.setSupplierId(savedSupplier.getId());
+                detail.setProductId(addDTO.getProductId());
+                detail.setPurchasePrice(addDTO.getPurchasePrice() != null ? addDTO.getPurchasePrice() : BigDecimal.ZERO);
+                detail.setStatus("ACTIVE");
+                detail.setCreatedAt(LocalDateTime.now());
+                detail.setUpdatedAt(LocalDateTime.now());
+
+                supplierProductRepository.save(detail);
+            }
+        }
+
+        return savedSupplier;
     }
 
 
@@ -304,13 +325,42 @@ public class SupplierService implements SupplierBusiness {
             if (!warehpuseRepository.existsById(updateDTO.getWarehouseId())){
                 throw new GenericException("Bodega no existe" , HttpStatus.BAD_REQUEST);
             }
-
             supplier.setWarehouseId(updateDTO.getWarehouseId());
         }
         // Actualizar timestamp
         supplier.setUpdatedAt(LocalDateTime.now());
 
-        return supplierRepository.save(supplier);
+        Supplier savedSupplier = supplierRepository.save(supplier);
+
+        // Manejar productos si la lista no es null o vacía
+        if (updateDTO.getProducts() != null && !updateDTO.getProducts().isEmpty()) {
+            for (SupplierProductDTO addDTO : updateDTO.getProducts()) {
+                if (!productRepository.existsById(addDTO.getProductId())) {
+                    throw new GenericException("Producto con ID " + addDTO.getProductId() + " no existe", HttpStatus.BAD_REQUEST);
+                }
+
+                // Verificar si ya existe un SupplierProduct para este supplier y product
+                SupplierProduct existingDetail = supplierProductRepository.findBySupplierIdAndProductId(savedSupplier.getId(), addDTO.getProductId());
+                if (existingDetail != null) {
+                    // Actualizar si existe
+                    existingDetail.setPurchasePrice(addDTO.getPurchasePrice() != null ? addDTO.getPurchasePrice() : BigDecimal.ZERO);
+                    existingDetail.setUpdatedAt(LocalDateTime.now());
+                    supplierProductRepository.save(existingDetail);
+                } else {
+                    // Agregar nuevo si no existe
+                    SupplierProduct newDetail = new SupplierProduct();
+                    newDetail.setSupplierId(savedSupplier.getId());
+                    newDetail.setProductId(addDTO.getProductId());
+                    newDetail.setPurchasePrice(addDTO.getPurchasePrice() != null ? addDTO.getPurchasePrice() : BigDecimal.ZERO);
+                    newDetail.setStatus("ACTIVE");
+                    newDetail.setCreatedAt(LocalDateTime.now());
+                    newDetail.setUpdatedAt(LocalDateTime.now());
+                    supplierProductRepository.save(newDetail);
+                }
+            }
+        }
+
+        return savedSupplier;
     }
 
 }

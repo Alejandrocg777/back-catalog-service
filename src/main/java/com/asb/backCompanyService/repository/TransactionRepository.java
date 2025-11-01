@@ -39,7 +39,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
 
 
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.TransactionResponseNewDTO(t.id,r.name, u.name, t.transactionDate, t.transactionType, t.observation) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.TransactionResponseNewDTO(t.id, r.id, r.name, u.id, u.name, t.transactionDate, t.transactionType, t.observation) " +
             "FROM User u " +
             "JOIN Rol r ON u.rolId = r.id " +
             "JOIN Transaction t ON u.id = t.userId " +
@@ -51,11 +51,16 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
 
 
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.TransactionResponseNewDTO(t.id, r.name, u.name, t.transactionDate, t.transactionType, t.observation) " +
-            "FROM User u " +
-            "JOIN Rol r ON u.rolId = r.id " +
-            "JOIN Transaction t ON u.id = t.userId " +
-            "WHERE t.status = 'ACTIVE' ")
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.TransactionResponseNewDTO(t.id, r.id, r.name, u.id,u.name, t.transactionDate, t.transactionType, t.observation) " +
+            "FROM Transaction t " +
+            "INNER JOIN User u ON t.userId = u.id " +
+            "INNER JOIN Rol r ON u.rolId = r.id " +
+            "WHERE t.status = 'ACTIVE' ",
+            countQuery = "SELECT COUNT(*) " +
+                    "FROM Transaction t " +
+                    "INNER JOIN User u ON t.userId = u.id " +
+                    "INNER JOIN Rol r ON u.rolId = r.id " +
+                    "WHERE t.status = 'ACTIVE' ")
     Page<TransactionResponseNewDTO> getActiveTransactionsMaster(Pageable pageable);
 
 }

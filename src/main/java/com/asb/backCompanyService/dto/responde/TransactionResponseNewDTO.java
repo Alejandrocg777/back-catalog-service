@@ -13,7 +13,9 @@ import java.time.LocalDateTime;
 public class TransactionResponseNewDTO {
 
     private Long id;
+    private Long rolId;
     private String typeUser;
+    private Long userId;
     private String userName;
     @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDateTime date;
