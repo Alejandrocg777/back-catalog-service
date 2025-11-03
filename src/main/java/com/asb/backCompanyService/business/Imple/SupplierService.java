@@ -363,4 +363,19 @@ public class SupplierService implements SupplierBusiness {
         return savedSupplier;
     }
 
+    @Override
+    public List<Supplier> getAllNoPage() {
+        return supplierRepository.getAllSupplier();
+    }
+
+    @Override
+    public BigDecimal getPurchasePrice(Long supplierId, Long productId) {
+        BigDecimal purchasePrice = supplierProductRepository.findPurchasePriceBySupplierIdAndProductId(supplierId, productId);
+
+        if (purchasePrice == null) {
+            return null;
+        }
+        return purchasePrice;
+    }
+
 }

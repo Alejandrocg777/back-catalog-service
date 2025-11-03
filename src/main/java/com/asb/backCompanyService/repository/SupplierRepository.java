@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
+
 public interface SupplierRepository extends JpaRepository<Supplier, Long> {
 
     @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.SupplierDtoResponse(s.id, s.name, s.email, s.phone, s.categoryId, w.warehouseName, w.id, s.status) " +
@@ -41,4 +43,12 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
                     "OR UPPER(w.warehouseName) LIKE UPPER(:warehouseName) " +
                     "OR UPPER(s.status) LIKE UPPER(:status)")
     Page<SupplierDtoResponse> searchSuppliers(String supplierId, String name, String email, String phone, String categoryId, String warehouseName, String status, Pageable pageable);
+
+
+
+    @Query(value = "SELECT s " +
+            "FROM Supplier s " +
+            "WHERE s.status = 'ACTIVE'")
+    List<Supplier> getAllSupplier();
+
 }

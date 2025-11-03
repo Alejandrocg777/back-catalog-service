@@ -9,6 +9,8 @@ import com.asb.backCompanyService.model.Supplier;
 import com.asb.backCompanyService.model.SupplierProduct;
 import org.springframework.data.domain.Page;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 public interface SupplierBusiness {
@@ -30,4 +32,8 @@ public interface SupplierBusiness {
     GenericResponse deleteSupplierProductLogical(Long supplierProductId);
 
      Supplier updateSupplier(Long supplierId, SupplierCreateDTO updateDTO);
+
+    List<Supplier> getAllNoPage();
+
+    BigDecimal getPurchasePrice(Long supplierId, Long productId);
 }

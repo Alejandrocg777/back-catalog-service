@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface SupplierProductRepository extends JpaRepository<SupplierProduct, Long> {
@@ -49,4 +50,7 @@ public interface SupplierProductRepository extends JpaRepository<SupplierProduct
     Boolean existsByProductId(Long productId);
 
     SupplierProduct findBySupplierIdAndProductId(Long supplierId, Long productId);
+
+    @Query(value = "SELECT sp.purchasePrice FROM SupplierProduct sp WHERE sp.supplierId = :supplierId AND sp.productId = :productId ")
+    BigDecimal findPurchasePriceBySupplierIdAndProductId(Long supplierId, Long productId);
 }

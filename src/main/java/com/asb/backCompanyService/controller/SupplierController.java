@@ -17,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -61,6 +63,13 @@ public class SupplierController {
         return new ResponseEntity<>(suppliers, HttpStatus.OK);
     }
 
+
+    @GetMapping("/get-all/no-page")
+    public ResponseEntity<List<Supplier>> getAllNoPage() {
+        List<Supplier> suppliers = supplierService.getAllNoPage();
+        return new ResponseEntity<>(suppliers, HttpStatus.OK);
+    }
+
     @GetMapping("/search")
     public ResponseEntity<Page<SupplierDtoResponse>> search(@RequestParam Map<String, String> customQuery) {
         Page<SupplierDtoResponse> suppliers = supplierService.searchCustom(customQuery);
@@ -95,5 +104,12 @@ public class SupplierController {
         log.info("Iniciando el endpoint para borrado lógico de detalle con ID: {}", supplierProductId);
         GenericResponse response = supplierService.deleteSupplierProductLogical(supplierProductId);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/get-purchase-price/{supplierId}/{productId}")
+    public ResponseEntity<BigDecimal> getPurchasePrice(@PathVariable("supplierId")Long supplierId,
+                                                       @PathVariable("productId")Long productId) {
+        log.info("Iniciado el enpoint que nos trae el precio de compra");
+        return new ResponseEntity<>(supplierService.getPurchasePrice(supplierId, productId), HttpStatus.OK);
     }
 }
