@@ -99,10 +99,11 @@ public class SupplierController {
         return new ResponseEntity<>(supplierService.deleteSupplierLogical(supplierId) , HttpStatus.OK);
     }
 
-    @DeleteMapping("/products/{supplierProductId}")
-    public ResponseEntity<GenericResponse> deleteSupplierProductLogical(@PathVariable Long supplierProductId) {
-        log.info("Iniciando el endpoint para borrado lógico de detalle con ID: {}", supplierProductId);
-        GenericResponse response = supplierService.deleteSupplierProductLogical(supplierProductId);
+    @DeleteMapping("/products/delete/{supplierId}/{productId}")
+    public ResponseEntity<GenericResponse> deleteSupplierProductLogical(@PathVariable("supplierId")Long supplierId,
+                                                                        @PathVariable("productId")Long productId) {
+        log.info("Iniciando el endpoint para borrado lógico de detalle ");
+        GenericResponse response = supplierService.deleteSupplierProductLogical(supplierId, productId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

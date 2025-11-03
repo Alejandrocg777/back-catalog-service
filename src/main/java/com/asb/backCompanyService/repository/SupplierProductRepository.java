@@ -53,4 +53,5 @@ public interface SupplierProductRepository extends JpaRepository<SupplierProduct
 
     @Query(value = "SELECT sp.purchasePrice FROM SupplierProduct sp WHERE sp.supplierId = :supplierId AND sp.productId = :productId ")
     BigDecimal findPurchasePriceBySupplierIdAndProductId(Long supplierId, Long productId);
+
 }
