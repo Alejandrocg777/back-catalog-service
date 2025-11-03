@@ -29,7 +29,7 @@ public interface SupplierBusiness {
 
     GenericResponse deleteSupplierLogical(Long supplierId);
 
-    GenericResponse deleteSupplierProductLogical(Long supplierId, Long ProductId);
+    GenericResponse deleteSupplierProductLogical(Long supplierProductId);
 
      Supplier updateSupplier(Long supplierId, SupplierCreateDTO updateDTO);
 

@@ -291,8 +291,8 @@ public class SupplierService implements SupplierBusiness {
     }
 
     @Override
-    public GenericResponse deleteSupplierProductLogical(Long supplierId, Long productId) {
-        SupplierProduct detail = supplierProductRepository.findBySupplierIdAndProductId(supplierId, productId);
+    public GenericResponse deleteSupplierProductLogical(Long supplierProductId) {
+        SupplierProduct detail = supplierProductRepository.findById(supplierProductId).get();
         detail.setStatus("INACTIVE");
         detail.setUpdatedAt(LocalDateTime.now());
         supplierProductRepository.save(detail);
