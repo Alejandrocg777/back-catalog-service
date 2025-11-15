@@ -6,6 +6,7 @@ import com.asb.backCompanyService.dto.request.PurchaseSupplierRequestDTO;
 import com.asb.backCompanyService.dto.request.SupplierCreateDTO;
 import com.asb.backCompanyService.dto.request.SupplierProductDTO;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
+import com.asb.backCompanyService.dto.responde.PurchaseSupplierResponseDTO;
 import com.asb.backCompanyService.dto.responde.SupplierDtoResponse;
 import com.asb.backCompanyService.dto.responde.SupplierProductDtoResponse;
 import com.asb.backCompanyService.model.Supplier;
@@ -118,5 +119,16 @@ public class SupplierController {
     public ResponseEntity<GenericResponse> createPurchase(@RequestBody PurchaseSupplierRequestDTO purchase){
         log.info("Iniciado el enpoint que nos trae el precio de compra");
         return new ResponseEntity<>(supplierService.createPurchase(purchase), HttpStatus.OK);
+    }
+
+
+    @GetMapping("/get-all-puchase-supplier")
+    public ResponseEntity<Page<PurchaseSupplierResponseDTO>> getAllPurshaseSupplier(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "ASC") String orders,
+            @RequestParam(defaultValue = "id") String sortBy) {
+        Page<PurchaseSupplierResponseDTO> products = supplierService.getAllPurshaseSupplier(page, size, orders, sortBy);
+        return new ResponseEntity<>(products, HttpStatus.OK);
     }
 }

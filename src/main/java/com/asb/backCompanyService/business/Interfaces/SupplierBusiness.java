@@ -4,6 +4,7 @@ import com.asb.backCompanyService.dto.request.PurchaseSupplierRequestDTO;
 import com.asb.backCompanyService.dto.request.SupplierCreateDTO;
 import com.asb.backCompanyService.dto.request.SupplierProductDTO;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
+import com.asb.backCompanyService.dto.responde.PurchaseSupplierResponseDTO;
 import com.asb.backCompanyService.dto.responde.SupplierDtoResponse;
 import com.asb.backCompanyService.dto.responde.SupplierProductDtoResponse;
 import com.asb.backCompanyService.model.Supplier;
@@ -40,4 +41,8 @@ public interface SupplierBusiness {
     BigDecimal getPurchasePrice(Long supplierId, Long productId);
 
     GenericResponse createPurchase(PurchaseSupplierRequestDTO purchase);
+
+    Page<PurchaseSupplierResponseDTO> getAllPurshaseSupplier(int page, int size, String orders, String sortBy);
+
+
 }

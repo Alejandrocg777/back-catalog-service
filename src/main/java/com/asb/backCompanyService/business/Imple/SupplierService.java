@@ -3,6 +3,7 @@ package com.asb.backCompanyService.business.Imple;
 import com.asb.backCompanyService.business.Interfaces.SupplierBusiness;
 import com.asb.backCompanyService.dto.request.*;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
+import com.asb.backCompanyService.dto.responde.PurchaseSupplierResponseDTO;
 import com.asb.backCompanyService.dto.responde.SupplierDtoResponse;
 import com.asb.backCompanyService.dto.responde.SupplierProductDtoResponse;
 import com.asb.backCompanyService.exception.CustomErrorException;
@@ -424,5 +425,14 @@ public class SupplierService implements SupplierBusiness {
 
         return new GenericResponse("Venta guardad con exito", 200);
     }
+
+    @Override
+    public Page<PurchaseSupplierResponseDTO> getAllPurshaseSupplier(int page, int size, String orders, String sortBy) {
+        Sort.Direction direction = Sort.Direction.fromString(orders);
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pagingSort = PageRequest.of(page, size, sort);
+        return purchaseSupplierRepository.findAllPurchaseSuppliers(pagingSort);
+    }
+
 
 }
