@@ -131,4 +131,11 @@ public class SupplierController {
         Page<PurchaseSupplierResponseDTO> products = supplierService.getAllPurshaseSupplier(page, size, orders, sortBy);
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
+
+
+    @GetMapping("/purchase/search")
+    public ResponseEntity<Page<PurchaseSupplierResponseDTO>> searchPPurchaseSupplier(@RequestParam Map<String, String> customQuery) {
+        Page<PurchaseSupplierResponseDTO> products = supplierService.searchPPurchaseSupplier(customQuery);
+        return new ResponseEntity<>(products, HttpStatus.OK);
+    }
 }

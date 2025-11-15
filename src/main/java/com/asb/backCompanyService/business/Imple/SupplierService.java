@@ -23,9 +23,12 @@ import org.springframework.stereotype.Service;
 
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -432,6 +435,98 @@ public class SupplierService implements SupplierBusiness {
         Sort sort = Sort.by(direction, sortBy);
         Pageable pagingSort = PageRequest.of(page, size, sort);
         return purchaseSupplierRepository.findAllPurchaseSuppliers(pagingSort);
+    }
+
+    @Override
+    public Page<PurchaseSupplierResponseDTO> searchPPurchaseSupplier(Map<String, String> customQuery) {
+        String orders = "ASC";
+        String sortBy = "id";  // Default sort by id
+        int page = 0;
+        int size = 10;
+        Long id = null;
+        Long userId = null;
+        Long supplierId = null;
+        String supplierName = null;
+        LocalDateTime date = null;
+        String purchaseStatus = null;
+        String observation = null;
+
+        if (customQuery.containsKey("orders")) {
+            orders = customQuery.get("orders");
+        }
+
+        if (customQuery.containsKey("sortBy")) {
+            sortBy = customQuery.get("sortBy");
+        }
+
+        if (customQuery.containsKey("page")) {
+            page = Integer.parseInt(customQuery.get("page"));
+        }
+
+        if (customQuery.containsKey("size")) {
+            size = Integer.parseInt(customQuery.get("size"));
+        }
+
+        if (customQuery.containsKey("id")) {
+            id = Long.parseLong(customQuery.get("id"));  // Exacto para Long
+        }
+
+        if (customQuery.containsKey("userId")) {
+            userId = Long.parseLong(customQuery.get("userId"));
+        }
+
+        if (customQuery.containsKey("supplierId")) {
+            supplierId = Long.parseLong(customQuery.get("supplierId"));
+        }
+
+        if (customQuery.containsKey("supplierName")) {
+            supplierName = "%" + customQuery.get("supplierName").toUpperCase() + "%";
+        }
+
+        if (customQuery.containsKey("date")) {
+            // Parsear string a LocalDateTime (asumiendo formato dd/MM/yyyy; ajusta si necesitas HH:mm)
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            date = LocalDate.parse(customQuery.get("date"), formatter).atStartOfDay();  // O ajusta para hora si necesario
+        }
+
+        if (customQuery.containsKey("purchaseStatus")) {
+            purchaseStatus = "%" + customQuery.get("purchaseStatus").toUpperCase() + "%";
+        }
+
+        if (customQuery.containsKey("observation")) {  // Asumiendo "status" en DTO es observation
+            observation = "%" + customQuery.get("observation").toUpperCase() + "%";
+        }
+
+        // Validar sortBy contra campos válidos para evitar errores (opcional pero recomendado)
+        Set<String> validSortFields = Set.of("id", "userId", "supplierId", "supplierName", "date", "purchaseStatus", "observation");
+        if (!validSortFields.contains(sortBy)) {
+            sortBy = "id";  // Fallback
+        }
+
+        Sort.Direction direction = Sort.Direction.fromString(orders);
+        Sort sort = Sort.by(direction, sortBy);  // Ajusta alias si necesario (e.g., "supplierName" -> "s.name" internamente en JPA)
+
+        Pageable pagingSort = PageRequest.of(page, size, sort);
+
+        // Logs para depuración (como en el ejemplo)
+        log.info("id: " + id);
+        log.info("userId: " + userId);
+        log.info("supplierId: " + supplierId);
+        log.info("supplierName: " + supplierName);
+        log.info("date: " + date);
+        log.info("purchaseStatus: " + purchaseStatus);
+        log.info("observation: " + observation);
+        log.info("Page: " + page);
+        log.info("Size: " + size);
+        log.info("Orders: " + orders);
+        log.info("SortBy: " + sortBy);
+
+        Page<PurchaseSupplierResponseDTO> searchResult = purchaseSupplierRepository.searchPurchaseSuppliers(
+                id, userId, supplierId, supplierName, date, purchaseStatus, observation, pagingSort
+        );
+
+        log.info("Search results: " + searchResult.getContent());
+        return searchResult;
     }
 
 

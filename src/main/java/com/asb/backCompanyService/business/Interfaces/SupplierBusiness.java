@@ -44,5 +44,6 @@ public interface SupplierBusiness {
 
     Page<PurchaseSupplierResponseDTO> getAllPurshaseSupplier(int page, int size, String orders, String sortBy);
 
+    Page<PurchaseSupplierResponseDTO> searchPPurchaseSupplier(Map<String, String> customQuery);
 
 }
