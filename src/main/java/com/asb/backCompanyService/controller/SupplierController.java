@@ -138,4 +138,10 @@ public class SupplierController {
         Page<PurchaseSupplierResponseDTO> products = supplierService.searchPPurchaseSupplier(customQuery);
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
+
+
+    @DeleteMapping("/purchase/delete/{purchaseSupplierIsd}")
+    public ResponseEntity<GenericResponse> deletePurchase(@PathVariable("purchaseSupplierIsd") Long purchase) {
+        return new ResponseEntity<>(supplierService.deletePurchase(purchase), HttpStatus.OK);
+    }
 }

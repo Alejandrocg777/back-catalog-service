@@ -43,6 +43,7 @@ public class SupplierService implements SupplierBusiness {
     private final TransactionsService transactionsService;
     private final TransactionProductRepository transactionProductRepository;
     private final PurchaseSupplierRepository purchaseSupplierRepository;
+    private final TransactionRepository transactionRepository;
 
 
     @Override
@@ -527,6 +528,33 @@ public class SupplierService implements SupplierBusiness {
 
         log.info("Search results: " + searchResult.getContent());
         return searchResult;
+    }
+
+    @Override
+    public GenericResponse deletePurchase(Long purchase) {
+
+        PurchaseSupplier purchaseSupplier = purchaseSupplierRepository.findById(purchase).get();
+        purchaseSupplier.setStatus("INACTIVE");
+
+        Transaction transaction = transactionRepository.findById(purchaseSupplier.getTransactionId()).get();
+
+        transaction.setStatus("INACTIVE");
+
+        List<TransactionProduct> products = transactionProductRepository.getQuantityByTransactionId(purchaseSupplier.getTransactionId());
+
+        for (TransactionProduct product : products) {
+
+            Product product1 = productRepository.findById(product.getProductId()).get();
+            Long newQuantity = product1.getQuantity() - product.getQuantity();
+            product1.setQuantity(newQuantity);
+            productRepository.save(product1);
+        }
+
+        purchaseSupplierRepository.save(purchaseSupplier);
+        transactionRepository.save(transaction);
+
+
+        return new GenericResponse("Eliminacion con exito", 200);
     }
 
 

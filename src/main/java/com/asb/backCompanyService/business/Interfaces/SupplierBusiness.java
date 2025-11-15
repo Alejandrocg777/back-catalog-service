@@ -46,4 +46,6 @@ public interface SupplierBusiness {
 
     Page<PurchaseSupplierResponseDTO> searchPPurchaseSupplier(Map<String, String> customQuery);
 
+    GenericResponse deletePurchase(Long purchase);
+
 }
