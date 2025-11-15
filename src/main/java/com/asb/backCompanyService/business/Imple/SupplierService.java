@@ -1,17 +1,14 @@
 package com.asb.backCompanyService.business.Imple;
 
 import com.asb.backCompanyService.business.Interfaces.SupplierBusiness;
-import com.asb.backCompanyService.dto.request.SupplierCreateDTO;
-import com.asb.backCompanyService.dto.request.SupplierProductDTO;
+import com.asb.backCompanyService.dto.request.*;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.dto.responde.SupplierDtoResponse;
 import com.asb.backCompanyService.dto.responde.SupplierProductDtoResponse;
+import com.asb.backCompanyService.exception.CustomErrorException;
 import com.asb.backCompanyService.exception.GenericException;
-import com.asb.backCompanyService.model.Supplier;
-import com.asb.backCompanyService.model.SupplierProduct;
-import com.asb.backCompanyService.repository.ProductRepository;
-import com.asb.backCompanyService.repository.SupplierProductRepository;
-import com.asb.backCompanyService.repository.SupplierRepository;
+import com.asb.backCompanyService.model.*;
+import com.asb.backCompanyService.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import com.asb.backCompanyService.repository.WarehouseRepository;
 
 
 import java.math.BigDecimal;
@@ -38,7 +34,11 @@ public class SupplierService implements SupplierBusiness {
     private final SupplierRepository supplierRepository;
     private final SupplierProductRepository supplierProductRepository;
     private final ProductRepository productRepository;
+    private final ProductService productService;
     private final WarehouseRepository warehpuseRepository;
+    private final TransactionsService transactionsService;
+    private final TransactionProductRepository transactionProductRepository;
+    private final PurchaseSupplierRepository purchaseSupplierRepository;
 
 
     @Override
@@ -374,6 +374,55 @@ public class SupplierService implements SupplierBusiness {
             return null;
         }
         return purchasePrice;
+    }
+
+    @Override
+    @Transactional
+    public GenericResponse createPurchase(PurchaseSupplierRequestDTO purchase) {
+
+        Transaction transaction = transactionsService.insertTransaction(
+                "ENTRADA PROVEEDOR",
+                purchase.getTransactionTotal(),
+                purchase.getUserId(),
+                purchase.getDate(),
+                purchase.getObservation(),
+                "ACTIVE"
+        );
+
+        for (PurchaseSupplierProductsDTO productDTO : purchase.getProducts()) {
+            // Validar producto
+            if (!productRepository.existsById(productDTO.getProductId())) {
+                throw new CustomErrorException(HttpStatus.BAD_REQUEST,
+                        "Producto no existe: " + productDTO.getProductId());
+            }
+
+            Product product = productRepository.findById(productDTO.getProductId())
+                    .orElseThrow(() -> new CustomErrorException(HttpStatus.NOT_FOUND, "Producto no encontrado"));
+
+            // Actualizar cantidad
+            Long newQuantity = product.getQuantity() + productDTO.getQuantity();
+            product.setQuantity(newQuantity);
+            product.setProductStatus(productService.calculateProductStatus(product.getCategoryId(), newQuantity));
+            productRepository.save(product);
+
+            // Insertar en transaction_product
+            TransactionProduct tp = new TransactionProduct();
+            tp.setTransactionId(transaction.getId());
+            tp.setProductId(product.getId());
+            tp.setPurchasePrice(productDTO.getPurchasePrice());
+            tp.setTotal(productDTO.getTotal());
+            tp.setQuantity(productDTO.getQuantity());
+            transactionProductRepository.save(tp);
+        }
+
+        PurchaseSupplier purchaseSupplier = new PurchaseSupplier();
+        purchaseSupplier.setSupplierId(purchase.getSupplierId());
+        purchaseSupplier.setStatus("ACTIVE");
+        purchaseSupplier.setPurchaseStatus(purchase.getPurchaseStatus());
+        purchaseSupplier.setTransactionId(transaction.getId());
+        purchaseSupplierRepository.save(purchaseSupplier);
+
+        return new GenericResponse("Venta guardad con exito", 200);
     }
 
 }

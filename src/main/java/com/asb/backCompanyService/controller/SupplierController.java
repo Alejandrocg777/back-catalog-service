@@ -2,6 +2,7 @@ package com.asb.backCompanyService.controller;
 
 import com.asb.backCompanyService.business.Imple.SupplierService;
 import com.asb.backCompanyService.business.Interfaces.SupplierBusiness;
+import com.asb.backCompanyService.dto.request.PurchaseSupplierRequestDTO;
 import com.asb.backCompanyService.dto.request.SupplierCreateDTO;
 import com.asb.backCompanyService.dto.request.SupplierProductDTO;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
@@ -111,5 +112,11 @@ public class SupplierController {
                                                        @PathVariable("productId")Long productId) {
         log.info("Iniciado el enpoint que nos trae el precio de compra");
         return new ResponseEntity<>(supplierService.getPurchasePrice(supplierId, productId), HttpStatus.OK);
+    }
+
+    @PostMapping("/create-purchase")
+    public ResponseEntity<GenericResponse> createPurchase(@RequestBody PurchaseSupplierRequestDTO purchase){
+        log.info("Iniciado el enpoint que nos trae el precio de compra");
+        return new ResponseEntity<>(supplierService.createPurchase(purchase), HttpStatus.OK);
     }
 }

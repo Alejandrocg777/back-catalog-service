@@ -1,5 +1,6 @@
 package com.asb.backCompanyService.business.Interfaces;
 
+import com.asb.backCompanyService.dto.request.PurchaseSupplierRequestDTO;
 import com.asb.backCompanyService.dto.request.SupplierCreateDTO;
 import com.asb.backCompanyService.dto.request.SupplierProductDTO;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
@@ -8,6 +9,7 @@ import com.asb.backCompanyService.dto.responde.SupplierProductDtoResponse;
 import com.asb.backCompanyService.model.Supplier;
 import com.asb.backCompanyService.model.SupplierProduct;
 import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -36,4 +38,6 @@ public interface SupplierBusiness {
     List<Supplier> getAllNoPage();
 
     BigDecimal getPurchasePrice(Long supplierId, Long productId);
+
+    GenericResponse createPurchase(PurchaseSupplierRequestDTO purchase);
 }
