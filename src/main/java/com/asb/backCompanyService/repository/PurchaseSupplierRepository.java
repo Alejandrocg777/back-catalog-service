@@ -1,5 +1,6 @@
 package com.asb.backCompanyService.repository;
 
+import com.asb.backCompanyService.dto.responde.PurchaseProductsSupplier;
 import com.asb.backCompanyService.dto.responde.PurchaseSupplierResponseDTO;
 import com.asb.backCompanyService.model.PurchaseSupplier;
 import org.springframework.data.domain.Page;
@@ -18,6 +19,14 @@ public interface PurchaseSupplierRepository extends JpaRepository<PurchaseSuppli
             "JOIN Supplier s ON s.id = ps.supplierId "+
             "WHERE ps.status = 'ACTIVE' ")
     Page<PurchaseSupplierResponseDTO> findAllPurchaseSuppliers(Pageable pageable);
+
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.PurchaseProductsSupplier(p.id , p.productName, t.purchasePrice, t.quantity, t.total) " +
+            "FROM PurchaseSupplier ps " +
+            "JOIN TransactionProduct t ON t.transactionId = ps.transactionId " +
+            "JOIN Product p ON p.id = t.productId "+
+            "WHERE ps.status = 'ACTIVE' " +
+            "AND ps.id =:purchaseSupplierId ")
+    Page<PurchaseProductsSupplier> findAllPurchaseProducts(Pageable pageable, Long purchaseSupplierId);
 
     @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.PurchaseSupplierResponseDTO(ps.id , t.userId, ps.supplierId, s.name, t.transactionDate, ps.purchaseStatus, t.observation) " +
             "FROM PurchaseSupplier ps " +

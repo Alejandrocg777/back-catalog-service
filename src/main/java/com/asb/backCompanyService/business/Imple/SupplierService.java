@@ -2,10 +2,7 @@ package com.asb.backCompanyService.business.Imple;
 
 import com.asb.backCompanyService.business.Interfaces.SupplierBusiness;
 import com.asb.backCompanyService.dto.request.*;
-import com.asb.backCompanyService.dto.responde.GenericResponse;
-import com.asb.backCompanyService.dto.responde.PurchaseSupplierResponseDTO;
-import com.asb.backCompanyService.dto.responde.SupplierDtoResponse;
-import com.asb.backCompanyService.dto.responde.SupplierProductDtoResponse;
+import com.asb.backCompanyService.dto.responde.*;
 import com.asb.backCompanyService.exception.CustomErrorException;
 import com.asb.backCompanyService.exception.GenericException;
 import com.asb.backCompanyService.model.*;
@@ -555,6 +552,14 @@ public class SupplierService implements SupplierBusiness {
 
 
         return new GenericResponse("Eliminacion con exito", 200);
+    }
+
+    @Override
+    public Page<PurchaseProductsSupplier> getAllProductByPurchaseId(int page, int size, String orders, String sortBy, Long purchaseSupplierId) {
+        Sort.Direction direction = Sort.Direction.fromString(orders);
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pagingSort = PageRequest.of(page, size, sort);
+        return purchaseSupplierRepository.findAllPurchaseProducts(pagingSort, purchaseSupplierId);
     }
 
 

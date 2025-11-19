@@ -5,10 +5,7 @@ import com.asb.backCompanyService.business.Interfaces.SupplierBusiness;
 import com.asb.backCompanyService.dto.request.PurchaseSupplierRequestDTO;
 import com.asb.backCompanyService.dto.request.SupplierCreateDTO;
 import com.asb.backCompanyService.dto.request.SupplierProductDTO;
-import com.asb.backCompanyService.dto.responde.GenericResponse;
-import com.asb.backCompanyService.dto.responde.PurchaseSupplierResponseDTO;
-import com.asb.backCompanyService.dto.responde.SupplierDtoResponse;
-import com.asb.backCompanyService.dto.responde.SupplierProductDtoResponse;
+import com.asb.backCompanyService.dto.responde.*;
 import com.asb.backCompanyService.model.Supplier;
 import com.asb.backCompanyService.model.SupplierProduct;
 import lombok.RequiredArgsConstructor;
@@ -143,5 +140,15 @@ public class SupplierController {
     @DeleteMapping("/purchase/delete/{purchaseSupplierIsd}")
     public ResponseEntity<GenericResponse> deletePurchase(@PathVariable("purchaseSupplierIsd") Long purchase) {
         return new ResponseEntity<>(supplierService.deletePurchase(purchase), HttpStatus.OK);
+    }
+
+    @GetMapping("/purchase/getAllProductByPurchaseId/{purchaseSupplierId}")
+    public ResponseEntity<Page<PurchaseProductsSupplier>>getAllProductByPurchaseId(@RequestParam(defaultValue = "0") int page,
+                                                                                   @RequestParam(defaultValue = "10") int size,
+                                                                                   @RequestParam(defaultValue = "ASC") String orders,
+                                                                                   @RequestParam(defaultValue = "id") String sortBy,
+                                                                                   @PathVariable("purchaseSupplierId")Long purchaseSupplierId) {
+        Page<PurchaseProductsSupplier> products = supplierService.getAllProductByPurchaseId(page, size, orders, sortBy, purchaseSupplierId);
+        return new ResponseEntity<>(products, HttpStatus.OK);
     }
 }

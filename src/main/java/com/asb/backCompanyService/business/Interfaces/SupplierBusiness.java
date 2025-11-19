@@ -3,10 +3,7 @@ package com.asb.backCompanyService.business.Interfaces;
 import com.asb.backCompanyService.dto.request.PurchaseSupplierRequestDTO;
 import com.asb.backCompanyService.dto.request.SupplierCreateDTO;
 import com.asb.backCompanyService.dto.request.SupplierProductDTO;
-import com.asb.backCompanyService.dto.responde.GenericResponse;
-import com.asb.backCompanyService.dto.responde.PurchaseSupplierResponseDTO;
-import com.asb.backCompanyService.dto.responde.SupplierDtoResponse;
-import com.asb.backCompanyService.dto.responde.SupplierProductDtoResponse;
+import com.asb.backCompanyService.dto.responde.*;
 import com.asb.backCompanyService.model.Supplier;
 import com.asb.backCompanyService.model.SupplierProduct;
 import org.springframework.data.domain.Page;
@@ -47,5 +44,8 @@ public interface SupplierBusiness {
     Page<PurchaseSupplierResponseDTO> searchPPurchaseSupplier(Map<String, String> customQuery);
 
     GenericResponse deletePurchase(Long purchase);
+
+    Page<PurchaseProductsSupplier> getAllProductByPurchaseId(int page, int size, String orders, String sortBy, Long purchaseSupplierId);
+
 
 }
