@@ -47,5 +47,10 @@ public interface SupplierBusiness {
 
     Page<PurchaseProductsSupplier> getAllProductByPurchaseId(int page, int size, String orders, String sortBy, Long purchaseSupplierId);
 
+    Page<AmountOwesSupplierDTO> getAllAmountThatSupplierOwes( int page, int size, String orders, String sortBy, Long supplierId);
+
+    Page<SuppliersWhoMustDTO> getAllSupplierOwes( int page, int size, String orders, String sortBy);
+
+
 
 }

@@ -151,4 +151,24 @@ public class SupplierController {
         Page<PurchaseProductsSupplier> products = supplierService.getAllProductByPurchaseId(page, size, orders, sortBy, purchaseSupplierId);
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
+
+    @GetMapping("/get-all/amountThatSupplierOwes/{supplierId}")
+    public ResponseEntity<Page<AmountOwesSupplierDTO>> getAllAmountThatSupplierOwes(@RequestParam(defaultValue = "0") int page,
+                                                            @RequestParam(defaultValue = "10") int size,
+                                                            @RequestParam(defaultValue = "ASC") String orders,
+                                                            @RequestParam(defaultValue = "id") String sortBy,
+                                                            @PathVariable("supplierId")Long supplierId) {
+        Page<AmountOwesSupplierDTO> suppliers = supplierService.getAllAmountThatSupplierOwes(page, size, orders, sortBy, supplierId);
+        return new ResponseEntity<>(suppliers, HttpStatus.OK);
+    }
+
+
+    @GetMapping("/get-all/supplierOwes")
+    public ResponseEntity<Page<SuppliersWhoMustDTO>> getAllSupplierOwes(@RequestParam(defaultValue = "0") int page,
+                                                                                    @RequestParam(defaultValue = "10") int size,
+                                                                                    @RequestParam(defaultValue = "ASC") String orders,
+                                                                                    @RequestParam(defaultValue = "id") String sortBy) {
+        Page<SuppliersWhoMustDTO> suppliers = supplierService.getAllSupplierOwes(page, size, orders, sortBy);
+        return new ResponseEntity<>(suppliers, HttpStatus.OK);
+    }
 }

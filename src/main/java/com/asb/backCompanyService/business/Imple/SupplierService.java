@@ -41,6 +41,7 @@ public class SupplierService implements SupplierBusiness {
     private final TransactionProductRepository transactionProductRepository;
     private final PurchaseSupplierRepository purchaseSupplierRepository;
     private final TransactionRepository transactionRepository;
+    private final ProductWareHouseRepository productWareHouseRepository;
 
 
     @Override
@@ -415,6 +416,11 @@ public class SupplierService implements SupplierBusiness {
             tp.setTotal(productDTO.getTotal());
             tp.setQuantity(productDTO.getQuantity());
             transactionProductRepository.save(tp);
+
+
+            // mandar los productos a la bodega
+            addQuantityProductToSupplier(productDTO.getProductId(), purchase.getSupplierId(), productDTO.getQuantity());
+
         }
 
         PurchaseSupplier purchaseSupplier = new PurchaseSupplier();
@@ -560,6 +566,43 @@ public class SupplierService implements SupplierBusiness {
         Sort sort = Sort.by(direction, sortBy);
         Pageable pagingSort = PageRequest.of(page, size, sort);
         return purchaseSupplierRepository.findAllPurchaseProducts(pagingSort, purchaseSupplierId);
+    }
+
+    @Override
+    public Page<AmountOwesSupplierDTO> getAllAmountThatSupplierOwes(int page, int size, String orders, String sortBy, Long supplierId) {
+        Sort.Direction direction = Sort.Direction.fromString(orders);
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pagingSort = PageRequest.of(page, size, sort);
+        return productWareHouseRepository.amountOwesSupplierDTO(supplierId, pagingSort);
+    }
+
+    @Override
+    public Page<SuppliersWhoMustDTO> getAllSupplierOwes(int page, int size, String orders, String sortBy) {
+        Sort.Direction direction = Sort.Direction.fromString(orders);
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pagingSort = PageRequest.of(page, size, sort);
+        return supplierRepository.getAllSupplierWithDebt(pagingSort);
+    }
+
+    public void addQuantityProductToSupplier(Long productId, Long supplierId, Long reservedQuantity){
+
+
+        ProductWarehouse productWarehouse = productWareHouseRepository.findByProductIdAndSupplierId(productId, supplierId);
+
+        if (productWarehouse == null){
+            productWarehouse.setProductId(productId);
+            productWarehouse.setSupplierId(supplierId);
+            productWarehouse.setReservedQuantity(reservedQuantity);
+
+        }else{
+            Long quantity = productWarehouse.getReservedQuantity() + reservedQuantity;
+            productWarehouse.setReservedQuantity(quantity);
+        }
+
+
+        productWareHouseRepository.save(productWarehouse);
+
+
     }
 
 

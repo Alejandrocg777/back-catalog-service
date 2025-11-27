@@ -1,6 +1,7 @@
 package com.asb.backCompanyService.repository;
 
 import com.asb.backCompanyService.dto.responde.SupplierDtoResponse;
+import com.asb.backCompanyService.dto.responde.SuppliersWhoMustDTO;
 import com.asb.backCompanyService.model.Supplier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -50,5 +51,13 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
             "FROM Supplier s " +
             "WHERE s.status = 'ACTIVE'")
     List<Supplier> getAllSupplier();
+
+    @Query(value = "SELECT distinct new com.asb.backCompanyService.dto.responde.SuppliersWhoMustDTO(s.id, s.name, w.warehouseName, s.status) " +
+            "FROM Supplier s " +
+            "JOIN Warehouse w ON s.warehouseId = w.id " +
+            "JOIN ProductWarehouse pw ON s.id = pw.supplierId " +
+            "WHERE s.status = 'ACTIVE' " +
+            "AND pw.reservedQuantity > 0 ")
+    Page<SuppliersWhoMustDTO> getAllSupplierWithDebt(Pageable pageable);
 
 }
