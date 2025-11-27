@@ -20,6 +20,10 @@ public class ClientRequestDTO {
 
     private String address;
 
+    private String neighborhood;
+
+    private String email;
+
     private Long cityId;
 
     private String status;

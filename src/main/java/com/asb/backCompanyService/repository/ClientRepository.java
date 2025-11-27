@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface ClientRepository extends CrudRepository<Client, Long> {
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ClientResponseDTO(c.id, c.name, c.phone, c.address, c.identification, t.cityName, c.status) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ClientResponseDTO(c.id, c.name, c.phone, c.address, c.neighborhood, c.email, c.identification, t.cityName, c.status) " +
             "FROM Client c " +
             "INNER JOIN City t ON c.cityId = t.id " +
             "WHERE c.status = 'ACTIVE'",
@@ -22,7 +22,7 @@ public interface ClientRepository extends CrudRepository<Client, Long> {
     Page<ClientResponseDTO> getStatus(Pageable pageable);
 
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ClientResponseDTO(c.id, c.name, c.phone, c.identification, c.address, t.cityName, c.status) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ClientResponseDTO(c.id, c.name, c.phone, c.address, c.neighborhood, c.email, c.identification, t.cityName, c.status) " +
             "FROM Client c " +
             "INNER JOIN City t ON c.cityId = t.id " +
             "WHERE CAST(c.id AS string) LIKE :id " +
@@ -30,6 +30,8 @@ public interface ClientRepository extends CrudRepository<Client, Long> {
             "OR UPPER(c.phone) LIKE :phone " +
             "OR UPPER(c.identification) LIKE :identification " +
             "OR UPPER(c.address) LIKE :address " +
+            "OR UPPER(c.neighborhood) LIKE :neighborhood " +
+            "OR UPPER(c.email) LIKE :email " +
             "OR UPPER(t.cityName) LIKE :cityName " +
             "OR UPPER(c.status) LIKE :status " ,
             countQuery = "SELECT COUNT(*) " +
@@ -40,6 +42,8 @@ public interface ClientRepository extends CrudRepository<Client, Long> {
                     "OR UPPER(c.phone) LIKE :phone " +
                     "OR UPPER(c.identification) LIKE :identification " +
                     "OR UPPER(c.address) LIKE :address " +
+                    "OR UPPER(c.neighborhood) LIKE :neighborhood " +
+                    "OR UPPER(c.email) LIKE :email " +
                     "OR UPPER(t.cityName) LIKE :cityName " +
                     "OR UPPER(c.status) LIKE :status ")
             Page<ClientResponseDTO> searchClient(String id,
@@ -49,10 +53,12 @@ public interface ClientRepository extends CrudRepository<Client, Long> {
                                                  String address,
                                                  String cityName,
                                                  String status,
+                                                 String neighborhood,
+                                                 String email,
                                                  Pageable pageable);
 
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ClientResponseDTO(c.id, c.name, c.phone, c.identification, c.address, t.cityName, c.status) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ClientResponseDTO(c.id, c.name, c.phone, c.address, c.neighborhood, c.email, c.identification, t.cityName, c.status) " +
             "FROM Client c " +
             "INNER JOIN City t ON c.cityId = t.id " +
             "WHERE CAST(c.id AS string) LIKE :id " +
@@ -61,6 +67,8 @@ public interface ClientRepository extends CrudRepository<Client, Long> {
             "OR UPPER(c.identification) LIKE :identification " +
             "OR UPPER(c.address) LIKE :address " +
             "OR UPPER(t.cityName) LIKE :cityName " +
+            "OR UPPER(c.neighborhood) LIKE :neighborhood " +
+            "OR UPPER(c.email) LIKE :email " +
             "OR UPPER(c.status) LIKE :status ")
     List<ClientResponseDTO> searchClientNoPage(String id,
                                                String name,
@@ -68,6 +76,8 @@ public interface ClientRepository extends CrudRepository<Client, Long> {
                                                String identification,
                                                String address,
                                                String cityName,
-                                               String status);
+                                               String status,
+                                               String neighborhood,
+                                               String email);
 
 }

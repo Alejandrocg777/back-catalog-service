@@ -32,6 +32,12 @@ public class Client {
     @Column(name = "address")
     private String address;
 
+    @Column(name = "neighborhood")
+    private String neighborhood;
+
+    @Column(name = "e-mail")
+    private String email;
+
     @Column(name = "city_id")
     private Long cityId;
 

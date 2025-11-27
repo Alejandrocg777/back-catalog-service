@@ -39,6 +39,8 @@ public class ClientService implements ClientBusiness {
         client.setAddress(request.getAddress());
         client.setStatus(request.getStatus());
         client.setCityId(request.getCityId());
+        client.setNeighborhood(request.getNeighborhood());
+        client.setEmail(request.getEmail());
         client.setIdentification(request.getIdentification());
         Client newClient = clientRepository.save(client);
 
@@ -59,6 +61,8 @@ public class ClientService implements ClientBusiness {
         client.setStatus(requestDTO.getStatus());
         client.setIdentification(requestDTO.getIdentification());
         client.setAddress(requestDTO.getAddress());
+        client.setNeighborhood(requestDTO.getNeighborhood());
+        client.setEmail(requestDTO.getEmail());
         client.setPhone(requestDTO.getPhone());
         clientRepository.save(client);
 
@@ -112,6 +116,8 @@ public class ClientService implements ClientBusiness {
             String address = null;
             String cityName = null;
             String status = null;
+            String neighborhood = null;
+            String email = null;
 
             if (customQuery.containsKey("id")) {
                 id = "%" + customQuery.get("id") + "%";
@@ -129,6 +135,14 @@ public class ClientService implements ClientBusiness {
                 address = "%" + customQuery.get("address") + "%";
             }
 
+            if (customQuery.containsKey("neighborhood")) {
+                address = "%" + customQuery.get("neighborhood") + "%";
+            }
+
+            if (customQuery.containsKey("email")) {
+                address = "%" + customQuery.get("email") + "%";
+            }
+
             if (customQuery.containsKey("phone")) {
                 phone = "%" + customQuery.get("phone") + "%";
             }
@@ -141,7 +155,7 @@ public class ClientService implements ClientBusiness {
                 status = "%" + customQuery.get("status") + "%";
             }
 
-            List<ClientResponseDTO> response = clientRepository.searchClientNoPage(id, name, phone, identification, address, cityName, status);
+            List<ClientResponseDTO> response = clientRepository.searchClientNoPage(id, name, phone, identification, address, cityName, status, neighborhood, email);
             return response;
         } catch (Exception e) {
             log.error("Error al obtener el cliente");
@@ -163,6 +177,8 @@ public class ClientService implements ClientBusiness {
         String address = null;
         String cityName = null;
         String status = null;
+        String neighborhood = null;
+        String email = null;
 
         if (customQuery.containsKey("orders")) {
             orders = customQuery.get("orders");
@@ -196,6 +212,14 @@ public class ClientService implements ClientBusiness {
             address = "%" + customQuery.get("address") + "%";
         }
 
+        if (customQuery.containsKey("neighborhood")) {
+            address = "%" + customQuery.get("neighborhood") + "%";
+        }
+
+        if (customQuery.containsKey("email")) {
+            address = "%" + customQuery.get("email") + "%";
+        }
+
         if (customQuery.containsKey("phone")) {
             phone = "%" + customQuery.get("phone") + "%";
         }
@@ -212,7 +236,7 @@ public class ClientService implements ClientBusiness {
         Sort sort = Sort.by(direction, sortBy);
 
         Pageable pagingSort = PageRequest.of(page, size, sort);
-        Page<ClientResponseDTO> searchClient = clientRepository.searchClient(id, name, phone, identification, address, cityName, status, pagingSort);
+        Page<ClientResponseDTO> searchClient = clientRepository.searchClient(id, name, phone, identification, address, cityName, status, neighborhood, email, pagingSort);
 
         return searchClient;
     }
