@@ -9,8 +9,10 @@ spring:
     password: Ladrillera317Transversal12@
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
+      connection-test-query: SELECT 1
       test-on-borrow: true
       validation-query: SELECT 1
+      validation-timeout: 2000
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
