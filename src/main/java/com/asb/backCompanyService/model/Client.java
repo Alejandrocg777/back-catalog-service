@@ -52,7 +52,16 @@ public class Client {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "identification_type_id")
+    private Long identificationTypeId;
 
+    @Column(name = "check_digit")
+    private Long checkDigit;
 
+    @Column(name = "type_person_id")
+    private Long typePersonId;
+
+    @Column(name = "tax_liability_id")
+    private Long taxLiabilityId;
 
 }

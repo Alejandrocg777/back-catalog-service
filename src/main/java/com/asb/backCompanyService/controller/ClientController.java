@@ -68,9 +68,9 @@ public class ClientController {
     }
 
     @GetMapping("/no-page/getAllClient")
-    public ResponseEntity<List<ClientResponseDTO>> getAllNoPage(@RequestParam Map<String, String> customQuery) {
+    public ResponseEntity<List<Client>> getAllNoPage() {
         log.info("Iniciando endpoint para obtener todas las taxes");
-        List<ClientResponseDTO> response = clientBusiness.getAllNoPage(customQuery);
+        List<Client> response = clientBusiness.getAllNoPage();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

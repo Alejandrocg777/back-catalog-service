@@ -42,6 +42,10 @@ public class ClientService implements ClientBusiness {
         client.setNeighborhood(request.getNeighborhood());
         client.setEmail(request.getEmail());
         client.setIdentification(request.getIdentification());
+        client.setIdentificationTypeId(request.getIdentificationTypeId());
+        client.setCheckDigit(request.getCheckDigit());
+        client.setTypePersonId(request.getTypePersonId());
+        client.setTaxLiabilityId(request.getTaxLiabilityId());
         Client newClient = clientRepository.save(client);
 
         ClientRequestDTO response = new ClientRequestDTO();
@@ -64,6 +68,10 @@ public class ClientService implements ClientBusiness {
         client.setNeighborhood(requestDTO.getNeighborhood());
         client.setEmail(requestDTO.getEmail());
         client.setPhone(requestDTO.getPhone());
+        client.setIdentificationTypeId(requestDTO.getIdentificationTypeId());
+        client.setCheckDigit(requestDTO.getCheckDigit());
+        client.setTypePersonId(requestDTO.getTypePersonId());
+        client.setTaxLiabilityId(requestDTO.getTaxLiabilityId());
         clientRepository.save(client);
 
         return new GenericResponse("client actualizado con exito", 200);
@@ -106,61 +114,13 @@ public class ClientService implements ClientBusiness {
     }
 
     @Override
-    public List<ClientResponseDTO> getAllNoPage(@RequestParam Map<String, String> customQuery) {
+    public List<Client> getAllNoPage() {
         try {
-
-            String id = null;
-            String name = null;
-            String phone = null;
-            String identification = null;
-            String address = null;
-            String cityName = null;
-            String status = null;
-            String neighborhood = null;
-            String email = null;
-
-            if (customQuery.containsKey("id")) {
-                id = "%" + customQuery.get("id") + "%";
-            }
-
-            if (customQuery.containsKey("name")) {
-                name = "%" + customQuery.get("name") + "%";
-            }
-
-            if (customQuery.containsKey("identification")) {
-                identification = "%" + customQuery.get("identification") + "%";
-            }
-
-            if (customQuery.containsKey("address")) {
-                address = "%" + customQuery.get("address") + "%";
-            }
-
-            if (customQuery.containsKey("neighborhood")) {
-                address = "%" + customQuery.get("neighborhood") + "%";
-            }
-
-            if (customQuery.containsKey("email")) {
-                address = "%" + customQuery.get("email") + "%";
-            }
-
-            if (customQuery.containsKey("phone")) {
-                phone = "%" + customQuery.get("phone") + "%";
-            }
-
-            if (customQuery.containsKey("cityName")) {
-                cityName = "%" + customQuery.get("cityName") + "%";
-            }
-
-            if (customQuery.containsKey("status")) {
-                status = "%" + customQuery.get("status") + "%";
-            }
-
-            List<ClientResponseDTO> response = clientRepository.searchClientNoPage(id, name, phone, identification, address, cityName, status, neighborhood, email);
-            return response;
+            return clientRepository.getAllNoPage();
         } catch (Exception e) {
-            log.error("Error al obtener el cliente");
+            log.error("Error al obtener el inventario");
             log.error("Causa: {}", e.getCause().toString());
-            throw new RuntimeException("No se puede recuperar el cliente", e);
+            throw new RuntimeException("No se puede recuperar el inventario", e);
         }
     }
 

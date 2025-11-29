@@ -27,4 +27,12 @@ public class ClientRequestDTO {
     private Long cityId;
 
     private String status;
+
+    private Long identificationTypeId;
+
+    private Long checkDigit;
+
+    private Long typePersonId;
+
+    private Long taxLiabilityId;
 }

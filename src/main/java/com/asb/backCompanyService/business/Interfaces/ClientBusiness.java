@@ -17,6 +17,6 @@ public interface ClientBusiness {
     Boolean delete(Long id);
     Page<ClientResponseDTO> getAll(int page, int size, String orders, String sortBy);
     ClientRequestDTO get(Long id);
-    List<ClientResponseDTO> getAllNoPage(@RequestParam Map<String, String> customQuery);
+    List<Client> getAllNoPage();
     Page<ClientResponseDTO>searchCustom(Map<String , String>customQuery);
 }
