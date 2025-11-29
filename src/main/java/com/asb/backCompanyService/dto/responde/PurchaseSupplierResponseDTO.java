@@ -19,6 +19,6 @@ public class PurchaseSupplierResponseDTO {
     @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDateTime date;
     private String purchaseStatus;
-    private String status;
+    private String observation;
 
 }
