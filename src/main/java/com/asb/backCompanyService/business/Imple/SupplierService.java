@@ -590,17 +590,21 @@ public class SupplierService implements SupplierBusiness {
         ProductWarehouse productWarehouse = productWareHouseRepository.findByProductIdAndSupplierId(productId, supplierId);
 
         if (productWarehouse == null){
-            productWarehouse.setProductId(productId);
-            productWarehouse.setSupplierId(supplierId);
-            productWarehouse.setReservedQuantity(reservedQuantity);
+
+            ProductWarehouse productWarehouse1 = new ProductWarehouse();
+            productWarehouse1.setProductId(productId);
+            productWarehouse1.setSupplierId(supplierId);
+            productWarehouse1.setReservedQuantity(reservedQuantity);
+            productWareHouseRepository.save(productWarehouse1);
 
         }else{
             Long quantity = productWarehouse.getReservedQuantity() + reservedQuantity;
             productWarehouse.setReservedQuantity(quantity);
+            productWareHouseRepository.save(productWarehouse);
         }
 
 
-        productWareHouseRepository.save(productWarehouse);
+
 
 
     }
