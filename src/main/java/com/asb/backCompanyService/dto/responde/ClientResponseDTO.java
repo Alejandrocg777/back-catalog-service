@@ -1,6 +1,5 @@
 package com.asb.backCompanyService.dto.responde;
 
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,7 +25,7 @@ public class ClientResponseDTO {
 
     private String email;
 
-    private String cityName;
+    private String municipality;
 
     private String status;
 }
