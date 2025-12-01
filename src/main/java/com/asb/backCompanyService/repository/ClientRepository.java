@@ -14,7 +14,7 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
 
     @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ClientResponseDTO(c.id, c.name, c.phone, c.address, c.neighborhood, c.email, c.identification, t.cityName, c.status) " +
             "FROM Client c " +
-            "INNER JOIN City t ON c.cityId = t.id " +
+            "LEFT JOIN City t ON c.cityId = t.id " +
             "WHERE c.status = 'ACTIVE'",
             countQuery = "SELECT COUNT(*) " +
                     "FROM Client c " +
