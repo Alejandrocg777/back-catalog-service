@@ -21,7 +21,7 @@ public class ClientResponseDTO {
 
     private String address;
 
-    private String neighborhood;
+    private String neighborhoodName;
 
     private String email;
 
