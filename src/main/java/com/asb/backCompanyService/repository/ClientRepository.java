@@ -12,20 +12,23 @@ import java.util.List;
 
 public interface ClientRepository extends JpaRepository<Client, Long> {
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ClientResponseDTO(c.id, c.name, c.phone, c.address, c.neighborhood, c.email, c.identification, t.cityName, c.status) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ClientResponseDTO(c.id, c.name, c.phone, c.identification, i.name, c.address, c.neighborhood, c.email, t.cityName, c.status) " +
             "FROM Client c " +
             "LEFT JOIN City t ON c.cityId = t.id " +
+            "LEFT JOIN IdentificationType  i ON i.identificationTypeId = c.identificationTypeId " +
             "WHERE c.status = 'ACTIVE'",
             countQuery = "SELECT COUNT(*) " +
                     "FROM Client c " +
                     "INNER JOIN City t ON c.cityId = t.id " +
+                    "LEFT JOIN IdentificationType  i ON i.identificationTypeId = c.identificationTypeId " +
                     "WHERE c.status = 'ACTIVE'")
     Page<ClientResponseDTO> getStatus(Pageable pageable);
 
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ClientResponseDTO(c.id, c.name, c.phone, c.address, c.neighborhood, c.email, c.identification, t.cityName, c.status) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ClientResponseDTO(c.id, c.name, c.phone, c.identification, i.name, c.address, c.neighborhood, c.email, t.cityName, c.status) " +
             "FROM Client c " +
             "INNER JOIN City t ON c.cityId = t.id " +
+            "LEFT JOIN IdentificationType  i ON i.identificationTypeId = c.identificationTypeId " +
             "WHERE CAST(c.id AS string) LIKE :id " +
             "OR UPPER(c.name) LIKE :name " +
             "OR UPPER(c.phone) LIKE :phone " +

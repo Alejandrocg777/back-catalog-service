@@ -19,6 +19,8 @@ public class ClientResponseDTO {
 
     private String identification;
 
+    private String identificationType;
+
     private String address;
 
     private String neighborhoodName;
