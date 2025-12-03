@@ -42,7 +42,7 @@ public class ClientService implements ClientBusiness {
         client.setEmail(request.getEmail());
         client.setIdentification(request.getIdentification());
         client.setIdentificationTypeId(request.getIdentificationTypeId());
-        client.setCheckDigit(request.getCheckDigit());
+        client.setCheckDigit(request.getVerificationDigit());
         client.setTypePersonId(request.getTypePersonId());
         client.setTaxLiabilityId(request.getTaxLiabilityId());
         Client newClient = clientRepository.save(client);
@@ -68,7 +68,7 @@ public class ClientService implements ClientBusiness {
         client.setEmail(requestDTO.getEmail());
         client.setPhone(requestDTO.getPhone());
         client.setIdentificationTypeId(requestDTO.getIdentificationTypeId());
-        client.setCheckDigit(requestDTO.getCheckDigit());
+        client.setCheckDigit(requestDTO.getVerificationDigit());
         client.setTypePersonId(requestDTO.getTypePersonId());
         client.setTaxLiabilityId(requestDTO.getTaxLiabilityId());
         clientRepository.save(client);

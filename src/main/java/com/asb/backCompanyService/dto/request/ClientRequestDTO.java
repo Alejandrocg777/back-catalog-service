@@ -30,7 +30,7 @@ public class ClientRequestDTO {
 
     private Long identificationTypeId;
 
-    private Long checkDigit;
+    private Long verificationDigit;
 
     private Long typePersonId;
 
