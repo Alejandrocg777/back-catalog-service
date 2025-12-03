@@ -38,12 +38,12 @@ public class ClientService implements ClientBusiness {
         client.setAddress(request.getAddress());
         client.setStatus(request.getStatus());
         client.setCityId(request.getCityId());
-        client.setNeighborhood(request.getNeighborhood());
+        client.setNeighborhood(request.getNeighborhoodName());
         client.setEmail(request.getEmail());
         client.setIdentification(request.getIdentification());
-        client.setIdentificationTypeId(request.getIdentificationTypeId());
+        client.setIdentificationTypeId(request.getTypeIdentificationId());
         client.setCheckDigit(request.getVerificationDigit());
-        client.setTypePersonId(request.getTypePersonId());
+        client.setTypePersonId(request.getPersonTypeId());
         client.setTaxLiabilityId(request.getTaxLiabilityId());
         Client newClient = clientRepository.save(client);
 
@@ -64,12 +64,12 @@ public class ClientService implements ClientBusiness {
         client.setStatus(requestDTO.getStatus());
         client.setIdentification(requestDTO.getIdentification());
         client.setAddress(requestDTO.getAddress());
-        client.setNeighborhood(requestDTO.getNeighborhood());
+        client.setNeighborhood(requestDTO.getNeighborhoodName());
         client.setEmail(requestDTO.getEmail());
         client.setPhone(requestDTO.getPhone());
-        client.setIdentificationTypeId(requestDTO.getIdentificationTypeId());
+        client.setIdentificationTypeId(requestDTO.getTypeIdentificationId());
         client.setCheckDigit(requestDTO.getVerificationDigit());
-        client.setTypePersonId(requestDTO.getTypePersonId());
+        client.setTypePersonId(requestDTO.getPersonTypeId());
         client.setTaxLiabilityId(requestDTO.getTaxLiabilityId());
         clientRepository.save(client);
 

@@ -20,7 +20,7 @@ public class ClientRequestDTO {
 
     private String address;
 
-    private String neighborhood;
+    private String neighborhoodName;
 
     private String email;
 
@@ -28,11 +28,11 @@ public class ClientRequestDTO {
 
     private String status;
 
-    private Long identificationTypeId;
+    private Long typeIdentificationId;
 
     private Long verificationDigit;
 
-    private Long typePersonId;
+    private Long personTypeId;
 
     private Long taxLiabilityId;
 }
