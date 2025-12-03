@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -35,7 +34,7 @@ public class ClientService implements ClientBusiness {
         client.setPhone(request.getPhone());
         client.setAddress(request.getAddress());
         client.setStatus("ACTIVE");
-        client.setCityId(request.getCityId());
+        client.setCityId(request.getMunicipalityId());
         client.setNeighborhood(request.getNeighborhoodName());
         client.setEmail(request.getEmail());
         client.setIdentification(request.getIdentification());
@@ -59,7 +58,7 @@ public class ClientService implements ClientBusiness {
 
         Client client = clientOptional.get();
         client.setName(requestDTO.getName());
-        client.setCityId(requestDTO.getCityId());
+        client.setCityId(requestDTO.getMunicipalityId());
         client.setStatus(requestDTO.getStatus());
         client.setIdentification(requestDTO.getIdentification());
         client.setAddress(requestDTO.getAddress());
@@ -108,7 +107,7 @@ public class ClientService implements ClientBusiness {
         response.setStatus(clientOptional.get().getStatus());
         response.setPhone(clientOptional.get().getPhone());
         response.setIdentification(clientOptional.get().getIdentification());
-        response.setCityId(clientOptional.get().getCityId());
+        response.setMunicipalityId(clientOptional.get().getCityId());
         return response;
     }
 

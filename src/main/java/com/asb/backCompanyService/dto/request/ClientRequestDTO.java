@@ -24,7 +24,7 @@ public class ClientRequestDTO {
 
     private String email;
 
-    private Long cityId;
+    private Long municipalityId;
 
     private String status;
 
