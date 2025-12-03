@@ -64,4 +64,7 @@ public class Client {
     @Column(name = "tax_liability_id")
     private Long taxLiabilityId;
 
+    @Column(name = "department_id")
+    private Long departmentId;
+
 }

@@ -44,4 +44,8 @@ public class ClientResponseDTO {
     private String taxLiability;
 
     private String status;
+
+    private String departmentName;
+
+    private Long departmentId;
 }

@@ -35,4 +35,6 @@ public class ClientRequestDTO {
     private Long personTypeId;
 
     private Long taxLiabilityId;
+
+    private Long departmentId;
 }

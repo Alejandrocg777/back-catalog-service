@@ -12,12 +12,13 @@ import java.util.List;
 
 public interface ClientRepository extends JpaRepository<Client, Long> {
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ClientResponseDTO(c.id, c.name, c.phone, c.identification, i.name, i.identificationTypeId, c.address, c.neighborhood, c.email, t.cityName, t.id, c.checkDigit,tp.description, tp.typePersonId, ta.id, ta.name, c.status) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ClientResponseDTO(c.id, c.name, c.phone, c.identification, i.name, i.identificationTypeId, c.address, c.neighborhood, c.email, t.cityName, t.id, c.checkDigit,tp.description, tp.typePersonId, ta.id, ta.name, c.status, d.departmentName, d.id) " +
             "FROM Client c " +
             "LEFT JOIN City t ON c.cityId = t.id " +
             "LEFT JOIN IdentificationType  i ON i.identificationTypeId = c.identificationTypeId " +
             "LEFT JOIN TypePerson tp ON tp.typePersonId = c.typePersonId " +
             "LEFT JOIN TaxLiability ta ON ta.id = c.taxLiabilityId " +
+            "LEFT JOIN Department d ON d.id = c.departmentId " +
             "WHERE c.status = 'ACTIVE'",
             countQuery = "SELECT COUNT(*) " +
                     "FROM Client c " +
@@ -27,12 +28,13 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
     Page<ClientResponseDTO> getStatus(Pageable pageable);
 
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ClientResponseDTO(c.id, c.name, c.phone, c.identification, i.name, i.identificationTypeId, c.address, c.neighborhood, c.email, t.cityName, t.id, c.checkDigit,tp.description, tp.typePersonId, ta.id, ta.name, c.status) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ClientResponseDTO(c.id, c.name, c.phone, c.identification, i.name, i.identificationTypeId, c.address, c.neighborhood, c.email, t.cityName, t.id, c.checkDigit,tp.description, tp.typePersonId, ta.id, ta.name, c.status, d.departmentName, d.id) " +
             "FROM Client c " +
             "LEFT JOIN City t ON c.cityId = t.id " +
             "LEFT JOIN IdentificationType  i ON i.identificationTypeId = c.identificationTypeId " +
             "LEFT JOIN TypePerson tp ON tp.typePersonId = c.typePersonId " +
             "LEFT JOIN TaxLiability ta ON ta.id = c.taxLiabilityId " +
+            "LEFT JOIN Department d ON d.id = c.departmentId " +
             "WHERE CAST(c.id AS string) LIKE :id " +
             "OR UPPER(c.name) LIKE :name " +
             "OR UPPER(c.phone) LIKE :phone " +

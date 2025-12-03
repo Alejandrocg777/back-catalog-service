@@ -43,6 +43,7 @@ public class ClientService implements ClientBusiness {
         client.setCheckDigit(request.getVerificationDigit());
         client.setTypePersonId(request.getPersonTypeId());
         client.setTaxLiabilityId(request.getTaxLiabilityId());
+        client.setDepartmentId(request.getDepartmentId());
         Client newClient = clientRepository.save(client);
 
         ClientRequestDTO response = new ClientRequestDTO();
@@ -69,6 +70,7 @@ public class ClientService implements ClientBusiness {
         client.setCheckDigit(requestDTO.getVerificationDigit());
         client.setTypePersonId(requestDTO.getPersonTypeId());
         client.setTaxLiabilityId(requestDTO.getTaxLiabilityId());
+        client.setDepartmentId(requestDTO.getDepartmentId());
         clientRepository.save(client);
 
         return new GenericResponse("client actualizado con exito", 200);
@@ -91,23 +93,7 @@ public class ClientService implements ClientBusiness {
         Sort.Direction direction = Sort.Direction.fromString(orders);
         Sort sort = Sort.by(direction, sortBy);
         Pageable pagingSort = PageRequest.of(page, size, sort);
-        Page<ClientResponseDTO> originalPage = clientRepository.getStatus(pagingSort);
-
-        // Extraer y modificar el contenido
-        List<ClientResponseDTO> modifiedContent = originalPage.getContent().stream()
-                .map(dto -> {
-                    // Verificar condiciones: tiene dígito de verificación y tipo es NIT
-                    if (dto.getVerificationDigit() != null &&
-                            "NIT".equalsIgnoreCase(dto.getIdentificationType())) {  // Ajusta 'identificationTypeName' si el campo se llama diferente (es i.name)
-                        // Modificar el identification agregando guion y checkDigit
-                        dto.setIdentification(dto.getIdentification() + "-" + dto.getVerificationDigit());
-                    }
-                    return dto;
-                })
-                .collect(Collectors.toList());
-
-        // Retornar una nueva página con el contenido modificado (manteniendo paginación y totales originales)
-        return new PageImpl<>(modifiedContent, pagingSort, originalPage.getTotalElements());
+        return clientRepository.getStatus(pagingSort);
     }
 
     @Override
