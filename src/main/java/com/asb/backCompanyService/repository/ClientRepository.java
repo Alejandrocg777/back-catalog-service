@@ -19,7 +19,7 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
             "WHERE c.status = 'ACTIVE'",
             countQuery = "SELECT COUNT(*) " +
                     "FROM Client c " +
-                    "INNER JOIN City t ON c.cityId = t.id " +
+                    "LEFT JOIN City t ON c.cityId = t.id " +
                     "LEFT JOIN IdentificationType  i ON i.identificationTypeId = c.identificationTypeId " +
                     "WHERE c.status = 'ACTIVE'")
     Page<ClientResponseDTO> getStatus(Pageable pageable);

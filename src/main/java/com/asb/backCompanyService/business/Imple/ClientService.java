@@ -36,7 +36,7 @@ public class ClientService implements ClientBusiness {
         client.setName(request.getName());
         client.setPhone(request.getPhone());
         client.setAddress(request.getAddress());
-        client.setStatus(request.getStatus());
+        client.setStatus("ACTIVE");
         client.setCityId(request.getCityId());
         client.setNeighborhood(request.getNeighborhoodName());
         client.setEmail(request.getEmail());
