@@ -12,10 +12,12 @@ import java.util.List;
 
 public interface ClientRepository extends JpaRepository<Client, Long> {
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ClientResponseDTO(c.id, c.name, c.phone, c.identification, i.name, c.address, c.neighborhood, c.email, t.cityName, c.status) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ClientResponseDTO(c.id, c.name, c.phone, c.identification, i.name, i.identificationTypeId, c.address, c.neighborhood, c.email, t.cityName, t.id, c.checkDigit,tp.description, tp.typePersonId, ta.id, ta.name, c.status) " +
             "FROM Client c " +
             "LEFT JOIN City t ON c.cityId = t.id " +
             "LEFT JOIN IdentificationType  i ON i.identificationTypeId = c.identificationTypeId " +
+            "LEFT JOIN TypePerson tp ON tp.typePersonId = c.typePersonId " +
+            "LEFT JOIN TaxLiability ta ON ta.id = c.taxLiabilityId " +
             "WHERE c.status = 'ACTIVE'",
             countQuery = "SELECT COUNT(*) " +
                     "FROM Client c " +
@@ -25,10 +27,12 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
     Page<ClientResponseDTO> getStatus(Pageable pageable);
 
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ClientResponseDTO(c.id, c.name, c.phone, c.identification, i.name, c.address, c.neighborhood, c.email, t.cityName, c.status) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ClientResponseDTO(c.id, c.name, c.phone, c.identification, i.name, i.identificationTypeId, c.address, c.neighborhood, c.email, t.cityName, t.id, c.checkDigit,tp.description, tp.typePersonId, ta.id, ta.name, c.status) " +
             "FROM Client c " +
-            "INNER JOIN City t ON c.cityId = t.id " +
+            "LEFT JOIN City t ON c.cityId = t.id " +
             "LEFT JOIN IdentificationType  i ON i.identificationTypeId = c.identificationTypeId " +
+            "LEFT JOIN TypePerson tp ON tp.typePersonId = c.typePersonId " +
+            "LEFT JOIN TaxLiability ta ON ta.id = c.taxLiabilityId " +
             "WHERE CAST(c.id AS string) LIKE :id " +
             "OR UPPER(c.name) LIKE :name " +
             "OR UPPER(c.phone) LIKE :phone " +
@@ -40,8 +44,10 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
             "OR UPPER(c.status) LIKE :status " ,
             countQuery = "SELECT COUNT(*) " +
                     "FROM Client c " +
-                    "INNER JOIN City t ON c.cityId = t.id " +
-                    "WHERE CAST(c.id AS string) LIKE :id " +
+                    "LEFT JOIN City t ON c.cityId = t.id " +
+                    "LEFT JOIN IdentificationType  i ON i.identificationTypeId = c.identificationTypeId " +
+                    "LEFT JOIN TypePerson tp ON tp.typePersonId = c.typePersonId " +
+                    "LEFT JOIN TaxLiability ta ON ta.id = c.taxLiabilityId " +
                     "OR UPPER(c.name) LIKE :name " +
                     "OR UPPER(c.phone) LIKE :phone " +
                     "OR UPPER(c.identification) LIKE :identification " +

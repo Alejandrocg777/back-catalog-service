@@ -11,16 +11,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -93,7 +91,23 @@ public class ClientService implements ClientBusiness {
         Sort.Direction direction = Sort.Direction.fromString(orders);
         Sort sort = Sort.by(direction, sortBy);
         Pageable pagingSort = PageRequest.of(page, size, sort);
-        return clientRepository.getStatus(pagingSort);
+        Page<ClientResponseDTO> originalPage = clientRepository.getStatus(pagingSort);
+
+        // Extraer y modificar el contenido
+        List<ClientResponseDTO> modifiedContent = originalPage.getContent().stream()
+                .map(dto -> {
+                    // Verificar condiciones: tiene dígito de verificación y tipo es NIT
+                    if (dto.getVerificationDigit() != null &&
+                            "NIT".equalsIgnoreCase(dto.getIdentificationType())) {  // Ajusta 'identificationTypeName' si el campo se llama diferente (es i.name)
+                        // Modificar el identification agregando guion y checkDigit
+                        dto.setIdentification(dto.getIdentification() + "-" + dto.getVerificationDigit());
+                    }
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        // Retornar una nueva página con el contenido modificado (manteniendo paginación y totales originales)
+        return new PageImpl<>(modifiedContent, pagingSort, originalPage.getTotalElements());
     }
 
     @Override

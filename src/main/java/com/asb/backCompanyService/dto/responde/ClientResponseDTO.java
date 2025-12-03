@@ -21,6 +21,8 @@ public class ClientResponseDTO {
 
     private String identificationType;
 
+    private Long typeIdentificationId;
+
     private String address;
 
     private String neighborhoodName;
@@ -28,6 +30,18 @@ public class ClientResponseDTO {
     private String email;
 
     private String municipality;
+
+    private Long municipalityId;
+
+    private Long verificationDigit;
+
+    private String personType;
+
+    private Long personTypeId;
+
+    private Long taxLiabilityId;
+
+    private String taxLiability;
 
     private String status;
 }
