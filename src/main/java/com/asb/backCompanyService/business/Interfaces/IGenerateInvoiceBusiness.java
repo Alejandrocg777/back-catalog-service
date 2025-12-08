@@ -1,6 +1,7 @@
 package com.asb.backCompanyService.business.Interfaces;
 
 import com.asb.backCompanyService.dto.request.GenerateInvoiceDto;
+import com.asb.backCompanyService.dto.request.InvoiceRequestDTO;
 import com.asb.backCompanyService.dto.responde.GenerateInvoiceResponseDto;
 import com.asb.backCompanyService.model.GenerateInvoice;
 import org.springframework.data.domain.Page;
@@ -10,7 +11,7 @@ import java.util.Map;
 
 public interface IGenerateInvoiceBusiness {
 
-    GenerateInvoiceDto save(GenerateInvoiceDto generateInvoiceDto);
+    InvoiceRequestDTO save(InvoiceRequestDTO generateInvoiceDto);
 
     GenerateInvoiceDto update(Long id, GenerateInvoiceDto generateInvoiceDto);
 

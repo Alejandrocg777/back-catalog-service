@@ -2,6 +2,7 @@ package com.asb.backCompanyService.controller;
 
 import com.asb.backCompanyService.business.Interfaces.IGenerateInvoiceBusiness;
 import com.asb.backCompanyService.dto.request.GenerateInvoiceDto;
+import com.asb.backCompanyService.dto.request.InvoiceRequestDTO;
 import com.asb.backCompanyService.dto.responde.GenerateInvoiceResponseDto;
 import com.asb.backCompanyService.model.GenerateInvoice;
 import lombok.RequiredArgsConstructor;
@@ -40,8 +41,8 @@ public class GenerateInvoiceController {
 
 
     @PostMapping("/create")
-    public ResponseEntity<GenerateInvoiceDto> createGenerateInvoice(@RequestBody GenerateInvoiceDto generateInvoiceDto) {
-        GenerateInvoiceDto createdGenerateInvoice = iGenerateInvoiceBusiness.save(generateInvoiceDto);
+    public ResponseEntity<InvoiceRequestDTO> createGenerateInvoice(@RequestBody InvoiceRequestDTO generateInvoiceDto) {
+        InvoiceRequestDTO createdGenerateInvoice = iGenerateInvoiceBusiness.save(generateInvoiceDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdGenerateInvoice);
     }
 

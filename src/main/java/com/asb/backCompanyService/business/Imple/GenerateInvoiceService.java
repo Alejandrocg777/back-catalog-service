@@ -2,10 +2,16 @@ package com.asb.backCompanyService.business.Imple;
 
 import com.asb.backCompanyService.business.Interfaces.IGenerateInvoiceBusiness;
 import com.asb.backCompanyService.dto.request.GenerateInvoiceDto;
+import com.asb.backCompanyService.dto.request.InvoiceDetailDTO;
+import com.asb.backCompanyService.dto.request.InvoiceRequestDTO;
 import com.asb.backCompanyService.dto.responde.GenerateInvoiceResponseDto;
 import com.asb.backCompanyService.exception.CustomErrorException;
 import com.asb.backCompanyService.exception.GenericException;
+import com.asb.backCompanyService.model.Bill;
+import com.asb.backCompanyService.model.BillDetails;
 import com.asb.backCompanyService.model.GenerateInvoice;
+import com.asb.backCompanyService.repository.BillDetailsRepopsitory;
+import com.asb.backCompanyService.repository.BillRepository;
 import com.asb.backCompanyService.repository.GenerateInvoiceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,25 +34,47 @@ import java.util.Map;
 public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
 
     private final GenerateInvoiceRepository generateInvoiceRepository;
+    private final BillRepository billRepository;
+    private final BillDetailsRepopsitory billDetailsRepopsitory;
 
     @Override
     @Transactional
-    public GenerateInvoiceDto save(GenerateInvoiceDto generateInvoiceDto) {
-        if (generateInvoiceDto.getId() != null && generateInvoiceRepository.existsById(generateInvoiceDto.getId())) {
-            throw new CustomErrorException(HttpStatus.BAD_REQUEST, "La factura ya existe");
+    public InvoiceRequestDTO save(InvoiceRequestDTO dto) {
+        Bill factura = new Bill();
+        factura.setCustomerId(dto.getCustomerId());
+        factura.setInvoiceDate(dto.getInvoiceDate());
+        factura.setDueDate(dto.getDueDate());
+        factura.setPaymentTypeId(dto.getPaymentTypeId());
+        factura.setPaymentMethodId(dto.getPaymentMethodId());
+        factura.setDeliveryType(dto.getDeliveryType());
+        factura.setDeliveryCost(dto.getDeliveryCost());
+        factura.setObservations(dto.getObservations());
+        factura.setSubtotal(dto.getSubtotal());
+        factura.setTotalDiscount(dto.getTotalDiscount());
+        factura.setTotal(dto.getTotal());
+        factura.setInitialPayment(dto.getInitialPayment());
+        factura.setRemainingBalance(dto.getRemainingBalance());
+        factura.setCashReceived(dto.getCashReceived());
+        factura.setChangeGiven(dto.getChangeGiven());
+
+        Bill newBill = billRepository.save(factura);
+
+        for (InvoiceDetailDTO detailDto : dto.getInvoiceDetails()) {
+            BillDetails detalle = new BillDetails();
+            detalle.setFacturaId(newBill.getId());  // Asignar el ID de la factura
+            detalle.setProductId(detailDto.getProductId());
+            detalle.setQuantity(detailDto.getQuantity());
+            detalle.setUnitPrice(detailDto.getUnitPrice());
+            detalle.setDiscountPercent(detailDto.getDiscountPercent());
+            detalle.setDiscountFixed(detailDto.getDiscountFixed());
+            detalle.setTotalDiscount(detailDto.getTotalDiscount());
+            detalle.setSubtotal(detailDto.getSubtotal());
+            detalle.setTotal(detailDto.getTotal());
+
+            // Guardar cada detalle (asumiendo que tienes un BillDetailsRepository)
+            billDetailsRepopsitory.save(detalle);
         }
-
-        GenerateInvoice generateInvoice = new GenerateInvoice();
-        generateInvoice.setResolutionNumber(generateInvoiceDto.getResolutionNumber());
-        generateInvoice.setBillingType(generateInvoiceDto.getBillingType());
-        generateInvoice.setAuthorizedEnabled(generateInvoiceDto.getAuthorizedEnabled());
-        generateInvoice.setResolutionDate(generateInvoiceDto.getResolutionDate());
-        generateInvoice.setCashRegisterName(generateInvoiceDto.getCashRegisterName());
-
-        GenerateInvoice savedGenerateInvoice = generateInvoiceRepository.save(generateInvoice);
-        GenerateInvoiceDto savedGenerateInvoiceDto = new GenerateInvoiceDto();
-        BeanUtils.copyProperties(savedGenerateInvoice, savedGenerateInvoiceDto);
-        return savedGenerateInvoiceDto;
+        return dto;
     }
 
     @Override
