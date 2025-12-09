@@ -22,37 +22,37 @@ public class Bill {
     @Column(name = "invoice_date", nullable = false)
     private LocalDateTime invoiceDate;
 
-    @Column(name = "due_date", nullable = false)
+    @Column(name = "due_date")
     private LocalDate dueDate;
 
-    @Column(name = "payment_type_id", nullable = false)
+    @Column(name = "payment_type_id")
     private Long paymentTypeId;
 
-    @Column(name = "payment_method_id", nullable = false)
+    @Column(name = "payment_method_id")
     private Long paymentMethodId;
 
-    @Column(name = "delivery_type", nullable = false)
+    @Column(name = "delivery_type")
     private String deliveryType;
 
-    @Column(name = "delivery_cost", nullable = false)
+    @Column(name = "delivery_cost")
     private Double deliveryCost;
 
     @Column(name = "observations")
     private String observations;
 
-    @Column(name = "subtotal", nullable = false)
+    @Column(name = "subtotal")
     private Double subtotal;
 
-    @Column(name = "total_discount", nullable = false)
+    @Column(name = "total_discount")
     private Double totalDiscount;
 
-    @Column(name = "total", nullable = false)
+    @Column(name = "total")
     private Double total;
 
-    @Column(name = "initial_payment", nullable = false)
+    @Column(name = "initial_payment")
     private Double initialPayment;
 
-    @Column(name = "remaining_balance", nullable = false)
+    @Column(name = "remaining_balance")
     private Double remainingBalance ;
 
     @Column(name = "cash_received")

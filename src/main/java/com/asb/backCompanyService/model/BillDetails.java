@@ -12,22 +12,22 @@ public class BillDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "factura_id", nullable = false)
+    @Column(name = "factura_id")
     private Long facturaId;
 
-    @Column(name = "product_id", nullable = false)
+    @Column(name = "product_id")
     private Long productId;
 
-    @Column(name = "quantity", nullable = false)
+    @Column(name = "quantity")
     private Integer quantity;
 
-    @Column(name = "unit_price", nullable = false)
+    @Column(name = "unit_price")
     private Double unitPrice;
 
-    @Column(name = "discount_percent", nullable = false)
+    @Column(name = "discount_percent")
     private Double discountPercent ;
 
-    @Column(name = "discount_fixed", nullable = false)
+    @Column(name = "discount_fixed")
     private Double discountFixed ;
 
     @Column(name = "total_discount", nullable = false)
