@@ -27,6 +27,7 @@ public class InvoiceRequestDTO {
     private Double initialPayment;
     private Double remainingBalance;
     private Double cashReceived;
+    private Long userId;
     private Double changeGiven;
     private List<InvoiceDetailDTO> invoiceDetails;
 }

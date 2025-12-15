@@ -2,13 +2,17 @@ package com.asb.backCompanyService.repository;
 
 import com.asb.backCompanyService.dto.responde.NumerationResponseDto;
 import com.asb.backCompanyService.model.Numeration;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface NumerationRepository extends JpaRepository<Numeration, Long> {
 
@@ -75,4 +79,13 @@ public interface NumerationRepository extends JpaRepository<Numeration, Long> {
 
 
     boolean existsById(Long id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT n FROM Numeration n " +
+            "WHERE n.userId = :userId " +
+            "AND n.status = 'ACTIVE' " +
+            "AND :currentDate BETWEEN n.startDate AND n.finishDate " +
+            "AND n.currentNumber < n.finalNumber")
+    Optional<Numeration> findActiveNumerationForType(@Param("userId") Long userId,
+                                                     @Param("currentDate") LocalDate currentDate);
 }

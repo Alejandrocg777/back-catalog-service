@@ -55,4 +55,7 @@ public class Numeration {
     @Column(name = "updated_at")
     private LocalDate updatedAt;
 
+    @Column(name = "user_id")
+    private Long userId;
+
 }

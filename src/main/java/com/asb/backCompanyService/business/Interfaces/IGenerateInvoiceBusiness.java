@@ -3,6 +3,7 @@ package com.asb.backCompanyService.business.Interfaces;
 import com.asb.backCompanyService.dto.request.GenerateInvoiceDto;
 import com.asb.backCompanyService.dto.request.InvoiceRequestDTO;
 import com.asb.backCompanyService.dto.responde.GenerateInvoiceResponseDto;
+import com.asb.backCompanyService.dto.responde.InvoiceResponseDto;
 import com.asb.backCompanyService.model.GenerateInvoice;
 import org.springframework.data.domain.Page;
 
@@ -24,7 +25,7 @@ public interface IGenerateInvoiceBusiness {
     boolean setStatus(Long id, String status);
 
 
-    Page<GenerateInvoiceResponseDto> getAll(int page, int size, String orders, String sortBy);
+    Page<InvoiceResponseDto> getAll(int page, int size, String orders, String sortBy);
 
     Page<GenerateInvoice> searchGenerateInvoice(Map<String, String> customQuery);
 

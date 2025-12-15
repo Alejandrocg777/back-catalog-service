@@ -34,11 +34,17 @@ public class Bill {
     @Column(name = "delivery_type")
     private String deliveryType;
 
+    @Column(name = "invoice_number")
+    private String invoiceNumber;
+
     @Column(name = "delivery_cost")
     private Double deliveryCost;
 
     @Column(name = "observations")
     private String observations;
+
+    @Column(name = "status")
+    private String status;
 
     @Column(name = "subtotal")
     private Double subtotal;
@@ -57,6 +63,9 @@ public class Bill {
 
     @Column(name = "cash_received")
     private Double cashReceived;
+
+    @Column(name = "user_id")
+    private Long userId;
 
     @Column(name = "change_given")
     private Double changeGiven;

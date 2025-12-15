@@ -4,6 +4,7 @@ import com.asb.backCompanyService.business.Interfaces.IGenerateInvoiceBusiness;
 import com.asb.backCompanyService.dto.request.GenerateInvoiceDto;
 import com.asb.backCompanyService.dto.request.InvoiceRequestDTO;
 import com.asb.backCompanyService.dto.responde.GenerateInvoiceResponseDto;
+import com.asb.backCompanyService.dto.responde.InvoiceResponseDto;
 import com.asb.backCompanyService.model.GenerateInvoice;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -69,11 +70,11 @@ public class GenerateInvoiceController {
 
 
     @GetMapping
-    public ResponseEntity<Page<GenerateInvoiceResponseDto>> getAll(@RequestParam(defaultValue = "0") int page,
-                                                                   @RequestParam(defaultValue = "5") int size,
-                                                                   @RequestParam(defaultValue = "ASC") String orders,
-                                                                   @RequestParam(defaultValue = "generate_invoice_id") String sortBy) {
-        Page<GenerateInvoiceResponseDto> generateInvoices = iGenerateInvoiceBusiness.getAll(page, size, orders, sortBy);
+    public ResponseEntity<Page<InvoiceResponseDto>> getAll(@RequestParam(defaultValue = "0") int page,
+                                                           @RequestParam(defaultValue = "5") int size,
+                                                           @RequestParam(defaultValue = "ASC") String orders,
+                                                           @RequestParam(defaultValue = "id") String sortBy) {
+        Page<InvoiceResponseDto> generateInvoices = iGenerateInvoiceBusiness.getAll(page, size, orders, sortBy);
         return ResponseEntity.ok(generateInvoices);
     }
 

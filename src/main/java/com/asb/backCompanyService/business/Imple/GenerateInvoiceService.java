@@ -5,6 +5,7 @@ import com.asb.backCompanyService.dto.request.GenerateInvoiceDto;
 import com.asb.backCompanyService.dto.request.InvoiceDetailDTO;
 import com.asb.backCompanyService.dto.request.InvoiceRequestDTO;
 import com.asb.backCompanyService.dto.responde.GenerateInvoiceResponseDto;
+import com.asb.backCompanyService.dto.responde.InvoiceResponseDto;
 import com.asb.backCompanyService.exception.CustomErrorException;
 import com.asb.backCompanyService.exception.GenericException;
 import com.asb.backCompanyService.model.Bill;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -36,6 +38,7 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
     private final GenerateInvoiceRepository generateInvoiceRepository;
     private final BillRepository billRepository;
     private final BillDetailsRepopsitory billDetailsRepopsitory;
+    private final NumerationService numerationService;
 
     @Override
     @Transactional
@@ -52,10 +55,14 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
         factura.setSubtotal(dto.getSubtotal());
         factura.setTotalDiscount(dto.getTotalDiscount());
         factura.setTotal(dto.getTotal());
+        factura.setUserId(dto.getUserId());
         factura.setInitialPayment(dto.getInitialPayment());
         factura.setRemainingBalance(dto.getRemainingBalance());
         factura.setCashReceived(dto.getCashReceived());
         factura.setChangeGiven(dto.getChangeGiven());
+
+        String invoiceNumber = numerationService.generateInvoiceNumber(dto.getUserId());
+        factura.setInvoiceNumber(invoiceNumber);
 
         Bill newBill = billRepository.save(factura);
 
@@ -98,10 +105,11 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
     @Override
     @Transactional
     public boolean delete(Long id) {
-        GenerateInvoice generateInvoice = generateInvoiceRepository.findById(id)
-                .orElseThrow(() -> new GenericException("La factura no fue encontrada por el id " + id, HttpStatus.NOT_FOUND));
+       Bill generateInvoice = billRepository.findById(id).get();
 
-        generateInvoiceRepository.delete(generateInvoice);
+       generateInvoice.setStatus("INCATIVE");
+
+        billRepository.save(generateInvoice);
         return true;
     }
 
@@ -127,7 +135,7 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
     }
 
     @Override
-    public Page<GenerateInvoiceResponseDto> getAll(int page, int size, String orders, String sortBy) {
+    public Page<InvoiceResponseDto> getAll(int page, int size, String orders, String sortBy) {
         if (page < 0) {
             throw new IllegalArgumentException("El índice de página no debe ser menor que cero");
         }
@@ -136,9 +144,9 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
         Sort sort = Sort.by(direction, sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<GenerateInvoice> result = generateInvoiceRepository.findAll(pageable);
+        Page<Bill> result = billRepository.findAll(pageable);
         return result.map(generateInvoice -> {
-            GenerateInvoiceResponseDto dto = new GenerateInvoiceResponseDto();
+            InvoiceResponseDto dto = new InvoiceResponseDto();  // Cambiado a InvoiceResponseDto
             BeanUtils.copyProperties(generateInvoice, dto);
             return dto;
         });
