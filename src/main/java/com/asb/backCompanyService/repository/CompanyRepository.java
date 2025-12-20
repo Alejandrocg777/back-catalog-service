@@ -12,7 +12,7 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
 
     List<Company> findByStatus(String status);
 
-    @Query(value = "SELECT c.company_id, c.`name_`, c.nit, c.address, c.email, c.phone, e.`description`, e.ciiu_code, c.economic_activity_id " +
+    @Query(value = "SELECT c.company_id, c.`name_`, c.nit, c.address, c.email, c.phone, e.`description`, e.ciiu_code, c.economic_activity_id, c.image " +
             "FROM company c " +
             "JOIN economic_activity e ON c.economic_activity_id = e.economic_activity_id " +
             "WHERE c.company_id = :id ", nativeQuery = true)

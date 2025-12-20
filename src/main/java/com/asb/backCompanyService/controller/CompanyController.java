@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -44,10 +45,34 @@ public class CompanyController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<CompanyDto> updateCompany(@PathVariable Long id, @RequestBody CompanyDto companyDto) {
-        CompanyDto updatedCompany = iCompanyBusiness.update(id, companyDto);
+    public ResponseEntity<CompanyDto> updateCompany(
+            @PathVariable Long id,
+            @RequestParam("companyName") String companyName,
+            @RequestParam("nit") String nit,
+            @RequestParam("address") String address,
+            @RequestParam("email") String email,
+            @RequestParam("phone") String phone,
+            @RequestParam(value = "economicActivityId", required = false) Long economicActivityId,
+            @RequestParam(value = "status", required = false) String status,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
+
+        log.info("Iniciando actualización para Company con ID: {}", id);
+
+        CompanyDto companyDto = new CompanyDto();
+        companyDto.setCompanyName(companyName);
+        companyDto.setNit(nit);
+        companyDto.setAddress(address);
+        companyDto.setEmail(email);
+        companyDto.setPhone(phone);
+        companyDto.setEconomicActivityId(economicActivityId);
+        companyDto.setStatus(status);
+        // No seteamos image aquí, se maneja directamente en el business
+
+        CompanyDto updatedCompany = iCompanyBusiness.update(id, companyDto, image);
+
         return ResponseEntity.ok(updatedCompany);
     }
+
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteCompany(@PathVariable Long id) {

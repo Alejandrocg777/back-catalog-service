@@ -15,6 +15,8 @@ public class ProductResponseDTO {
 
     private Double price;
 
+    private Double purchasePrice;
+
     private String description;
 
     private Long categoryId;

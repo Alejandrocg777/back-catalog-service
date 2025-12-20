@@ -72,7 +72,7 @@ public class ProductController {
                                                   @RequestParam(value = "quantity", required = false) Long quantity,
                                                   @RequestParam(value = "image",required = false)MultipartFile image,
                                                   @RequestParam("purchasePrice") Double purchasePrice) {
-        log.info("Iniciando actualización para City con ID: {}", id);
+        log.info("Iniciando actualización para producto con ID: {}", id);
         ProductRequestDTO productRequestDTO = new ProductRequestDTO();
         productRequestDTO.setProductName(productName);
         productRequestDTO.setPrice(price);

@@ -12,5 +12,6 @@ public class SuppliersWhoMustDTO {
     private Long id;
     private String supplierName;
     private String warehouseName;
+    private String purchaseStatus;
     private String status;
 }

@@ -7,6 +7,8 @@ import com.asb.backCompanyService.exception.CustomErrorException;
 import com.asb.backCompanyService.exception.GenericException;
 import com.asb.backCompanyService.model.Company;
 import com.asb.backCompanyService.repository.CompanyRepository;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -18,7 +20,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +32,7 @@ import java.util.Map;
 public class CompanyService implements ICompanyBusiness {
 
     private final CompanyRepository companyRepository;
+    private final Cloudinary cloudinary;
 
 
     @Override
@@ -54,19 +59,37 @@ public class CompanyService implements ICompanyBusiness {
 
     @Override
     @Transactional
-    public CompanyDto update(Long id, CompanyDto companyDto) {
-        Company company = companyRepository.findById(id).orElseThrow(() -> new GenericException("La empresa no fue encontrada por el id " + id, HttpStatus.NOT_FOUND));
-        company.setCompanyName(companyDto.getCompanyName());
-        company.setNit(companyDto.getNit());
-        company.setAddress(companyDto.getAddress());
-        company.setEmail(companyDto.getEmail());
-        company.setPhone(companyDto.getPhone());
-        company.setEconomicActivityId(companyDto.getEconomicActivityId());
+    public CompanyDto update(Long id, CompanyDto companyDto, MultipartFile imageFile) {
+        Company company = companyRepository.findById(id)
+                .orElseThrow(() -> new GenericException("La empresa no fue encontrada por el id " + id, HttpStatus.NOT_FOUND));
+
+        // Actualizar campos de texto
+        if (companyDto.getCompanyName() != null) company.setCompanyName(companyDto.getCompanyName());
+        if (companyDto.getNit() != null) company.setNit(companyDto.getNit());
+        if (companyDto.getAddress() != null) company.setAddress(companyDto.getAddress());
+        if (companyDto.getEmail() != null) company.setEmail(companyDto.getEmail());
+        if (companyDto.getPhone() != null) company.setPhone(companyDto.getPhone());
+        if (companyDto.getEconomicActivityId() != null) company.setEconomicActivityId(companyDto.getEconomicActivityId());
+        if (companyDto.getStatus() != null) company.setStatus(companyDto.getStatus());
+
+        // Manejo de la imagen (opcional)
+        if (imageFile != null && !imageFile.isEmpty()) {
+            try {
+                Map uploadResult = cloudinary.uploader().upload(imageFile.getBytes(),
+                        ObjectUtils.asMap("resource_type", "auto"));
+                String imageUrl = (String) uploadResult.get("url");
+                company.setImage(imageUrl);
+            } catch (IOException e) {
+                throw new RuntimeException("Error al subir la imagen a Cloudinary", e);
+            }
+        }
+        // Si no se envía imagen, se mantiene la existente (no se sobrescribe con null o vacío)
 
         Company updatedCompany = companyRepository.save(company);
-        CompanyDto updatedCompanyDto = new CompanyDto();
-        BeanUtils.copyProperties(updatedCompany, updatedCompanyDto);
-        return updatedCompanyDto;
+
+        CompanyDto updatedDto = new CompanyDto();
+        BeanUtils.copyProperties(updatedCompany, updatedDto);
+        return updatedDto;
     }
 
     @Override
@@ -96,6 +119,7 @@ public class CompanyService implements ICompanyBusiness {
             companyDto.setDescription(company[6] != null ? company[6].toString() : null);
             companyDto.setCiiuCode(company[7] != null ? company[7].toString() : null);
             companyDto.setEconomicActivityId(company[8] != null ? Long.parseLong(company[8].toString()) : null);
+            companyDto.setImage(company[9] != null ? company[9].toString() : null);
         }
         return companyDto;
     }

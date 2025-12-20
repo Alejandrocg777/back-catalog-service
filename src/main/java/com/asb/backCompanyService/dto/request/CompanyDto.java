@@ -15,5 +15,6 @@ public class CompanyDto {
     private String email;
     private String phone;
     private Long economicActivityId;
+    private String image;
     private String status;
 }
