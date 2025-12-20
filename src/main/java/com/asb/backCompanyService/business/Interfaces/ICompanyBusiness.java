@@ -7,6 +7,7 @@ import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.model.Company;
 import com.asb.backCompanyService.model.Department;
 import org.springframework.data.domain.Page;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,7 @@ import java.util.Map;
 public interface ICompanyBusiness {
 
     CompanyDto save(CompanyDto companyDto);
-    CompanyDto update(Long id, CompanyDto companyDto);
+    CompanyDto update(Long id, CompanyDto companyDto, MultipartFile image);
     boolean delete(Long id);
     CompanyResponseDto get(Long id);
     List<Company> getAllCompany();

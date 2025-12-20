@@ -17,4 +17,5 @@ public class CompanyResponseDto {
     private String description;
     private String ciiuCode;
     private Long economicActivityId;
+    private String image;
 }

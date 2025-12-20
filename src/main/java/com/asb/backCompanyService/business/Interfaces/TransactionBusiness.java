@@ -1,6 +1,8 @@
 package com.asb.backCompanyService.business.Interfaces;
 
+import com.asb.backCompanyService.dto.request.TransactionEmployeeRequestDTO;
 import com.asb.backCompanyService.dto.responde.ProductOfTransactionDTO;
+import com.asb.backCompanyService.dto.responde.TransactionEmployeeResponseDTO;
 import com.asb.backCompanyService.dto.responde.TransactionResponseDTO;
 import com.asb.backCompanyService.dto.responde.TransactionResponseNewDTO;
 import org.springframework.data.domain.Page;
@@ -8,6 +10,7 @@ import org.springframework.data.domain.Page;
 import java.util.Map;
 
 public interface TransactionBusiness {
+
 
     Page<TransactionResponseNewDTO> getTransactions(Integer page,
                                                     Integer size,

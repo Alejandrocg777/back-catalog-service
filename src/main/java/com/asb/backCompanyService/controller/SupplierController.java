@@ -165,9 +165,9 @@ public class SupplierController {
 
     @GetMapping("/get-all/supplierOwes")
     public ResponseEntity<Page<SuppliersWhoMustDTO>> getAllSupplierOwes(@RequestParam(defaultValue = "0") int page,
-                                                                                    @RequestParam(defaultValue = "10") int size,
-                                                                                    @RequestParam(defaultValue = "ASC") String orders,
-                                                                                    @RequestParam(defaultValue = "id") String sortBy) {
+                                                                        @RequestParam(defaultValue = "5") int size,
+                                                                        @RequestParam(defaultValue = "ASC") String orders,
+                                                                        @RequestParam(defaultValue = "id") String sortBy) {
         Page<SuppliersWhoMustDTO> suppliers = supplierService.getAllSupplierOwes(page, size, orders, sortBy);
         return new ResponseEntity<>(suppliers, HttpStatus.OK);
     }
