@@ -63,6 +63,7 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
 
         String invoiceNumber = numerationService.generateInvoiceNumber(dto.getUserId());
         factura.setInvoiceNumber(invoiceNumber);
+        factura.setStatus("ACTIVE");
 
         Bill newBill = billRepository.save(factura);
 

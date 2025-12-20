@@ -18,25 +18,25 @@ public interface NumerationRepository extends JpaRepository<Numeration, Long> {
 
 
     @Query(
-            value = "SELECT new com.asb.backCompanyService.dto.responde.NumerationResponseDto(n.id, n.accountingDocumentTypeId, n.authNumer, n.prefix, n.status, n.initialNumber, n.finalNumber, n.currentNumber, a.description, n.technicalKey) " +
+            value = "SELECT new com.asb.backCompanyService.dto.responde.NumerationResponseDto(n.id, n.authNumer, n.prefix, n.startDate, n.finishDate, n.status, n.initialNumber, n.finalNumber, n.currentNumber) " +
                     "FROM Numeration n " +
-                    "JOIN AccountingDocumentType a ON n.accountingDocumentTypeId = a.id " +
+                    //"JOIN AccountingDocumentType a ON n.accountingDocumentTypeId = a.id " +
                     "WHERE CAST(n.id AS string) LIKE :id " +
                     "OR UPPER(n.authNumer) LIKE UPPER(:authNumer) " +
                     "OR UPPER(n.prefix) LIKE UPPER(:prefix) " +
                     "OR UPPER(n.status) LIKE UPPER(:status) " +
-                    "OR CAST(n.technicalKey AS string) LIKE :technicalKey " +
-                    "OR CAST(a.description AS string) LIKE :descriptionAccountingDocumentType " +
+                   // "OR CAST(n.technicalKey AS string) LIKE :technicalKey " +
+                   // "OR CAST(a.description AS string) LIKE :descriptionAccountingDocumentType " +
                     "OR CAST(n.currentNumber AS string) LIKE :currentNumber",
             countQuery = "SELECT COUNT(*) " +
                     "FROM Numeration n " +
-                    "JOIN AccountingDocumentType a ON n.accountingDocumentTypeId = a.id " +
+                   // "JOIN AccountingDocumentType a ON n.accountingDocumentTypeId = a.id " +
                     "WHERE CAST(n.id AS string) LIKE :id " +
                     "OR UPPER(n.authNumer) LIKE UPPER(:authNumer) " +
                     "OR UPPER(n.prefix) LIKE UPPER(:prefix) " +
                     "OR UPPER(n.status) LIKE UPPER(:status) " +
-                    "OR CAST(n.technicalKey AS string) LIKE :technicalKey " +
-                    "OR CAST(a.description AS string) LIKE :descriptionAccountingDocumentType " +
+                   // "OR CAST(n.technicalKey AS string) LIKE :technicalKey " +
+                   // "OR CAST(a.description AS string) LIKE :descriptionAccountingDocumentType " +
                     "OR CAST(n.currentNumber AS string) LIKE :currentNumber"
     )
     Page<NumerationResponseDto> searchNumeration(
@@ -44,29 +44,27 @@ public interface NumerationRepository extends JpaRepository<Numeration, Long> {
             @Param("authNumer") String authNumer,
             @Param("prefix") String prefix,
             @Param("status") String status,
-            @Param("technicalKey") String technicalKey,
-            @Param("descriptionAccountingDocumentType") String descriptionAccountingDocumentType,
             @Param("currentNumber") String currentNumber,
             Pageable pageable);
 
 
     @Query(
-            value = "SELECT new com.asb.backCompanyService.dto.responde.NumerationResponseDto(n.id, n.accountingDocumentTypeId, n.authNumer, n.prefix, n.startDate, n.finishDate, n.status, n.initialNumber, n.finalNumber, n.currentNumber, a.description, n.technicalKey) " +
+            value = "SELECT new com.asb.backCompanyService.dto.responde.NumerationResponseDto(n.id, n.authNumer, n.prefix, n.startDate, n.finishDate, n.status, n.initialNumber, n.finalNumber, n.currentNumber) " +
                     "FROM Numeration n " +
-                    "JOIN AccountingDocumentType a ON n.accountingDocumentTypeId = a.id " +
+                   // "JOIN AccountingDocumentType a ON n.accountingDocumentTypeId = a.id " +
                     "WHERE n.status = 'ACTIVE'",
             countQuery = "SELECT COUNT(*) " +
                     "FROM Numeration n " +
-                    "JOIN AccountingDocumentType a ON n.accountingDocumentTypeId = a.id " +
+                    //"JOIN AccountingDocumentType a ON n.accountingDocumentTypeId = a.id " +
                     "WHERE n.status = 'ACTIVE'"
     )
     Page<NumerationResponseDto> getStatus(Pageable pageable);
 
 
     @Query(
-            value = "SELECT new com.asb.backCompanyService.dto.responde.NumerationResponseDto(n.id, n.accountingDocumentTypeId, n.authNumer, n.prefix, n.startDate, n.finishDate, n.status, n.initialNumber, n.finalNumber, n.currentNumber, a.description, n.technicalKey) " +
+            value = "SELECT new com.asb.backCompanyService.dto.responde.NumerationResponseDto(n.id, n.authNumer, n.prefix, n.startDate, n.finishDate, n.status, n.initialNumber, n.finalNumber, n.currentNumber) " +
                     "FROM Numeration n " +
-                    "JOIN AccountingDocumentType a ON n.accountingDocumentTypeId = a.id " +
+                    //"JOIN AccountingDocumentType a ON n.accountingDocumentTypeId = a.id " +
                     "WHERE n.status = 'ACTIVE'"
     )
     List<NumerationResponseDto> getAllNumeration();
@@ -82,7 +80,8 @@ public interface NumerationRepository extends JpaRepository<Numeration, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT n FROM Numeration n " +
-            "WHERE n.userId = :userId " +
+            "JOIN Terminal t ON n.id = t.numerationId " +
+            "WHERE t.userId = :userId " +
             "AND n.status = 'ACTIVE' " +
             "AND :currentDate BETWEEN n.startDate AND n.finishDate " +
             "AND n.currentNumber < n.finalNumber")

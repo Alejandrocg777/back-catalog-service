@@ -44,7 +44,6 @@ public class NumerationService implements INumerationBusiness {
             NumerationDto objectDtoVo = new NumerationDto();
             if (!objectExists) {
                 Numeration numerationRepo = new Numeration();
-                numerationRepo.setAccountingDocumentTypeId(numerationDto.getAccountingDocumentTypeId());
                 numerationRepo.setAuthNumer(creationResolutionNumber(numerationDto.getStartDate(), numerationDto.getPrefix(), numerationDto.getCurrentNumber()));
                 numerationRepo.setPrefix(numerationDto.getPrefix());
                 numerationRepo.setStartDate(numerationDto.getStartDate());
@@ -53,7 +52,6 @@ public class NumerationService implements INumerationBusiness {
                 numerationRepo.setInitialNumber(Integer.valueOf(numerationDto.getInitialNumber()));
                 numerationRepo.setFinalNumber(Integer.valueOf(numerationDto.getFinalNumber()));
                 numerationRepo.setCurrentNumber(Integer.valueOf(numerationDto.getCurrentNumber()));
-                numerationRepo.setTechnicalKey(numerationDto.getTechnicalKey());
 
                 Numeration newObject = repository.save(numerationRepo);
 
@@ -85,7 +83,6 @@ public class NumerationService implements INumerationBusiness {
 
             Numeration numeration = optionalNumeration.get();
             BeanUtils.copyProperties(numerationDto, numeration);
-            numeration.setAccountingDocumentTypeId(numerationDto.getAccountingDocumentTypeId());
             numeration.setAuthNumer(numerationDto.getAuthNumer());
             numeration.setPrefix(numerationDto.getPrefix());
             numeration.setStartDate(numerationDto.getStartDate());
@@ -94,7 +91,6 @@ public class NumerationService implements INumerationBusiness {
             numeration.setInitialNumber(Integer.valueOf(numerationDto.getInitialNumber()));
             numeration.setFinalNumber(Integer.valueOf(numerationDto.getFinalNumber()));
             numeration.setCurrentNumber(Integer.valueOf(numerationDto.getCurrentNumber()));
-            numeration.setTechnicalKey(numerationDto.getTechnicalKey());
 
             repository.save(numeration);
 
@@ -214,7 +210,7 @@ public class NumerationService implements INumerationBusiness {
         log.info("Orders: " + orders);
         log.info("SortBy: " + sortBy);
 
-        Page<NumerationResponseDto> searchResult = repository.searchNumeration(id, authNumer, prefix, status,technicalKey,descriptionAccountingDocumentType,currentNumber, pagingSort);
+        Page<NumerationResponseDto> searchResult = repository.searchNumeration(id, authNumer, prefix, status,technicalKey, pagingSort);
         log.info("Search results: " + searchResult.getContent());
         return searchResult;
     }

@@ -19,9 +19,6 @@ public class Numeration {
     @Column(name = "numeration_id")
     private Long id;
 
-    @Column(name = "accounting_document_type_id")
-    private Long accountingDocumentTypeId;
-
     @Column(name = "auth_numer")
     private String authNumer;
 
@@ -43,8 +40,8 @@ public class Numeration {
     @Column(name = "current_number")
     private Integer currentNumber;
 
-    @Column(name = "technical_key")
-    private String technicalKey;
+    @Column(name = "resolution_number")
+    private Integer resolutionNumber;
 
     @Column(name = "status")
     private String status;
@@ -55,7 +52,5 @@ public class Numeration {
     @Column(name = "updated_at")
     private LocalDate updatedAt;
 
-    @Column(name = "user_id")
-    private Long userId;
 
 }
