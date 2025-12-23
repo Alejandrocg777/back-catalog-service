@@ -58,8 +58,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
                     "LEFT JOIN area a ON e.area_id = a.area_id " +
                     "LEFT JOIN identification_type i ON e.identification_type_id = i.identification_type_id " +
                     "LEFT JOIN position p ON e.position_id = p.position_id " +
-                    "WHERE e.status = 'ACTIVE' " +
-                    "ORDER BY e.employee_id ASC",
+                    "WHERE e.status = 'ACTIVE'",
             countQuery =
                     "SELECT COUNT(*) " +
                             "FROM employee e " +

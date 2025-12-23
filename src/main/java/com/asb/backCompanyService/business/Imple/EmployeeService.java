@@ -94,7 +94,20 @@ public class EmployeeService implements IEmployeeBusiness{
 
     @Override
     public Page<EmployeePaymentDTO> getAllEmployeePayment(int page, int size, String orders, String sortBy) {
-        Pageable pageable = PageRequest.of(page, size, Sort.unsorted());
+        Sort sort = Sort.unsorted();
+
+        if (sortBy != null && !sortBy.isEmpty()) {
+            Sort.Direction direction = Sort.Direction.ASC;
+
+            if (orders != null && orders.equalsIgnoreCase("desc")) {
+                direction = Sort.Direction.DESC;
+            }
+
+            String dbField = mapDtoFieldToDbField(sortBy);
+            sort = Sort.by(direction, dbField);
+        }
+
+        Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<Object[]> rawPage = employeeRepository.getEmployeePaymentStatus(pageable);
 
@@ -153,6 +166,22 @@ public class EmployeeService implements IEmployeeBusiness{
                 .toList();
 
         return new PageImpl<>(dtoList, pageable, rawPage.getTotalElements());
+    }
+
+    private String mapDtoFieldToDbField(String dtoField) {
+        return switch (dtoField.toLowerCase()) {
+            case "employeeid" -> "employee_id";
+            case "name" -> "name_";
+            case "phone" -> "phone";
+            case "identification" -> "identification";
+            case "hiredate" -> "hire_date";
+            case "email" -> "e-mail";
+            case "basesalary" -> "base_salary";
+            case "areadescription" -> "description";
+            case "positiondescription" -> "description";
+            case "balancetopay" -> "balanceToPay";
+            default -> "employee_id";
+        };
     }
 
     @Override

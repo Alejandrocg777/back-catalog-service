@@ -60,7 +60,6 @@ public class EmployeeController {
                                                                           @RequestParam(defaultValue = "5") int size,
                                                                           @RequestParam(defaultValue = "ASC") String orders,
                                                                           @RequestParam(defaultValue = "id") String sortBy) {
-
         Page<EmployeePaymentDTO> result = employeeBusiness.getAllEmployeePayment(page, size, orders, sortBy);
         return ResponseEntity.ok(result);
     }
