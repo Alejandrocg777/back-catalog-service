@@ -42,8 +42,8 @@ public class TransactionsEmployeeService implements TransactionEmployeeBusiness 
         entity.setTypeTransaction(TransactionType.valueOf(requestDTO.getTypeTransaction()));
         entity.setPaymentAmount(requestDTO.getPaymentAmount());
         entity.setDate(requestDTO.getDate());
+        entity.setStatus("ACTIVE");
         entity.setObservation(requestDTO.getObservation());
-        entity.setStatus(requestDTO.getStatus() != null ? requestDTO.getStatus() : "ACTIVE");
 
         TransactionEmployee saved = transactionEmployeeRepository.save(entity);
 
@@ -61,16 +61,13 @@ public class TransactionsEmployeeService implements TransactionEmployeeBusiness 
 
     @Override
     public Page<TransactionEmployeeResponseDTO> getTransactions(Integer page,
-                                                           Integer size,
-                                                           String orders,
-                                                           String sortBy){
+                                                                Integer size,
+                                                                String orders,
+                                                                String sortBy) {
         Sort.Direction direction = Sort.Direction.fromString(orders);
         Pageable pagingSort = PageRequest.of(page, size, Sort.by(direction, sortBy));
         return transactionEmployeeRepository.getStatus(pagingSort);
     }
-
-
-
 
 
     @Override

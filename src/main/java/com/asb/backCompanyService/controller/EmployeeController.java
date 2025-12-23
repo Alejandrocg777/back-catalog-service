@@ -2,6 +2,7 @@ package com.asb.backCompanyService.controller;
 
 import com.asb.backCompanyService.business.Interfaces.IEmployeeBusiness;
 import com.asb.backCompanyService.dto.request.EmployeeRequestDTO;
+import com.asb.backCompanyService.dto.responde.EmployeePaymentDTO;
 import com.asb.backCompanyService.dto.responde.EmployeeResponseDTO;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.model.Employee;
@@ -54,10 +55,26 @@ public class EmployeeController {
         return ResponseEntity.ok(Employees);
     }
 
+    @GetMapping("/get-all-payment")
+    public ResponseEntity<Page<EmployeePaymentDTO>> getAllEmployeePayment(@RequestParam(defaultValue = "0") int page,
+                                                                          @RequestParam(defaultValue = "5") int size,
+                                                                          @RequestParam(defaultValue = "ASC") String orders,
+                                                                          @RequestParam(defaultValue = "id") String sortBy) {
+
+        Page<EmployeePaymentDTO> result = employeeBusiness.getAllEmployeePayment(page, size, orders, sortBy);
+        return ResponseEntity.ok(result);
+    }
+
     @GetMapping("/get/{id}")
     public ResponseEntity<EmployeeRequestDTO> get(@PathVariable("id") long id) {
         EmployeeRequestDTO requestDTO = employeeBusiness.get(id);
         return ResponseEntity.ok(requestDTO);
+    }
+
+    @GetMapping("/search-payment")
+    public ResponseEntity<Page<EmployeePaymentDTO>> searchEmployeePayment(@RequestParam Map<String, String> customQuery) {
+        Page<EmployeePaymentDTO> employeeSearch = employeeBusiness.searchEmployeePayment(customQuery);
+        return ResponseEntity.ok(employeeSearch);
     }
 
     @GetMapping("/search")
