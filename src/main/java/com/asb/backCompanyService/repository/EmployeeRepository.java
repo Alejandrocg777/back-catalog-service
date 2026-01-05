@@ -66,6 +66,42 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
             nativeQuery = true)
     Page<Object[]> getEmployeePaymentStatus(Pageable pageable);
 
+    @Query(value =
+            "SELECT " +
+                    "    e.employee_id AS employeeId, " +
+                    "    e.name_ AS name, " +
+                    "    e.phone AS phone, " +
+                    "    e.identification AS identification, " +
+                    "    i.identification_type_id AS identificationTypeId, " +
+                    "    i.name AS identificationTypeName, " +
+                    "    e.address AS address, " +
+                    "    e.hire_date AS hireDate, " +
+                    "    e.`e-mail` AS email, " +
+                    "    a.area_id AS areaId, " +
+                    "    a.description AS areaDescription, " +
+                    "    p.position_id AS positionId, " +
+                    "    p.description AS positionDescription, " +
+                    "    e.base_salary AS baseSalary, " +
+                    "    e.status AS status, " +
+                    "    COALESCE((" +
+                    "        SELECT SUM(" +
+                    "            CASE " +
+                    "                WHEN et.transaction_type = 'ENTRADA' THEN et.amount " +
+                    "                WHEN et.transaction_type IN ('PAGO', 'PRESTAMO') THEN -et.amount " +
+                    "                ELSE 0 " +
+                    "            END" +
+                    "        ) " +
+                    "        FROM employee_transaction et " +
+                    "        WHERE et.employee_id = e.employee_id" +
+                    "    ), 0) AS balanceToPay " +
+                    "FROM employee e " +
+                    "LEFT JOIN area a ON e.area_id = a.area_id " +
+                    "LEFT JOIN identification_type i ON e.identification_type_id = i.identification_type_id " +
+                    "LEFT JOIN position p ON e.position_id = p.position_id " +
+                    "WHERE e.status = 'ACTIVE'",
+            nativeQuery = true)
+    List<Object[]> getEmployeePaymentStatusNoPage();
+
     @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.EmployeeResponseDTO(" +
             "c.id, c.name, c.phone, c.identification, " +
             "i.identificationTypeId, i.name, " +

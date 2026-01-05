@@ -168,6 +168,80 @@ public class EmployeeService implements IEmployeeBusiness{
         return new PageImpl<>(dtoList, pageable, rawPage.getTotalElements());
     }
 
+    @Override
+    public List<EmployeePaymentDTO> getAllEmployeePaymentNoPage(String orders, String sortBy) {
+        Sort sort = Sort.unsorted();
+
+        if (sortBy != null && !sortBy.isEmpty()) {
+            Sort.Direction direction = Sort.Direction.ASC;
+
+            if (orders != null && orders.equalsIgnoreCase("desc")) {
+                direction = Sort.Direction.DESC;
+            }
+
+            String dbField = mapDtoFieldToDbField(sortBy);
+            sort = Sort.by(direction, dbField);
+        }
+
+        List<Object[]> rawList = employeeRepository.getEmployeePaymentStatusNoPage();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        return rawList.stream()
+                .map(row -> {
+                    String hireDateStr = null;
+                    if (row[7] != null) {
+                        java.sql.Date sqlDate = (java.sql.Date) row[7];
+                        hireDateStr = sqlDate.toLocalDate().format(formatter);
+                    }
+
+                    Double baseSalary = null;
+                    if (row[13] != null) {
+                        baseSalary = ((BigDecimal) row[13]).doubleValue();
+                    }
+
+                    Double transactionBalance = 0.0;
+                    if (row[15] != null) {
+                        transactionBalance = ((BigDecimal) row[15]).doubleValue();
+                    }
+
+                    Double totalToPay = transactionBalance;
+                    if (baseSalary != null) {
+                        totalToPay += baseSalary;
+                    }
+
+                    String paymentStatus;
+                    if (totalToPay == 0) {
+                        paymentStatus = "CANCELADO";
+                    } else if (totalToPay < 0) {
+                        paymentStatus = "DEBE";
+                    } else {
+                        paymentStatus = "PENDIENTE";
+                    }
+
+                    return new EmployeePaymentDTO(
+                            (Long) row[0],
+                            (String) row[1],
+                            (String) row[2],
+                            (String) row[3],
+                            (Long) row[4],
+                            (String) row[5],
+                            (String) row[6],
+                            hireDateStr,
+                            (String) row[8],
+                            (Long) row[9],
+                            (String) row[10],
+                            (Long) row[11],
+                            (String) row[12],
+                            baseSalary,
+                            totalToPay,
+                            paymentStatus,
+                            (String) row[14]
+                    );
+                })
+                .toList();
+    }
+
     private String mapDtoFieldToDbField(String dtoField) {
         return switch (dtoField.toLowerCase()) {
             case "employeeid" -> "employee_id";

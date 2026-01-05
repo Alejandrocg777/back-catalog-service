@@ -19,6 +19,8 @@ public interface IEmployeeBusiness {
 
     Page<EmployeePaymentDTO> getAllEmployeePayment(int page, int size, String orders, String sortBy);
 
+    List<EmployeePaymentDTO> getAllEmployeePaymentNoPage(String orders, String sortBy);
+
     EmployeeRequestDTO get(Long id);
     List<Employee> getAllNoPage();
     Page<EmployeeResponseDTO>search(Map<String , String>customQuery);

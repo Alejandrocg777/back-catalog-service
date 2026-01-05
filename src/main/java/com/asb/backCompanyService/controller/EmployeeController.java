@@ -64,6 +64,14 @@ public class EmployeeController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/get-all-payment-no-page")
+    public ResponseEntity<List<EmployeePaymentDTO>> getAllEmployeePaymentNoPage(
+            @RequestParam(defaultValue = "ASC") String orders,
+            @RequestParam(defaultValue = "id") String sortBy) {
+        List<EmployeePaymentDTO> result = employeeBusiness.getAllEmployeePaymentNoPage(orders, sortBy);
+        return ResponseEntity.ok(result);
+    }
+
     @GetMapping("/get/{id}")
     public ResponseEntity<EmployeeRequestDTO> get(@PathVariable("id") long id) {
         EmployeeRequestDTO requestDTO = employeeBusiness.get(id);
