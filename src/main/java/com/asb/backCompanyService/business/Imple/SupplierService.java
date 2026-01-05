@@ -124,7 +124,7 @@ public class SupplierService implements SupplierBusiness {
         String sortBy = "id";
         int page = 0;
         int size = 10;
-        String supplierId = null;
+        String id = null;
         String name = null;
         String email = null;
         String phone = null;
@@ -148,8 +148,8 @@ public class SupplierService implements SupplierBusiness {
             size = Integer.parseInt(customQuery.get("size"));
         }
 
-        if (customQuery.containsKey("supplierId")) {
-            supplierId = "%" + customQuery.get("supplierId") + "%";
+        if (customQuery.containsKey("id")) {
+            id = "%" + customQuery.get("id") + "%";
         }
 
         if (customQuery.containsKey("name")) {
@@ -181,7 +181,7 @@ public class SupplierService implements SupplierBusiness {
 
         Pageable pagingSort = PageRequest.of(page, size, sort);
 
-        log.info("supplierId: " + supplierId);
+        log.info("supplierId: " + id);
         log.info("name: " + name);
         log.info("email: " + email);
         log.info("phone: " + phone);
@@ -193,7 +193,7 @@ public class SupplierService implements SupplierBusiness {
         log.info("Orders: " + orders);
         log.info("SortBy: " + sortBy);
 
-        Page<SupplierDtoResponse> searchResult = supplierRepository.searchSuppliers(supplierId, name, email, phone, categoryId, warehouseName, status, pagingSort);
+        Page<SupplierDtoResponse> searchResult = supplierRepository.searchSuppliers(id, name, email, phone, categoryId, warehouseName, status, pagingSort);
         log.info("Search results: " + searchResult.getContent());
         return searchResult;
     }

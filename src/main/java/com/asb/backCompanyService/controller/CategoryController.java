@@ -78,7 +78,7 @@ public class CategoryController {
                                                   @RequestParam("nameCategory") String nameCategory,
                                                   @RequestParam("soldOutValue") Double soldOutValue,
                                                   @RequestParam("fewUnits") Double fewUnits,
-                                                  @RequestPart("image") MultipartFile image) {
+                                                  @RequestParam(required = false)  MultipartFile image) {
         log.info("Iniciando actualización para Category con ID: {}", categoryId);
         CategoryDto categoryDto = new CategoryDto();
         categoryDto.setNameCategory(nameCategory);

@@ -26,7 +26,7 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
     @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.SupplierDtoResponse(s.id, s.name, s.email, s.phone, s.categoryId, w.warehouseName, w.id, s.status) " +
             "FROM Supplier s " +
             "JOIN Warehouse w ON s.warehouseId = w.id " +
-            "WHERE CAST(s.id AS string) LIKE :supplierId " +
+            "WHERE CAST(s.id AS string) LIKE :id " +
             "OR UPPER(s.name) LIKE UPPER(:name) " +
             "OR UPPER(s.email) LIKE UPPER(:email) " +
             "OR s.phone LIKE :phone " +
@@ -36,14 +36,14 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
             countQuery = "SELECT COUNT(*) " +
                     "FROM Supplier s " +
                     "JOIN Warehouse w ON s.warehouseId = w.id " +
-                    "WHERE CAST(s.id AS string) LIKE :supplierId " +
+                    "WHERE CAST(s.id AS string) LIKE :id " +
                     "OR UPPER(s.name) LIKE UPPER(:name) " +
                     "OR UPPER(s.email) LIKE UPPER(:email) " +
                     "OR s.phone LIKE :phone " +
                     "OR CAST(s.categoryId AS string) LIKE :categoryId " +
                     "OR UPPER(w.warehouseName) LIKE UPPER(:warehouseName) " +
                     "OR UPPER(s.status) LIKE UPPER(:status)")
-    Page<SupplierDtoResponse> searchSuppliers(String supplierId, String name, String email, String phone, String categoryId, String warehouseName, String status, Pageable pageable);
+    Page<SupplierDtoResponse> searchSuppliers(String id, String name, String email, String phone, String categoryId, String warehouseName, String status, Pageable pageable);
 
 
 
