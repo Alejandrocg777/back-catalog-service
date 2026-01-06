@@ -2,11 +2,15 @@ package com.asb.backCompanyService.business.Imple;
 
 import com.asb.backCompanyService.business.Interfaces.TerminalBusiness;
 import com.asb.backCompanyService.dto.request.TerminalRequestDTO;
+import com.asb.backCompanyService.dto.request.UserRequestDTO;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.dto.responde.TerminalResponseDTO;
 import com.asb.backCompanyService.exception.GenericException;
 import com.asb.backCompanyService.model.Terminal;
+import com.asb.backCompanyService.model.TerminalDetails;
+import com.asb.backCompanyService.repository.TerminalDetailsRepository;
 import com.asb.backCompanyService.repository.TerminalRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +18,11 @@ import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -22,27 +30,100 @@ import java.util.List;
 public class TerminalService implements TerminalBusiness {
 
     private final TerminalRepository terminalRepository;
+    private final TerminalDetailsRepository terminalDetailsRepository;
 
     @Override
-    public Terminal save(TerminalRequestDTO terminal) {
+    public Terminal save(TerminalRequestDTO dto) {
 
-        Terminal newTerminal = new Terminal();
-        newTerminal.setName(terminal.getName());
-        newTerminal.setNumerationId(terminal.getNumerationId());
-        newTerminal.setUserId(terminal.getUserId());
-        newTerminal.setStatus("ACTIVE");
-        return terminalRepository.save(newTerminal);
+        List<Long> userIds = new ArrayList<>();
+        if (dto.getUsers() != null && !dto.getUsers().isEmpty()) {
+            userIds = dto.getUsers().stream()
+                    .map(UserRequestDTO::getUserId)
+                    .filter(Objects::nonNull)  // Evitar userId nulos
+                    .toList();
+
+            // Validar duplicados dentro de la misma petición (opcional pero recomendado)
+            Set<Long> duplicados = userIds.stream()
+                    .collect(Collectors.toSet());
+            if (duplicados.size() < userIds.size()) {
+                throw new GenericException("No se permiten usuarios duplicados en la misma terminal", HttpStatus.BAD_REQUEST);
+            }
+
+            // Validar que ninguno de estos usuarios ya esté asignado a otra terminal
+            List<Long> usuariosYaAsignados = terminalDetailsRepository.findUserIdsInUse(userIds);
+            if (!usuariosYaAsignados.isEmpty()) {
+                throw new GenericException("Los siguientes usuarios ya están asignados a otra terminal: " + usuariosYaAsignados, HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        // Crear la terminal
+        Terminal terminal = new Terminal();
+        terminal.setName(dto.getName());
+        terminal.setNumerationId(dto.getNumerationId());
+        terminal.setStatus("ACTIVE");  // valor por defecto si lo deseas
+        terminal = terminalRepository.save(terminal);
+
+        // Asignar los usuarios a la terminal
+        if (!userIds.isEmpty()) {
+            for (Long userId : userIds) {
+                TerminalDetails detail = new TerminalDetails();
+                detail.setUserId(userId);
+                detail.setTerminalId(terminal.getId());
+                terminalDetailsRepository.save(detail);
+            }
+        }
+
+        return terminal;
 
     }
 
     @Override
-    public Terminal update(Long id, TerminalRequestDTO terminal) {
+    @Transactional
+    public Terminal update(Long id, TerminalRequestDTO dto) {
 
-        Terminal newTerminal = terminalRepository.findById(id).get();
-        newTerminal.setName(terminal.getName());
-        newTerminal.setNumerationId(terminal.getNumerationId());
-        newTerminal.setUserId(terminal.getUserId());
-        return terminalRepository.save(newTerminal);
+
+        // 1. Buscar la terminal
+        Terminal terminal = terminalRepository.findById(id)
+                .orElseThrow(() -> new GenericException("Terminal no encontrada con id: " + id, HttpStatus.NOT_FOUND));
+
+        // 2. Actualizar campos básicos
+        terminal.setName(dto.getName());
+        terminal.setNumerationId(dto.getNumerationId());
+
+        // 3. Procesar usuarios si se envía la lista
+        if (dto.getUsers() != null) {
+            List<Long> newUserIds = dto.getUsers().stream()
+                    .map(UserRequestDTO::getUserId)
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .toList();
+
+            if (!newUserIds.isEmpty()) {
+                // Validar que los nuevos usuarios no estén en otra terminal (excluimos la actual)
+                List<Long> usuariosOcupados = terminalDetailsRepository
+                        .findUserIdsInUseExcludingTerminal(newUserIds, id);
+
+                if (!usuariosOcupados.isEmpty()) {
+                    throw new GenericException("Los usuarios ya están asignados a otra terminal: " + usuariosOcupados, HttpStatus.BAD_REQUEST);
+                }
+            }
+
+            List<TerminalDetails> detallesActuales = terminalDetailsRepository.findByTerminalId(id);
+            if (!detallesActuales.isEmpty()) {
+                terminalDetailsRepository.deleteAll(detallesActuales);  // Seguro dentro de @Transactional
+            }
+
+            // Crear los nuevos
+            for (Long userId : newUserIds) {
+                TerminalDetails detail = new TerminalDetails();
+                detail.setUserId(userId);
+                detail.setTerminalId(terminal.getId());
+                terminalDetailsRepository.save(detail);
+            }
+        }
+        // Si no envían "uses", no tocamos los usuarios actuales
+
+        return terminalRepository.save(terminal);
 
     }
 

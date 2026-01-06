@@ -12,22 +12,19 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "terminal")
-public class Terminal {
+@Table(name = "terminal_details")
+public class TerminalDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "terminal_id")
+    @Column(name = "terminal_details_id")
     private Long id;
 
-    @Column(name = "numeration_id")
-    private Long numerationId;
+    @Column(name = "user_id")
+    private Long userId;
 
-    @Column(name = "name")
-    private String name;
-
-    @Column(name = "status")
-    private String status;
+    @Column(name = "terminal_id")
+    private Long terminalId;
 
     @CreationTimestamp
     @Column(name = "created_at")

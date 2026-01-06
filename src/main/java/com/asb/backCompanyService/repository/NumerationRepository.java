@@ -81,10 +81,10 @@ public interface NumerationRepository extends JpaRepository<Numeration, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT n FROM Numeration n " +
             "JOIN Terminal t ON n.id = t.numerationId " +
-            "WHERE t.userId = :userId " +
+           // "WHERE t.userId = :userId " +
             "AND n.status = 'ACTIVE' " +
             "AND :currentDate BETWEEN n.startDate AND n.finishDate " +
             "AND n.currentNumber < n.finalNumber")
-    Optional<Numeration> findActiveNumerationForType(@Param("userId") Long userId,
+    Optional<Numeration> findActiveNumerationForType(
                                                      @Param("currentDate") LocalDate currentDate);
 }

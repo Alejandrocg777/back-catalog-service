@@ -232,7 +232,7 @@ public class NumerationService implements INumerationBusiness {
         LocalDate currentDate = LocalDate.now();  // Fecha actual para validar vigencia
 
         // Encontrar la numeración vigente con lock
-        Optional<Numeration> optionalNumeration = repository.findActiveNumerationForType(userId, currentDate);
+        Optional<Numeration> optionalNumeration = repository.findActiveNumerationForType( currentDate);
 
         if (optionalNumeration.isEmpty()) {
             throw new RuntimeException("No hay numeración vigente para el usuario " + userId +
