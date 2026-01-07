@@ -139,7 +139,7 @@ public class NumerationService implements INumerationBusiness {
         int page = 0;
         int size = 6;
         String id = null;
-        String authNumer = null;
+        String authNumber = null;
         String prefix = null;
         String status = null;
         String initialNumber = null;
@@ -166,8 +166,8 @@ public class NumerationService implements INumerationBusiness {
             id = "%" + customQuery.get("id") + "%";
         }
 
-        if (customQuery.containsKey("authNumer")) {
-            authNumer = "%" + customQuery.get("authNumer") + "%";
+        if (customQuery.containsKey("authNumber")) {
+            authNumber = "%" + customQuery.get("authNumber") + "%";
         }
 
         if (customQuery.containsKey("prefix")) {
@@ -198,7 +198,7 @@ public class NumerationService implements INumerationBusiness {
 
         Page<NumerationResponseDto> searchResult = repository.searchNumeration(
                 id,
-                authNumer,
+                authNumber,
                 prefix,
                 status,
                 initialNumber,

@@ -41,7 +41,7 @@ public interface NumerationRepository extends JpaRepository<Numeration, Long> {
                     "AND (:currentNumber IS NULL OR CAST(n.currentNumber AS string) LIKE :currentNumber)")
     Page<NumerationResponseDto> searchNumeration(
             @Param("id") String id,
-            @Param("authNumer") String authNumer,
+            @Param("authNumber") String authNumber,
             @Param("prefix") String prefix,
             @Param("status") String status,
             @Param("initialNumber") String initialNumber,
