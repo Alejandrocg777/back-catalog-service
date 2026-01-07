@@ -11,8 +11,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class NumerationResponseDto {
     private Long id;
-    //private Long accountingDocumentTypeId;
-    private String authNumer;
+    private String authNumber;
     private String prefix;
     private LocalDate startDate;
     private LocalDate finishDate;
@@ -20,6 +19,4 @@ public class NumerationResponseDto {
     private Integer initialNumber;
     private Integer finalNumber;
     private Integer currentNumber;
-    //private String descriptionAccountingDocumentType;
-    //private String technicalKey;
 }

@@ -15,8 +15,7 @@ import java.time.LocalDate;
 public class NumerationDto {
 
     private Long id;
-    private Long accountingDocumentTypeId;
-    private String authNumer;
+    private String authNumber;
     private String prefix;
     private LocalDate startDate = LocalDate.now();
     private LocalDate finishDate = LocalDate.now()  ;
@@ -24,5 +23,4 @@ public class NumerationDto {
     private Integer initialNumber;
     private Integer finalNumber;
     private Integer currentNumber;
-    private String technicalKey;
 }

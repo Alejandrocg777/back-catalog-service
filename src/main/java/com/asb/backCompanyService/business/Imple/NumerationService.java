@@ -44,7 +44,7 @@ public class NumerationService implements INumerationBusiness {
             NumerationDto objectDtoVo = new NumerationDto();
             if (!objectExists) {
                 Numeration numerationRepo = new Numeration();
-                numerationRepo.setAuthNumer(creationResolutionNumber(numerationDto.getStartDate(), numerationDto.getPrefix(), numerationDto.getCurrentNumber()));
+                numerationRepo.setAuthNumber(numerationDto.getAuthNumber());
                 numerationRepo.setPrefix(numerationDto.getPrefix());
                 numerationRepo.setStartDate(numerationDto.getStartDate());
                 numerationRepo.setFinishDate(numerationDto.getFinishDate());
@@ -65,11 +65,6 @@ public class NumerationService implements INumerationBusiness {
         }
     }
 
-    private String creationResolutionNumber(LocalDate resolutionDate, String prefix, Integer consecutive){
-        DateTimeFormatter format = DateTimeFormatter.ofPattern("ddMMyyyy");
-        String formatedDate = resolutionDate.format(format);
-        return formatedDate + "-" + prefix + "-" + consecutive.toString();
-    }
 
     @Override
     @Transactional
@@ -83,7 +78,7 @@ public class NumerationService implements INumerationBusiness {
 
             Numeration numeration = optionalNumeration.get();
             BeanUtils.copyProperties(numerationDto, numeration);
-            numeration.setAuthNumer(numerationDto.getAuthNumer());
+            numeration.setAuthNumber(numerationDto.getAuthNumber());
             numeration.setPrefix(numerationDto.getPrefix());
             numeration.setStartDate(numerationDto.getStartDate());
             numeration.setFinishDate(numerationDto.getFinishDate());
@@ -147,10 +142,9 @@ public class NumerationService implements INumerationBusiness {
         String authNumer = null;
         String prefix = null;
         String status = null;
-        String technicalKey = null;
-        String descriptionAccountingDocumentType = null;
+        String initialNumber = null;
+        String finalNumber = null;
         String currentNumber = null;
-
 
         if (customQuery.containsKey("orders")) {
             orders = customQuery.get("orders");
@@ -184,16 +178,16 @@ public class NumerationService implements INumerationBusiness {
             status = "%" + customQuery.get("status").toUpperCase() + "%";
         }
 
-        if (customQuery.containsKey("technicalKey")) {
-            technicalKey = "%" + customQuery.get("technicalKey") + "%";
+        if (customQuery.containsKey("initialNumber")) {
+            initialNumber = "%" + customQuery.get("initialNumber") + "%";
         }
 
-        if (customQuery.containsKey("descriptionAccountingDocumentType")) {
-            descriptionAccountingDocumentType = "%" + customQuery.get("descriptionAccountingDocumentType") + "%";
+        if (customQuery.containsKey("finalNumber")) {
+            finalNumber = "%" + customQuery.get("finalNumber") + "%";
         }
 
         if (customQuery.containsKey("currentNumber")) {
-            currentNumber = "%" + customQuery.get("currentNumber").toUpperCase() + "%";
+            currentNumber = "%" + customQuery.get("currentNumber") + "%";
         }
 
         Sort.Direction direction = Sort.Direction.fromString(orders);
@@ -201,20 +195,23 @@ public class NumerationService implements INumerationBusiness {
 
         Pageable pagingSort = PageRequest.of(page, size, sort);
 
-        log.info("ID: " + id);
-        log.info("Auth Number: " + authNumer);
-        log.info("Prefix: " + prefix);
-        log.info("Status: " + status);
-        log.info("Page: " + page);
-        log.info("Size: " + size);
-        log.info("Orders: " + orders);
-        log.info("SortBy: " + sortBy);
 
-        Page<NumerationResponseDto> searchResult = repository.searchNumeration(id, authNumer, prefix, status,technicalKey, pagingSort);
+        Page<NumerationResponseDto> searchResult = repository.searchNumeration(
+                id,
+                authNumer,
+                prefix,
+                status,
+                initialNumber,
+                finalNumber,
+                currentNumber,
+                pagingSort
+        );
+
+        log.info("Search results found: " + searchResult.getTotalElements() + " records");
         log.info("Search results: " + searchResult.getContent());
+
         return searchResult;
     }
-
     @Override
     public List<NumerationResponseDto> getAllNumeration() {
         try {

@@ -20,7 +20,7 @@ public class Numeration {
     private Long id;
 
     @Column(name = "auth_numer")
-    private String authNumer;
+    private String authNumber;
 
     @Column(name = "prefix")
     private String prefix;

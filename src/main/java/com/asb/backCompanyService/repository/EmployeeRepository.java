@@ -112,7 +112,8 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
             "LEFT JOIN Area a ON c.areaId = a.id " +
             "LEFT JOIN IdentificationType i ON i.identificationTypeId = c.identificationTypeId " +
             "LEFT JOIN Position p ON p.id = c.positionId " +
-            "WHERE (:id IS NULL OR CAST(c.id AS string) LIKE :id) " +
+            "WHERE c.status = 'ACTIVE' " +
+            "AND (:id IS NULL OR CAST(c.id AS string) LIKE :id) " +
             "AND (:name IS NULL OR UPPER(c.name) LIKE UPPER(:name)) " +
             "AND (:phone IS NULL OR UPPER(c.phone) LIKE UPPER(:phone)) " +
             "AND (:identification IS NULL OR UPPER(c.identification) LIKE UPPER(:identification)) " +
@@ -128,7 +129,8 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
                     "LEFT JOIN Area a ON c.areaId = a.id " +
                     "LEFT JOIN IdentificationType i ON i.identificationTypeId = c.identificationTypeId " +
                     "LEFT JOIN Position p ON p.id = c.positionId " +
-                    "WHERE (:id IS NULL OR CAST(c.id AS string) LIKE :id) " +
+                    "WHERE c.status = 'ACTIVE' " +
+                    "AND (:id IS NULL OR CAST(c.id AS string) LIKE :id) " +
                     "AND (:name IS NULL OR UPPER(c.name) LIKE UPPER(:name)) " +
                     "AND (:phone IS NULL OR UPPER(c.phone) LIKE UPPER(:phone)) " +
                     "AND (:identification IS NULL OR UPPER(c.identification) LIKE UPPER(:identification)) " +
