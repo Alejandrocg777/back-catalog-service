@@ -1,7 +1,15 @@
+# Etapa 1: Construcción
+FROM maven:3.8-amazoncorretto-17 AS build
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+# Etapa 2: Ejecución
 FROM amazoncorretto:17-al2-jdk
 
 WORKDIR /apl/
-COPY target/*.jar micro.jar
+COPY --from=build /app/target/*.jar micro.jar
 
 RUN mkdir -p /apl/files/
 RUN mkdir -p /apl/tmp/
