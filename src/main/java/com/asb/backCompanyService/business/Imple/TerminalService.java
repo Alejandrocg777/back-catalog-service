@@ -5,11 +5,14 @@ import com.asb.backCompanyService.dto.request.TerminalRequestDTO;
 import com.asb.backCompanyService.dto.request.UserRequestDTO;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.dto.responde.TerminalResponseDTO;
+import com.asb.backCompanyService.dto.responde.UserListResponseDTO;
 import com.asb.backCompanyService.exception.GenericException;
 import com.asb.backCompanyService.model.Terminal;
 import com.asb.backCompanyService.model.TerminalDetails;
 import com.asb.backCompanyService.repository.TerminalDetailsRepository;
 import com.asb.backCompanyService.repository.TerminalRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +34,7 @@ public class TerminalService implements TerminalBusiness {
 
     private final TerminalRepository terminalRepository;
     private final TerminalDetailsRepository terminalDetailsRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     public Terminal save(TerminalRequestDTO dto) {
@@ -137,24 +141,39 @@ public class TerminalService implements TerminalBusiness {
         // Mapeo manual de Object[] a TerminalResponseDTO
         List<TerminalResponseDTO> dtos = pageResult.getContent().stream()
                 .map(row -> {
-                    TerminalResponseDTO dto = new TerminalResponseDTO();
-                    dto.setId(((Number) row[0]).longValue());
-                    dto.setName((String) row[1]);
-                    dto.setNumerationId(row[2] != null ? ((Number) row[2]).longValue() : null);
-                    dto.setPrefix((String) row[3]);
-                    dto.setInitialNumber(row[4] != null ? (Integer) row[4] : null);
-                    dto.setFinalNumber(row[5] != null ? (Integer) row[5] : null);
-                    dto.setUserId(row[6] != null ? ((Number) row[6]).longValue() : null);
-                    dto.setUserName((String) row[7]);
-                    dto.setNumberUser(((Number) row[8]).longValue());
-                    dto.setStatus((String) row[9]);
-                    return dto;
+                    try {
+                        TerminalResponseDTO dto = new TerminalResponseDTO();
+                        dto.setId(((Number) row[0]).longValue());
+                        dto.setName((String) row[1]);
+                        dto.setNumerationId(row[2] != null ? ((Number) row[2]).longValue() : null);
+                        dto.setPrefix((String) row[3]);
+                        dto.setInitialNumber(row[4] != null ? ((Number) row[4]).intValue() : null);
+                        dto.setFinalNumber(row[5] != null ? ((Number) row[5]).intValue() : null);
+                        dto.setNumberUser(((Number) row[6]).longValue());
+                        dto.setStatus((String) row[7]);
+
+                        // Parsear el JSON de usuarios
+                        String usersJson = (String) row[8];
+                        if (usersJson != null && !usersJson.equals("[]")) {
+                            List<UserListResponseDTO> users = objectMapper.readValue(
+                                    usersJson,
+                                    new TypeReference<List<UserListResponseDTO>>() {}
+                            );
+                            dto.setUsers(users);
+                        } else {
+                            dto.setUsers(List.of()); // Lista vacía si no hay usuarios
+                        }
+
+                        return dto;
+                    } catch (Exception e) {
+                        throw new RuntimeException("Error mapeando terminal: " + e.getMessage(), e);
+                    }
                 })
                 .toList();
 
-        // Reconstruir el Page con los DTOs mapeados
         return new PageImpl<>(dtos, pagingSort, pageResult.getTotalElements());
     }
+
 
     @Override
     public GenericResponse delete(Long id) {

@@ -35,7 +35,7 @@ public class Client {
     @Column(name = "neighborhood")
     private String neighborhood;
 
-    @Column(name = "e-mail")
+    @Column(name = "email")
     private String email;
 
     @Column(name = "city_id")

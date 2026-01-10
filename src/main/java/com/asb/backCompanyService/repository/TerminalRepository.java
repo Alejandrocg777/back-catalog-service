@@ -14,28 +14,39 @@ public interface TerminalRepository extends JpaRepository<Terminal, Long> {
 
     @Query(
             value = """
-        SELECT 
-            t.terminal_id AS id,
-            t.name AS name,
-            t.numeration_id AS numerationId,
-            n.prefix AS prefix,
-            n.initial_number AS initialNumber,
-            n.final_number AS finalNumber,
-            t.user_id AS userId,
-            u.name_ AS userName,
-            (
-                SELECT COUNT(*)
-                FROM terminal t2
-                WHERE t2.user_id = t.user_id
-            ) AS numberUser,
-            t.status AS status
+    SELECT 
+        t.terminal_id AS id,
+        t.name AS name,
+        t.numeration_id AS numerationId,
+        n.prefix AS prefix,
+        n.initial_number AS initialNumber,
+        n.final_number AS finalNumber,
+        COUNT(DISTINCT td.user_id) AS numberUser,
+        t.status AS status,
+        CASE 
+            WHEN COUNT(td.user_id) > 0 THEN
+                json_agg(
+                    json_build_object(
+                        'userId', u.user_id,
+                        'userName', u.name_
+                    )
+                )
+            ELSE '[]'
+        END AS users
+    FROM terminal t
+    INNER JOIN numeration n ON t.numeration_id = n.numeration_id
+    LEFT JOIN terminal_details td ON t.terminal_id = td.terminal_id
+    LEFT JOIN user_app u ON td.user_id = u.user_id
+    WHERE t.status = 'ACTIVE'
+    GROUP BY t.terminal_id, t.name, t.numeration_id, n.prefix, n.initial_number, n.final_number, t.status
+    ORDER BY t.terminal_id
+    """,
+            countQuery = """
+        SELECT COUNT(DISTINCT t.terminal_id) 
         FROM terminal t
-        LEFT JOIN numeration n ON t.numeration_id = n.numeration_id
-        LEFT JOIN user_app u ON t.user_id = u.user_id
-        where t.status = 'ACTIVE'
-        ORDER BY t.terminal_id
-        """,
-            countQuery = "SELECT COUNT(*) FROM terminal",
+        INNER JOIN numeration n ON t.numeration_id = n.numeration_id
+        WHERE t.status = 'ACTIVE'
+    """,
             nativeQuery = true
     )
     Page<Object[]> findAllTerminalesPaginadoRaw(Pageable pageable);

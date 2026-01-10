@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -32,7 +33,7 @@ public class Employee {
     @Column(name = "address")
     private String address;
 
-    @Column(name = "e-mail")
+    @Column(name = "email")
     private String email;
 
     @Column(name = "identification_type_id")
@@ -45,7 +46,7 @@ public class Employee {
     private Long positionId;
 
     @Column(name = "hire_date")
-    private String date;
+    private LocalDate date;
 
     @Column(name = "base_salary", nullable = true)
     private Double baseSalary;
@@ -60,7 +61,6 @@ public class Employee {
     @CreationTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
 
 
 }

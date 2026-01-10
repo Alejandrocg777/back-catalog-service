@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -36,7 +37,9 @@ public class EmployeeService implements IEmployeeBusiness{
         Employee.setPhone(request.getPhone());
         Employee.setAddress(request.getAddress());
         Employee.setStatus("ACTIVE");
-        Employee.setDate(request.getDate());
+        if (request.getDate() != null && !request.getDate().isEmpty()) {
+            Employee.setDate(LocalDate.parse(request.getDate()));
+        }
         Employee.setEmail(request.getEmail());
         Employee.setIdentification(request.getIdentification());
         Employee.setIdentificationTypeId(request.getTypeIdentificationId());
@@ -273,7 +276,7 @@ public class EmployeeService implements IEmployeeBusiness{
         response.setAreaId(EmployeeOptional.get().getAreaId());
         response.setPositionId(EmployeeOptional.get().getPositionId());
         response.setBaseSalary(EmployeeOptional.get().getBaseSalary());
-        response.setDate(String.valueOf(new Date(EmployeeOptional.get().getDate())));
+        response.setDate(String.valueOf(new Date(String.valueOf(EmployeeOptional.get().getDate()))));
 
         return response;
     }

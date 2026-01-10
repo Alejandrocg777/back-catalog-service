@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -21,7 +22,7 @@ public class TransactionEmployeeResponseDTO {
 
     private Double paymentAmount;
 
-    private String date;
+    private LocalDate date;
 
     private String observation;
 

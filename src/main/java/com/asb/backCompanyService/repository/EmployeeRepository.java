@@ -36,7 +36,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
                     "    i.name AS identificationTypeName, " +
                     "    e.address AS address, " +
                     "    e.hire_date AS hireDate, " +
-                    "    e.`e-mail` AS email, " +
+                    "    e.email AS email, " +
                     "    a.area_id AS areaId, " +
                     "    a.description AS areaDescription, " +
                     "    p.position_id AS positionId, " +
@@ -76,7 +76,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
                     "    i.name AS identificationTypeName, " +
                     "    e.address AS address, " +
                     "    e.hire_date AS hireDate, " +
-                    "    e.`e-mail` AS email, " +
+                    "    e.email AS email, " +
                     "    a.area_id AS areaId, " +
                     "    a.description AS areaDescription, " +
                     "    p.position_id AS positionId, " +

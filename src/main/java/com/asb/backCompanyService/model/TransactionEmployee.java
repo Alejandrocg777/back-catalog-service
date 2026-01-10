@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -28,7 +29,7 @@ public class TransactionEmployee {
     private Long employeeId;
 
     @Column(name = "transaction_date")
-    private String date;
+    private LocalDate date;
 
     @Column(name = "amount")
     private Double paymentAmount;
