@@ -5,6 +5,7 @@ import com.asb.backCompanyService.dto.request.GeneralRatesDTO;
 import com.asb.backCompanyService.dto.request.SupplierRateRequestDTO;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.dto.responde.SupplierRateResponseDTO;
+import com.asb.backCompanyService.dto.responde.TerminalResponseDTO;
 import com.asb.backCompanyService.model.SupplierRate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/${app.request.prefix}/${app.request.version}${app.request.mappings}/supplier-rate")
@@ -50,6 +53,12 @@ public class SupplierRateController {
     public ResponseEntity<GenericResponse>updateRate(@PathVariable("id") Long id,
                                                      @RequestBody SupplierRateRequestDTO createDTO){
         return new ResponseEntity<>(supplierRateBusiness.updateRate(id, createDTO), HttpStatus.OK);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<SupplierRateResponseDTO>> search(@RequestParam Map<String, String> customQuery) {
+        Page<SupplierRateResponseDTO> supplierRate = supplierRateBusiness.search(customQuery);
+        return ResponseEntity.ok(supplierRate);
     }
 
     @PostMapping("/general-rates")

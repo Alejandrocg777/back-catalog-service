@@ -20,7 +20,7 @@ public class ClientRequestDTO {
 
     private String address;
 
-    private String neighborhoodName;
+    private String neighborhood;
 
     private String email;
 

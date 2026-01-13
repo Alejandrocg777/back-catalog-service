@@ -4,6 +4,7 @@ import com.asb.backCompanyService.business.Imple.TerminalService;
 import com.asb.backCompanyService.business.Interfaces.TerminalBusiness;
 import com.asb.backCompanyService.dto.request.TerminalRequestDTO;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
+import com.asb.backCompanyService.dto.responde.NumerationResponseDto;
 import com.asb.backCompanyService.dto.responde.TerminalResponseDTO;
 import com.asb.backCompanyService.model.Terminal;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/${app.request.prefix}/${app.request.version}${app.request.mappings}/terminal")
@@ -48,6 +50,12 @@ public class TerminalController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<GenericResponse> delete(@PathVariable("id")Long id){
         return new ResponseEntity<>(terminalBusiness.delete(id), HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<TerminalResponseDTO>> search(@RequestParam Map<String, String> customQuery) {
+        Page<TerminalResponseDTO> terminals = terminalBusiness.search(customQuery);
+        return ResponseEntity.ok(terminals);
     }
 
     @GetMapping("/get-all/no-page")

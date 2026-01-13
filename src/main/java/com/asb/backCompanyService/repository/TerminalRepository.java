@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -51,6 +52,29 @@ public interface TerminalRepository extends JpaRepository<Terminal, Long> {
     )
     Page<Object[]> findAllTerminalesPaginadoRaw(Pageable pageable);
 
+
+
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.TerminalResponseDTO(" +
+            "t.id, t.name, t.numerationId, n.prefix, n.initialNumber, n.finalNumber, " +
+            "0L, t.status) " +
+            "FROM Terminal t " +
+            "INNER JOIN Numeration n ON t.numerationId = n.id " +
+            "WHERE t.status = 'ACTIVE' " +
+            "AND (CAST(t.id AS string) LIKE :id " +
+            "OR UPPER(t.name) LIKE UPPER(:name) " +
+            "OR UPPER(n.prefix) LIKE UPPER(:prefix))",
+            countQuery = "SELECT COUNT(t) " +
+                    "FROM Terminal t " +
+                    "INNER JOIN Numeration n ON t.numerationId = n.id " +
+                    "WHERE t.status = 'ACTIVE' " +
+                    "AND (CAST(t.id AS string) LIKE :id " +
+                    "OR UPPER(t.name) LIKE UPPER(:name) " +
+                    "OR UPPER(n.prefix) LIKE UPPER(:prefix))")
+    Page<TerminalResponseDTO> search(
+            @Param("id") String id,
+            @Param("name") String name,
+            @Param("prefix") String prefix,
+            Pageable pageable);
 
     List<Terminal>findTerminalByStatus(String status);
 }

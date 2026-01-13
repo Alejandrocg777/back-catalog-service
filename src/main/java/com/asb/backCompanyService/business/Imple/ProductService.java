@@ -232,7 +232,6 @@ public class ProductService implements ProductBusiness {
         }
 
 
-
          Sort.Direction direction = Sort.Direction.fromString(orders);
         Sort sort = Sort.by(direction, sortBy);
         Pageable pagingSort = PageRequest.of(page, size, sort);

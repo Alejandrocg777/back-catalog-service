@@ -151,7 +151,7 @@ public class PaymentMethodService implements IPaymentMethodBusiness {
         log.info("Orders: " + orders);
         log.info("SortBy: " + sortBy);
 
-        Page<PaymentMethod> searchResult = repository.searchPaymentMethod(id, description, status, pagingSort);
+        Page<PaymentMethod> searchResult = repository.searchPaymentMethod(id, description, pagingSort);
         log.info("Search results: " + searchResult.getContent());
         return searchResult;
     }

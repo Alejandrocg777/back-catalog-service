@@ -200,7 +200,6 @@ public class NumerationService implements INumerationBusiness {
                 id,
                 authNumber,
                 prefix,
-                status,
                 initialNumber,
                 finalNumber,
                 currentNumber,

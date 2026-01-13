@@ -22,33 +22,29 @@ public interface NumerationRepository extends JpaRepository<Numeration, Long> {
             "n.initialNumber, n.finalNumber, n.currentNumber) " +
             "FROM Numeration n " +
             "WHERE n.status = 'ACTIVE' " +
-            "AND (:id IS NULL OR CAST(n.id AS string) LIKE :id) " +
-            "AND (:authNumber IS NULL OR UPPER(n.authNumber) LIKE UPPER(:authNumber)) " +
-            "AND (:prefix IS NULL OR UPPER(n.prefix) LIKE UPPER(:prefix)) " +
-            "AND (:status IS NULL OR UPPER(n.status) LIKE UPPER(:status)) " +
-            "AND (:initialNumber IS NULL OR CAST(n.initialNumber AS string) LIKE :initialNumber) " +
-            "AND (:finalNumber IS NULL OR CAST(n.finalNumber AS string) LIKE :finalNumber) " +
-            "AND (:currentNumber IS NULL OR CAST(n.currentNumber AS string) LIKE :currentNumber)",
+            "AND (CAST(n.id AS string) LIKE :id " +
+            "OR UPPER(n.authNumber) LIKE UPPER(:authNumber) " +
+            "OR UPPER(n.prefix) LIKE UPPER(:prefix) " +
+            "OR CAST(n.initialNumber AS string) LIKE :initialNumber " +
+            "OR CAST(n.finalNumber AS string) LIKE :finalNumber " +
+            "OR CAST(n.currentNumber AS string) LIKE :currentNumber)",
             countQuery = "SELECT COUNT(n) " +
                     "FROM Numeration n " +
                     "WHERE n.status = 'ACTIVE' " +
-                    "AND (:id IS NULL OR CAST(n.id AS string) LIKE :id) " +
-                    "AND (:authNumber IS NULL OR UPPER(n.authNumber) LIKE UPPER(:authNumber)) " +
-                    "AND (:prefix IS NULL OR UPPER(n.prefix) LIKE UPPER(:prefix)) " +
-                    "AND (:status IS NULL OR UPPER(n.status) LIKE UPPER(:status)) " +
-                    "AND (:initialNumber IS NULL OR CAST(n.initialNumber AS string) LIKE :initialNumber) " +
-                    "AND (:finalNumber IS NULL OR CAST(n.finalNumber AS string) LIKE :finalNumber) " +
-                    "AND (:currentNumber IS NULL OR CAST(n.currentNumber AS string) LIKE :currentNumber)")
+                    "AND (CAST(n.id AS string) LIKE :id " +
+                    "OR UPPER(n.authNumber) LIKE UPPER(:authNumber) " +
+                    "OR UPPER(n.prefix) LIKE UPPER(:prefix) " +
+                    "OR CAST(n.initialNumber AS string) LIKE :initialNumber " +
+                    "OR CAST(n.finalNumber AS string) LIKE :finalNumber " +
+                    "OR CAST(n.currentNumber AS string) LIKE :currentNumber)")
     Page<NumerationResponseDto> searchNumeration(
             @Param("id") String id,
             @Param("authNumber") String authNumber,
             @Param("prefix") String prefix,
-            @Param("status") String status,
             @Param("initialNumber") String initialNumber,
             @Param("finalNumber") String finalNumber,
             @Param("currentNumber") String currentNumber,
             Pageable pageable);
-
     @Query(
             value = "SELECT new com.asb.backCompanyService.dto.responde.NumerationResponseDto(n.id, n.authNumber, n.prefix, n.startDate, n.finishDate, n.status, n.initialNumber, n.finalNumber, n.currentNumber) " +
                     "FROM Numeration n " +

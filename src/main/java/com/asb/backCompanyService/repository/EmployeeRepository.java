@@ -4,11 +4,13 @@ import com.asb.backCompanyService.dto.responde.EmployeeResponseDTO;
 import com.asb.backCompanyService.model.Employee;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Set;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
@@ -230,9 +232,27 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
             Pageable pageable);
 
 
+
+    @Query(value = """
+        SELECT et.employee_id,
+               SUM(CASE 
+                   WHEN et.transaction_type = 'ENTRADA' THEN et.amount 
+                   WHEN et.transaction_type IN ('PAGO', 'PRESTAMO') THEN -et.amount 
+                   ELSE 0 
+               END) AS balance
+        FROM employee_transaction et 
+        WHERE et.employee_id IN :employeeIds
+          AND et.status = 'ACTIVE'
+        GROUP BY et.employee_id
+        """,
+            nativeQuery = true)
+    List<Object[]> calculateBalancesByEmployeeIds(@Param("employeeIds") Set<Long> employeeIds);
+
+
     @Query(value = "SELECT c " +
             "FROM Employee c " +
             "where c.status = 'ACTIVE' ")
     List<Employee> getAllNoPage();
 
+    Page<Employee> findAll(Specification<Employee> spec, Pageable pagingSort);
 }

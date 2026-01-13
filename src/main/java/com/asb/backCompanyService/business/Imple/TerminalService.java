@@ -4,6 +4,7 @@ import com.asb.backCompanyService.business.Interfaces.TerminalBusiness;
 import com.asb.backCompanyService.dto.request.TerminalRequestDTO;
 import com.asb.backCompanyService.dto.request.UserRequestDTO;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
+import com.asb.backCompanyService.dto.responde.NumerationResponseDto;
 import com.asb.backCompanyService.dto.responde.TerminalResponseDTO;
 import com.asb.backCompanyService.dto.responde.UserListResponseDTO;
 import com.asb.backCompanyService.exception.GenericException;
@@ -21,10 +22,7 @@ import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -187,6 +185,73 @@ public class TerminalService implements TerminalBusiness {
         terminalRepository.save(terminal);
 
         return new GenericResponse("Borrado con exito", 0);
+    }
+
+    @Override
+    public Page<TerminalResponseDTO> search(Map<String, String> customQuery) {
+        String orders = "ASC";
+        String sortBy = "id";
+        int page = 0;
+        int size = 6;
+        String id = null;
+        String name = null;
+        String prefix = null;
+        String numberUser = null;
+        String status = null;
+
+        if (customQuery.containsKey("orders")) {
+            orders = customQuery.get("orders");
+        }
+
+        if (customQuery.containsKey("sortBy")) {
+            sortBy = customQuery.get("sortBy");
+        }
+
+        if (customQuery.containsKey("page")) {
+            page = Integer.parseInt(customQuery.get("page"));
+        }
+
+        if (customQuery.containsKey("size")) {
+            size = Integer.parseInt(customQuery.get("size"));
+        }
+
+        if (customQuery.containsKey("id")) {
+            id = "%" + customQuery.get("id") + "%";
+        }
+
+        if (customQuery.containsKey("name")) {
+            name = "%" + customQuery.get("name") + "%";
+        }
+
+        if (customQuery.containsKey("prefix")) {
+            prefix = "%" + customQuery.get("prefix") + "%";
+        }
+
+        if (customQuery.containsKey("status")) {
+            status = "%" + customQuery.get("status").toUpperCase() + "%";
+        }
+
+        if (customQuery.containsKey("numberUser")) {
+            numberUser = "%" + customQuery.get("numberUser") + "%";
+        }
+
+        Sort.Direction direction = Sort.Direction.fromString(orders);
+        Sort sort = Sort.by(direction, sortBy);
+
+        Pageable pagingSort = PageRequest.of(page, size, sort);
+
+
+        Page<TerminalResponseDTO> searchResult = terminalRepository.search(
+                id,
+                name,
+                prefix,
+                pagingSort
+        );
+
+        log.info("Search results found: " + searchResult.getTotalElements() + " records");
+        log.info("Search results: " + searchResult.getContent());
+
+        return searchResult;
     }
 
     @Override

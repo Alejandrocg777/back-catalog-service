@@ -18,8 +18,22 @@ public class TerminalResponseDTO {
    private String prefix;
    private Integer initialNumber;
    private Integer finalNumber;
-   private List<UserListResponseDTO> users;
    private Long numberUser;
    private String status;
+   private List<UserListResponseDTO> users;
 
+   // Constructor para la query de búsqueda (SIN users)
+   public TerminalResponseDTO(Long id, String name, Long numerationId,
+                              String prefix, Integer initialNumber,
+                              Integer finalNumber, Long numberUser, String status) {
+      this.id = id;
+      this.name = name;
+      this.numerationId = numerationId;
+      this.prefix = prefix;
+      this.initialNumber = initialNumber;
+      this.finalNumber = finalNumber;
+      this.numberUser = numberUser;
+      this.status = status;
+      this.users = List.of(); // Lista vacía por defecto
+   }
 }

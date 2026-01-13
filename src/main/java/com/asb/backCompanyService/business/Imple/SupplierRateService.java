@@ -5,6 +5,7 @@ import com.asb.backCompanyService.dto.request.GeneralRatesDTO;
 import com.asb.backCompanyService.dto.request.SupplierRateRequestDTO;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.dto.responde.SupplierRateResponseDTO;
+import com.asb.backCompanyService.dto.responde.TerminalResponseDTO;
 import com.asb.backCompanyService.model.Supplier;
 import com.asb.backCompanyService.model.SupplierRate;
 import com.asb.backCompanyService.repository.SupplierRateRepository;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -67,6 +69,64 @@ public class SupplierRateService implements SupplierRateBusiness {
 
         return new GenericResponse("Tarifa actualizada", 200);
 
+    }
+
+    @Override
+    public Page<SupplierRateResponseDTO> search(Map<String, String> customQuery) {
+        String orders = "ASC";
+        String sortBy = "id";
+        int page = 0;
+        int size = 6;
+        String id = null;
+        String supplierName = null;
+        String priceRate = null;
+
+        if (customQuery.containsKey("orders")) {
+            orders = customQuery.get("orders");
+        }
+
+        if (customQuery.containsKey("sortBy")) {
+            sortBy = customQuery.get("sortBy");
+        }
+
+        if (customQuery.containsKey("page")) {
+            page = Integer.parseInt(customQuery.get("page"));
+        }
+
+        if (customQuery.containsKey("size")) {
+            size = Integer.parseInt(customQuery.get("size"));
+        }
+
+        if (customQuery.containsKey("id")) {
+            id = "%" + customQuery.get("id") + "%";
+        }
+
+        if (customQuery.containsKey("supplierName")) {
+            supplierName = "%" + customQuery.get("supplierName") + "%";
+        }
+
+        if (customQuery.containsKey("priceRate")) {
+            priceRate = "%" + customQuery.get("priceRate") + "%";
+        }
+
+
+        Sort.Direction direction = Sort.Direction.fromString(orders);
+        Sort sort = Sort.by(direction, sortBy);
+
+        Pageable pagingSort = PageRequest.of(page, size, sort);
+
+
+        Page<SupplierRateResponseDTO> searchResult = supplierRateRepository.search(
+                id,
+                supplierName,
+                priceRate,
+                pagingSort
+        );
+
+        log.info("Search results found: " + searchResult.getTotalElements() + " records");
+        log.info("Search results: " + searchResult.getContent());
+
+        return searchResult;
     }
 
     @Override

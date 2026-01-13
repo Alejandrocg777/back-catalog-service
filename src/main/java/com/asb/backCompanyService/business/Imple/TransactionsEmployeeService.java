@@ -4,11 +4,14 @@ import com.asb.backCompanyService.business.Interfaces.TransactionBusiness;
 import com.asb.backCompanyService.business.Interfaces.TransactionEmployeeBusiness;
 import com.asb.backCompanyService.dto.request.TransactionEmployeeRequestDTO;
 import com.asb.backCompanyService.dto.responde.TransactionEmployeeResponseDTO;
+import com.asb.backCompanyService.model.Employee;
 import com.asb.backCompanyService.model.Transaction;
 import com.asb.backCompanyService.model.TransactionEmployee;
 import com.asb.backCompanyService.model.TransactionType;
 import com.asb.backCompanyService.repository.EmployeeRepository;
 import com.asb.backCompanyService.repository.TransactionEmployeeRepository;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,76 +79,144 @@ public class TransactionsEmployeeService implements TransactionEmployeeBusiness 
         String orders = "ASC";
         String sortBy = "id";
         int page = 0;
-        int size = 6;
-
+        int size = 10;
         String id = null;
         String employeeName = null;
         String typeTransaction = null;
+        String dateFrom = null;
+        String dateTo = null;
         String paymentAmount = null;
-        String date = null;
         String observation = null;
-        String status = null;
 
         if (customQuery.containsKey("orders")) {
             orders = customQuery.get("orders");
         }
-
         if (customQuery.containsKey("sortBy")) {
             sortBy = customQuery.get("sortBy");
         }
-
         if (customQuery.containsKey("page")) {
             page = Integer.parseInt(customQuery.get("page"));
         }
-
         if (customQuery.containsKey("size")) {
             size = Integer.parseInt(customQuery.get("size"));
         }
-        if (customQuery.containsKey("id") && !customQuery.get("id").trim().isEmpty()) {
-            id = "%" + customQuery.get("id").trim() + "%";
+        if (customQuery.containsKey("id") && !customQuery.get("id").isEmpty()) {
+            id = customQuery.get("id");
+        }
+        if (customQuery.containsKey("employeeName") && !customQuery.get("employeeName").isEmpty()) {
+            employeeName = customQuery.get("employeeName");
+        }
+        if (customQuery.containsKey("typeTransaction") && !customQuery.get("typeTransaction").isEmpty()) {
+            typeTransaction = customQuery.get("typeTransaction");
+        }
+        if (customQuery.containsKey("dateFrom") && !customQuery.get("dateFrom").isEmpty()) {
+            dateFrom = customQuery.get("dateFrom");
+        }
+        if (customQuery.containsKey("dateTo") && !customQuery.get("dateTo").isEmpty()) {
+            dateTo = customQuery.get("dateTo");
+        }
+        if (customQuery.containsKey("paymentAmount") && !customQuery.get("paymentAmount").isEmpty()) {
+            paymentAmount = customQuery.get("paymentAmount");
         }
 
-        if (customQuery.containsKey("employeeName") && !customQuery.get("employeeName").trim().isEmpty()) {
-            employeeName = "%" + customQuery.get("employeeName").trim() + "%";
-        }
-
-        if (customQuery.containsKey("typeTransaction") && !customQuery.get("typeTransaction").trim().isEmpty()) {
-            typeTransaction = "%" + customQuery.get("typeTransaction").trim() + "%";
-        }
-
-        if (customQuery.containsKey("paymentAmount") && !customQuery.get("paymentAmount").trim().isEmpty()) {
-            paymentAmount = "%" + customQuery.get("paymentAmount").trim() + "%";
-        }
-
-        if (customQuery.containsKey("date") && !customQuery.get("date").trim().isEmpty()) {
-            date = "%" + customQuery.get("date").trim() + "%";
-        }
-
-        if (customQuery.containsKey("observation") && !customQuery.get("observation").trim().isEmpty()) {
-            observation = "%" + customQuery.get("observation").trim() + "%";
-        }
-
-        if (customQuery.containsKey("status") && !customQuery.get("status").trim().isEmpty()) {
-            status = "%" + customQuery.get("status").trim() + "%";
+        if (customQuery.containsKey("observation") && !customQuery.get("observation").isEmpty()) {
+            observation = customQuery.get("observation");
         }
 
         Sort.Direction direction = Sort.Direction.fromString(orders);
-        Sort sort = Sort.by(direction, sortBy);
+        Pageable pagingSort = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        Pageable pagingSort = PageRequest.of(page, size, sort);
-        Page<TransactionEmployeeResponseDTO> result = transactionEmployeeRepository.search(
-                id,
-                employeeName,
-                typeTransaction,
-                paymentAmount,
-                date ,
-                observation,
-                status,
-                pagingSort
-        );
+        Specification<TransactionEmployee> spec = Specification.where(null);
 
-        log.info("Resultados encontrados: {} elementos", result.getContent().size());
-        return result;
+        spec = spec.and((root, query, cb) ->
+                cb.equal(root.get("status"), "ACTIVE"));
+
+        if (id != null) {
+            final String idParam = id;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(root.get("id").as(String.class), "%" + idParam + "%"));
+        }
+
+        if (typeTransaction != null) {
+            try {
+                final TransactionType typeParam = TransactionType.valueOf(typeTransaction.toUpperCase());
+                spec = spec.and((root, query, cb) ->
+                        cb.equal(root.get("typeTransaction"), typeParam));
+            } catch (IllegalArgumentException e) {
+                log.warn("Tipo de transacción inválido: {}", typeTransaction);
+            }
+        }
+
+        if (dateFrom != null) {
+            try {
+                final LocalDate dateFromParam = LocalDate.parse(dateFrom);
+                spec = spec.and((root, query, cb) ->
+                        cb.greaterThanOrEqualTo(root.get("date"), dateFromParam));
+            } catch (Exception e) {
+                log.warn("Fecha desde inválida: {}", dateFrom);
+            }
+        }
+
+        if (dateTo != null) {
+            try {
+                final LocalDate dateToParam = LocalDate.parse(dateTo);
+                spec = spec.and((root, query, cb) ->
+                        cb.lessThanOrEqualTo(root.get("date"), dateToParam));
+            } catch (Exception e) {
+                log.warn("Fecha hasta inválida: {}", dateTo);
+            }
+        }
+
+        if (paymentAmount != null) {
+            final String paymentAmountParam = paymentAmount;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(root.get("paymentAmount").as(String.class), "%" + paymentAmountParam + "%"));
+        }
+
+
+        if (observation != null) {
+            final String observationParam = observation;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.upper(root.get("observation")), "%" + observationParam.toUpperCase() + "%"));
+        }
+
+        if (employeeName != null) {
+            final String employeeParam = employeeName;
+            spec = spec.and((root, query, cb) -> {
+                Subquery<Long> subquery = query.subquery(Long.class);
+                Root<Employee> employeeRoot = subquery.from(Employee.class);
+                subquery.select(employeeRoot.get("id"))
+                        .where(cb.like(cb.upper(employeeRoot.get("name")), "%" + employeeParam.toUpperCase() + "%"));
+                return cb.in(root.get("employeeId")).value(subquery);
+            });
+        }
+
+        Page<TransactionEmployee> entityPage = transactionEmployeeRepository.findAll(spec, pagingSort);
+
+        log.info("Transacciones encontradas: {}", entityPage.getContent().size());
+
+        return entityPage.map(this::mapToTransactionEmployeeResponseDTO);
+    }
+
+    private TransactionEmployeeResponseDTO mapToTransactionEmployeeResponseDTO(TransactionEmployee entity) {
+        String employeeName = null;
+
+        if (entity.getEmployeeId() != null) {
+            employeeName = employeeRepository.findById(entity.getEmployeeId())
+                    .map(Employee::getName)
+                    .orElse(null);
+        }
+
+        return TransactionEmployeeResponseDTO.builder()
+                .id(entity.getId())
+                .typeTransaction(entity.getTypeTransaction())
+                .employeeId(entity.getEmployeeId())
+                .employeeName(employeeName)
+                .date(entity.getDate())
+                .paymentAmount(entity.getPaymentAmount())
+                .observation(entity.getObservation())
+                .status(entity.getStatus())
+                .build();
     }
 
 

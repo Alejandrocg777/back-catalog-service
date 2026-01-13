@@ -6,13 +6,23 @@ import com.asb.backCompanyService.dto.responde.EmployeePaymentDTO;
 import com.asb.backCompanyService.dto.responde.EmployeeResponseDTO;
 import com.asb.backCompanyService.dto.responde.GenericResponse;
 import com.asb.backCompanyService.exception.CustomErrorException;
+import com.asb.backCompanyService.model.Area;
 import com.asb.backCompanyService.model.Employee;
+import com.asb.backCompanyService.model.IdentificationType;
+import com.asb.backCompanyService.model.Position;
+import com.asb.backCompanyService.repository.AreaRepository;
 import com.asb.backCompanyService.repository.EmployeeRepository;
+import com.asb.backCompanyService.repository.IdentificationTypeRepository;
+import com.asb.backCompanyService.repository.PositionRepository;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import jakarta.persistence.EntityManager;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -26,9 +36,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Slf4j
 
-public class EmployeeService implements IEmployeeBusiness{
+public class EmployeeService implements IEmployeeBusiness {
 
     private final EmployeeRepository employeeRepository;
+    private final IdentificationTypeRepository identificationTypeRepository;
+    private final PositionRepository positionRepository;
+    private final AreaRepository areaRepository;
+    private final EntityManager entityManager;
 
     @Override
     public EmployeeRequestDTO save(EmployeeRequestDTO request) {
@@ -55,7 +69,8 @@ public class EmployeeService implements IEmployeeBusiness{
 
     @Override
     public GenericResponse update(Long id, EmployeeRequestDTO requestDTO) {
-        if (!employeeRepository.existsById(id)) throw new CustomErrorException(HttpStatus.BAD_REQUEST, "Employee no existe");
+        if (!employeeRepository.existsById(id))
+            throw new CustomErrorException(HttpStatus.BAD_REQUEST, "Employee no existe");
 
         Optional<Employee> EmployeeOptional = employeeRepository.findById(id);
 
@@ -263,7 +278,8 @@ public class EmployeeService implements IEmployeeBusiness{
 
     @Override
     public EmployeeRequestDTO get(Long id) {
-        if (!employeeRepository.existsById(id)) throw new CustomErrorException(HttpStatus.BAD_REQUEST, "Employee no existe");
+        if (!employeeRepository.existsById(id))
+            throw new CustomErrorException(HttpStatus.BAD_REQUEST, "Employee no existe");
 
         Optional<Employee> EmployeeOptional = employeeRepository.findById(id);
 
@@ -303,7 +319,6 @@ public class EmployeeService implements IEmployeeBusiness{
         String phone = null;
         String identification = null;
         String address = null;
-        String status = null;
         String email = null;
         String baseSalary = null;
         String typeIdentificationName = null;
@@ -314,70 +329,177 @@ public class EmployeeService implements IEmployeeBusiness{
         if (customQuery.containsKey("orders")) {
             orders = customQuery.get("orders");
         }
-
         if (customQuery.containsKey("sortBy")) {
             sortBy = customQuery.get("sortBy");
         }
-
         if (customQuery.containsKey("page")) {
             page = Integer.parseInt(customQuery.get("page"));
         }
-
         if (customQuery.containsKey("size")) {
             size = Integer.parseInt(customQuery.get("size"));
         }
-
-        if (customQuery.containsKey("id")) {
-            id = "%" + customQuery.get("id") + "%";
+        if (customQuery.containsKey("id") && !customQuery.get("id").isEmpty()) {
+            id = customQuery.get("id");
         }
-
-        if (customQuery.containsKey("name")) {
-            name = "%" + customQuery.get("name") + "%";
+        if (customQuery.containsKey("name") && !customQuery.get("name").isEmpty()) {
+            name = customQuery.get("name");
         }
-
-        if (customQuery.containsKey("identification")) {
-            identification = "%" + customQuery.get("identification") + "%";
+        if (customQuery.containsKey("identification") && !customQuery.get("identification").isEmpty()) {
+            identification = customQuery.get("identification");
         }
-
-        if (customQuery.containsKey("address")) {
-            address = "%" + customQuery.get("address") + "%";
+        if (customQuery.containsKey("address") && !customQuery.get("address").isEmpty()) {
+            address = customQuery.get("address");
         }
-
-        if (customQuery.containsKey("baseSalary")) {
-            baseSalary = "%" + customQuery.get("baseSalary") + "%";
+        if (customQuery.containsKey("baseSalary") && !customQuery.get("baseSalary").isEmpty()) {
+            baseSalary = customQuery.get("baseSalary");
         }
-
-        if (customQuery.containsKey("email")) {
-            email = "%" + customQuery.get("email") + "%";
+        if (customQuery.containsKey("email") && !customQuery.get("email").isEmpty()) {
+            email = customQuery.get("email");
         }
-
-        if (customQuery.containsKey("phone")) {
-            phone = "%" + customQuery.get("phone") + "%";
+        if (customQuery.containsKey("phone") && !customQuery.get("phone").isEmpty()) {
+            phone = customQuery.get("phone");
         }
-
-        if (customQuery.containsKey("typeIdentificationName")) {
-            typeIdentificationName = "%" + customQuery.get("typeIdentificationName") + "%";
+        if (customQuery.containsKey("typeIdentificationName") && !customQuery.get("typeIdentificationName").isEmpty()) {
+            typeIdentificationName = customQuery.get("typeIdentificationName");
         }
-
-        if (customQuery.containsKey("areaName")) {
-            areaName = "%" + customQuery.get("areaName") + "%";
+        if (customQuery.containsKey("areaName") && !customQuery.get("areaName").isEmpty()) {
+            areaName = customQuery.get("areaName");
         }
-
-        if (customQuery.containsKey("positionName")) {
-            positionName = "%" + customQuery.get("positionName") + "%";
-        }
-
-        if (customQuery.containsKey("status")) {
-            status = "%" + customQuery.get("status") + "%";
+        if (customQuery.containsKey("positionName") && !customQuery.get("positionName").isEmpty()) {
+            positionName = customQuery.get("positionName");
         }
 
         Sort.Direction direction = Sort.Direction.fromString(orders);
-        Sort sort = Sort.by(direction, sortBy);
+        Pageable pagingSort = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        Pageable pagingSort = PageRequest.of(page, size, sort);
-        Page<EmployeeResponseDTO> searchEmployee = employeeRepository.search(id, name, phone, identification, address,  status,  email,baseSalary, typeIdentificationName,areaName,positionName, pagingSort);
 
-        return searchEmployee;
+        Specification<Employee> spec = Specification.where(null);
+
+        spec = spec.and((root, query, cb) ->
+                cb.equal(root.get("status"), "ACTIVE"));
+
+        if (id != null) {
+            final String idParam = id;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(root.get("id").as(String.class), "%" + idParam + "%"));
+        }
+
+        if (name != null) {
+            final String nameParam = name;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.upper(root.get("name")), "%" + nameParam.toUpperCase() + "%"));
+        }
+
+        if (phone != null) {
+            final String phoneParam = phone;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(root.get("phone"), "%" + phoneParam + "%"));
+        }
+
+        if (identification != null) {
+            final String identificationParam = identification;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(root.get("identification"), "%" + identificationParam + "%"));
+        }
+
+        if (address != null) {
+            final String addressParam = address;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.upper(root.get("address")), "%" + addressParam.toUpperCase() + "%"));
+        }
+
+        if (email != null) {
+            final String emailParam = email;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.upper(root.get("email")), "%" + emailParam.toUpperCase() + "%"));
+        }
+
+        if (baseSalary != null) {
+            final String salaryParam = baseSalary;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(root.get("baseSalary").as(String.class), "%" + salaryParam + "%"));
+        }
+
+        if (typeIdentificationName != null) {
+            final String typeParam = typeIdentificationName;
+            spec = spec.and((root, query, cb) -> {
+                Subquery<Long> subquery = query.subquery(Long.class);
+                Root<IdentificationType> typeRoot = subquery.from(IdentificationType.class);
+                subquery.select(typeRoot.get("id"))
+                        .where(cb.like(cb.upper(typeRoot.get("name")), "%" + typeParam.toUpperCase() + "%"));
+                return cb.in(root.get("identificationTypeId")).value(subquery);
+            });
+        }
+
+        if (areaName != null) {
+            final String areaParam = areaName;
+            spec = spec.and((root, query, cb) -> {
+                Subquery<Long> subquery = query.subquery(Long.class);
+                Root<Area> areaRoot = subquery.from(Area.class);
+                subquery.select(areaRoot.get("id"))
+                        .where(cb.like(cb.upper(areaRoot.get("description")), "%" + areaParam.toUpperCase() + "%"));
+                return cb.in(root.get("areaId")).value(subquery);
+            });
+        }
+
+        if (positionName != null) {
+            final String positionParam = positionName;
+            spec = spec.and((root, query, cb) -> {
+                Subquery<Long> subquery = query.subquery(Long.class);
+                Root<Position> positionRoot = subquery.from(Position.class);
+                subquery.select(positionRoot.get("id"))
+                        .where(cb.like(cb.upper(positionRoot.get("description")), "%" + positionParam.toUpperCase() + "%"));
+                return cb.in(root.get("positionId")).value(subquery);
+            });
+        }
+
+        Page<Employee> entityPage = employeeRepository.findAll(spec, pagingSort);
+
+        log.info("Resultados encontrados: {}", entityPage.getContent().size());
+
+        return entityPage.map(this::mapToEmployeeResponseDTO);
+    }
+
+    private EmployeeResponseDTO mapToEmployeeResponseDTO(Employee entity) {
+        String typeIdentificationNameValue = null;
+        String areaNameValue = null;
+        String positionNameValue = null;
+
+        if (entity.getIdentificationTypeId() != null) {
+            typeIdentificationNameValue = identificationTypeRepository.findById(entity.getIdentificationTypeId())
+                    .map(IdentificationType::getName)
+                    .orElse(null);
+        }
+
+        if (entity.getAreaId() != null) {
+            areaNameValue = areaRepository.findById(entity.getAreaId())
+                    .map(Area::getDescription)
+                    .orElse(null);
+        }
+
+        if (entity.getPositionId() != null) {
+            positionNameValue = positionRepository.findById(entity.getPositionId())
+                    .map(Position::getDescription)
+                    .orElse(null);
+        }
+
+        return EmployeeResponseDTO.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .phone(entity.getPhone())
+                .identification(entity.getIdentification())
+                .address(entity.getAddress())
+                .email(entity.getEmail())
+                .typeIdentificationId(entity.getIdentificationTypeId())
+                .typeIdentificationName(typeIdentificationNameValue)
+                .areaId(entity.getAreaId())
+                .areaName(areaNameValue)
+                .positionId(entity.getPositionId())
+                .positionName(positionNameValue)
+                .date(entity.getDate())
+                .baseSalary(entity.getBaseSalary())
+                .status(entity.getStatus())
+                .build();
     }
 
     @Override
@@ -385,7 +507,8 @@ public class EmployeeService implements IEmployeeBusiness{
         int page = 0;
         int size = 10;
         String orders = "ASC";
-        final String sortByParam = customQuery.getOrDefault("sortBy", "id").toLowerCase();
+        String sortBy = "id";
+
         if (customQuery.containsKey("page")) {
             try {
                 page = Integer.parseInt(customQuery.get("page"));
@@ -405,19 +528,8 @@ public class EmployeeService implements IEmployeeBusiness{
         if (customQuery.containsKey("orders")) {
             orders = customQuery.get("orders").toUpperCase();
         }
-
-        String paymentStatusFilter;
-        if (customQuery.containsKey("paymentStatus") && !customQuery.get("paymentStatus").trim().isEmpty()) {
-            paymentStatusFilter = customQuery.get("paymentStatus").trim().toUpperCase();
-        } else {
-            paymentStatusFilter = null;
-        }
-
-        String totalFilter;
-        if (customQuery.containsKey("total") && !customQuery.get("total").trim().isEmpty()) {
-            totalFilter = customQuery.get("total").trim();
-        } else {
-            totalFilter = null;
+        if (customQuery.containsKey("sortBy") && !customQuery.get("sortBy").isEmpty()) {
+            sortBy = customQuery.get("sortBy");
         }
 
         String name = getFilterValue(customQuery, "name");
@@ -429,6 +541,8 @@ public class EmployeeService implements IEmployeeBusiness{
         String areaDescription = getFilterValue(customQuery, "areaName");
         String positionDescription = getFilterValue(customQuery, "positionName");
         String baseSalary = getFilterValue(customQuery, "baseSalary");
+        String paymentStatusFilter = getFilterValue(customQuery, "paymentStatus");
+        String totalFilter = getFilterValue(customQuery, "total");
 
         Sort.Direction direction;
         try {
@@ -437,102 +551,259 @@ public class EmployeeService implements IEmployeeBusiness{
             direction = Sort.Direction.ASC;
         }
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, "employeeId"));
+        boolean needsPostFiltering = paymentStatusFilter != null || totalFilter != null;
 
-        Page<Object[]> rawPage = employeeRepository.searchEmployeePayment(
-                name, phone, identification, email, address,
-                identificationTypeName, areaDescription, positionDescription,
-                baseSalary, pageable);
+        Pageable fetchPageable;
+        if (needsPostFiltering) {
+            fetchPageable = Pageable.unpaged();
+        } else {
+            fetchPageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        }
 
-        List<EmployeePaymentDTO> dtoList = rawPage.getContent().stream()
-                .map(row -> {
-                    Long id = (Long) row[0];
-                    String empName = (String) row[1];
-                    String empPhone = (String) row[2];
-                    String empIdentification = (String) row[3];
-                    Long typeIdentificationId = (Long) row[4];
-                    String typeIdentificationNameVal = (String) row[5];
-                    String empAddress = (String) row[6];
-                    String hireDate = (String) row[7];
-                    String empEmail = (String) row[8];
-                    Long areaId = (Long) row[9];
-                    String areaName = (String) row[10];
-                    Long positionId = (Long) row[11];
-                    String positionName = (String) row[12];
-                    Double baseSalaryVal = row[13] != null ? ((BigDecimal) row[13]).doubleValue() : 0.0;
-                    String status = (String) row[14];
-                    Double balanceToPay = row[15] != null ? ((BigDecimal) row[15]).doubleValue() : 0.0;
+        Specification<Employee> spec = Specification.where(null);
 
+        spec = spec.and((root, query, cb) ->
+                cb.equal(root.get("status"), "ACTIVE"));
+
+        if (name != null) {
+            final String nameParam = name;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.upper(root.get("name")), "%" + nameParam.toUpperCase() + "%"));
+        }
+
+        if (phone != null) {
+            final String phoneParam = phone;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.upper(root.get("phone")), "%" + phoneParam.toUpperCase() + "%"));
+        }
+
+        if (identification != null) {
+            final String identificationParam = identification;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.upper(root.get("identification")), "%" + identificationParam.toUpperCase() + "%"));
+        }
+
+        if (email != null) {
+            final String emailParam = email;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.upper(root.get("email")), "%" + emailParam.toUpperCase() + "%"));
+        }
+
+        if (address != null) {
+            final String addressParam = address;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.upper(root.get("address")), "%" + addressParam.toUpperCase() + "%"));
+        }
+
+        if (baseSalary != null) {
+            final String salaryParam = baseSalary;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(root.get("baseSalary").as(String.class), "%" + salaryParam + "%"));
+            log.info("✅ Filtrando por salario base (LIKE): {}", salaryParam);
+        }
+
+        if (identificationTypeName != null) {
+            final String typeParam = identificationTypeName;
+            spec = spec.and((root, query, cb) -> {
+                Subquery<Long> subquery = query.subquery(Long.class);
+                Root<IdentificationType> typeRoot = subquery.from(IdentificationType.class);
+                subquery.select(typeRoot.get("id"))
+                        .where(cb.like(cb.upper(typeRoot.get("name")), "%" + typeParam.toUpperCase() + "%"));
+                return cb.in(root.get("identificationTypeId")).value(subquery);
+            });
+        }
+
+        if (areaDescription != null) {
+            final String areaParam = areaDescription;
+            spec = spec.and((root, query, cb) -> {
+                Subquery<Long> subquery = query.subquery(Long.class);
+                Root<Area> areaRoot = subquery.from(Area.class);
+                subquery.select(areaRoot.get("id"))
+                        .where(cb.like(cb.upper(areaRoot.get("description")), "%" + areaParam.toUpperCase() + "%"));
+                return cb.in(root.get("areaId")).value(subquery);
+            });
+        }
+
+        if (positionDescription != null) {
+            final String positionParam = positionDescription;
+            spec = spec.and((root, query, cb) -> {
+                Subquery<Long> subquery = query.subquery(Long.class);
+                Root<Position> positionRoot = subquery.from(Position.class);
+                subquery.select(positionRoot.get("id"))
+                        .where(cb.like(cb.upper(positionRoot.get("description")), "%" + positionParam.toUpperCase() + "%"));
+                return cb.in(root.get("positionId")).value(subquery);
+            });
+        }
+
+        Page<Employee> entityPage = employeeRepository.findAll(spec, fetchPageable);
+
+        log.info("Empleados encontrados: {}", entityPage.getContent().size());
+
+        Set<Long> employeeIds = entityPage.getContent().stream()
+                .map(Employee::getId)
+                .collect(Collectors.toSet());
+
+        Set<Long> identificationTypeIds = entityPage.getContent().stream()
+                .map(Employee::getIdentificationTypeId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        Set<Long> areaIds = entityPage.getContent().stream()
+                .map(Employee::getAreaId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        Set<Long> positionIds = entityPage.getContent().stream()
+                .map(Employee::getPositionId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        Map<Long, String> identificationTypeMap = identificationTypeRepository.findAllById(identificationTypeIds).stream()
+                .collect(Collectors.toMap(IdentificationType::getIdentificationTypeId, IdentificationType::getName));
+
+        Map<Long, String> areaMap = areaRepository.findAllById(areaIds).stream()
+                .collect(Collectors.toMap(Area::getId, Area::getDescription));
+
+        Map<Long, String> positionMap = positionRepository.findAllById(positionIds).stream()
+                .collect(Collectors.toMap(Position::getId, Position::getDescription));
+
+        Map<Long, Double> balanceMap = calculateBalanceForEmployees(employeeIds);
+
+        List<EmployeePaymentDTO> dtoList = entityPage.getContent().stream()
+                .map(employee -> {
+                    String typeIdentificationNameVal = employee.getIdentificationTypeId() != null ?
+                            identificationTypeMap.get(employee.getIdentificationTypeId()) : null;
+                    String areaNameVal = employee.getAreaId() != null ?
+                            areaMap.get(employee.getAreaId()) : null;
+                    String positionNameVal = employee.getPositionId() != null ?
+                            positionMap.get(employee.getPositionId()) : null;
+
+                    Double baseSalaryVal = employee.getBaseSalary() != null ? employee.getBaseSalary() : 0.0;
+                    Double balanceToPay = balanceMap.getOrDefault(employee.getId(), 0.0);
                     Double total = baseSalaryVal + balanceToPay;
 
                     String paymentStatus = total == 0.0 ? "CANCELADO" :
                             total < 0.0 ? "DEBE" : "PENDIENTE";
 
+                    String hireDate = employee.getDate() != null ?
+                            employee.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : null;
+
                     return new EmployeePaymentDTO(
-                            id, empName, empPhone, empIdentification,
-                            typeIdentificationId, typeIdentificationNameVal,
-                            empAddress, hireDate, empEmail,
-                            areaId, areaName, positionId, positionName,
-                            baseSalaryVal, total, paymentStatus, status
+                            employee.getId(),
+                            employee.getName(),
+                            employee.getPhone(),
+                            employee.getIdentification(),
+                            employee.getIdentificationTypeId(),
+                            typeIdentificationNameVal,
+                            employee.getAddress(),
+                            hireDate,
+                            employee.getEmail(),
+                            employee.getAreaId(),
+                            areaNameVal,
+                            employee.getPositionId(),
+                            positionNameVal,
+                            baseSalaryVal,
+                            total,
+                            paymentStatus,
+                            employee.getStatus()
                     );
                 })
-                .collect(Collectors.toCollection(ArrayList::new));
+                .collect(Collectors.toList());
 
         if (paymentStatusFilter != null) {
+            final String statusFilter = paymentStatusFilter.toUpperCase();
+            log.info("🔍 Filtrando por paymentStatus: {}", statusFilter);
             dtoList = dtoList.stream()
                     .filter(dto -> dto.getPaymentStatus() != null &&
-                            dto.getPaymentStatus().toUpperCase().contains(paymentStatusFilter))
+                            dto.getPaymentStatus().toUpperCase().contains(statusFilter))
                     .collect(Collectors.toList());
+            log.info("✅ Después del filtro de paymentStatus: {} registros", dtoList.size());
         }
 
         if (totalFilter != null) {
             try {
-                double filterValue = Double.parseDouble(totalFilter);
+                final double filterValue = Double.parseDouble(totalFilter);
+                log.info("🔍 Filtrando por total >= {}", filterValue);
                 dtoList = dtoList.stream()
-                        .filter(dto -> dto.getTotal() != null && dto.getTotal().toString().contains(totalFilter))
+                        .filter(dto -> dto.getTotal() != null && dto.getTotal() >= filterValue)
                         .collect(Collectors.toList());
+                log.info("✅ Después del filtro de total: {} registros", dtoList.size());
             } catch (NumberFormatException e) {
-
+                log.warn("Total inválido: {}", totalFilter);
             }
         }
 
-        final Sort.Direction finalDirection = direction;
-
-        if (!"id".equals(sortByParam) && !"employeeid".equals(sortByParam)) {
-            Comparator<EmployeePaymentDTO> comparator = Comparator.comparing(
-                    dto -> {
-                        Object key = switch (sortByParam) {
-                            case "paymentstatus" -> dto.getPaymentStatus();
-                            case "total" -> dto.getTotal();
-                            case "name" -> dto.getName();
-                            case "phone" -> dto.getPhone();
-                            case "identification" -> dto.getIdentification();
-                            case "email" -> dto.getEmail();
-                            case "basesalary" -> dto.getBaseSalary();
-                            default -> dto.getId();
-                        };
-                        return key != null ? key.toString() : "";
-                    }
-            );
-
-            if (finalDirection.isDescending()) {
-                comparator = comparator.reversed();
-            }
-
-            dtoList.sort(comparator);
+        if (!"id".equals(sortBy.toLowerCase())) {
+            sortDTOList(dtoList, sortBy, direction);
         }
 
-        long totalElements = dtoList.size();
+        if (needsPostFiltering) {
+            int totalElements = dtoList.size();
+            int start = page * size;
+            int end = Math.min(start + size, dtoList.size());
 
-        return new PageImpl<>(dtoList, pageable, totalElements);
+            if (start >= dtoList.size()) {
+                dtoList = Collections.emptyList();
+            } else {
+                dtoList = dtoList.subList(start, end);
+            }
+
+            Pageable pagingSort = PageRequest.of(page, size, Sort.by(direction, sortBy));
+            return new PageImpl<>(dtoList, pagingSort, totalElements);
+        }
+
+        return new PageImpl<>(dtoList, PageRequest.of(page, size, Sort.by(direction, sortBy)), entityPage.getTotalElements());
     }
 
+    private Map<Long, Double> calculateBalanceForEmployees(Set<Long> employeeIds) {
+        if (employeeIds.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        try {
+            List<Object[]> results = employeeRepository.calculateBalancesByEmployeeIds(employeeIds);
+
+            return results.stream()
+                    .collect(Collectors.toMap(
+                            row -> ((Number) row[0]).longValue(),
+                            row -> row[1] != null ? ((Number) row[1]).doubleValue() : 0.0
+                    ));
+        } catch (Exception e) {
+            log.error("Error calculando balances: {}", e.getMessage(), e);
+            return new HashMap<>();
+        }
+    }
+
+    private void sortDTOList(List<EmployeePaymentDTO> dtoList, String sortBy, Sort.Direction direction) {
+        Comparator<EmployeePaymentDTO> comparator = Comparator.comparing(
+                dto -> {
+                    Object key = switch (sortBy.toLowerCase()) {
+                        case "paymentstatus" -> dto.getPaymentStatus();
+                        case "total" -> dto.getTotal();
+                        case "name" -> dto.getName();
+                        case "phone" -> dto.getPhone();
+                        case "identification" -> dto.getIdentification();
+                        case "email" -> dto.getEmail();
+                        case "basesalary" -> dto.getBaseSalary();
+                        default -> dto.getId();
+                    };
+                    return key != null ? key.toString() : "";
+                }
+        );
+
+        if (direction.isDescending()) {
+            comparator = comparator.reversed();
+        }
+
+        dtoList.sort(comparator);
+    }
 
     private String getFilterValue(Map<String, String> customQuery, String key) {
-        String value = customQuery.get(key);
-        if (value != null && !value.trim().isEmpty()) {
-            return "%" + value.trim() + "%";
+        if (customQuery.containsKey(key) && !customQuery.get(key).trim().isEmpty()) {
+            return customQuery.get(key).trim();
         }
         return null;
     }
+
+
 }

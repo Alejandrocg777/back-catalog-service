@@ -247,18 +247,9 @@ public class RateNeighborhoodService implements IRateNeighborhoodBusiness {
 
         Pageable pagingSort = PageRequest.of(page, size, sort);
 
-        log.info("ID: " + id);
-        log.info("cityName : " + cityName);
-        log.info("department Name: " + departmentName);
-        log.info("neighborhood Name: " + neighborhood);
-        log.info("rate : " + rate);
-        log.info("Status: " + status);
-        log.info("Page: " + page);
-        log.info("Size: " + size);
-        log.info("Orders: " + orders);
-        log.info("SortBy: " + sortBy);
 
-        Page<RateNeighborhoodDtoResponse> searchResult = repository.searchRateNeighborhood(id, cityName, departmentName, neighborhood,rate, status, pagingSort);
+        Page<RateNeighborhoodDtoResponse> searchResult = repository.searchRateNeighborhood(
+                id, cityName, departmentName, neighborhood,rate, pagingSort);
         log.info("Search results: " + searchResult.getContent());
         return searchResult;
     }

@@ -10,15 +10,15 @@ import org.springframework.data.jpa.repository.Query;
 public interface PaymentMethodRepository extends JpaRepository<PaymentMethod, Long> {
 
     @Query(value = "SELECT * FROM payment_method " +
-            "WHERE CAST(payment_method_id AS char) LIKE :id " +
-            "OR UPPER(description) LIKE UPPER(:description) " +
-            "OR UPPER(status) LIKE UPPER(:status)",
+            "WHERE status = 'ACTIVE' " +
+            "AND (CAST(payment_method_id AS char) LIKE :id " +
+            "OR UPPER(description) LIKE UPPER(:description))",
             countQuery = "SELECT COUNT(*) FROM payment_method " +
-                    "WHERE CAST(payment_method_id AS char) LIKE :id " +
-                    "OR UPPER(description) LIKE UPPER(:description) " +
-                    "OR UPPER(status) LIKE UPPER(:status)",
+                    "WHERE status = 'ACTIVE' " +
+                    "AND (CAST(payment_method_id AS char) LIKE :id " +
+                    "OR UPPER(description) LIKE UPPER(:description))",
             nativeQuery = true)
-    Page<PaymentMethod> searchPaymentMethod(String id, String description, String status, Pageable pageable);
+    Page<PaymentMethod> searchPaymentMethod(String id, String description, Pageable pageable);
 
     @Query(value = "SELECT * FROM payment_method " +
             "WHERE status = 'ACTIVE'",

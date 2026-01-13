@@ -20,31 +20,29 @@ public interface RateNeighborhoodRepository extends JpaRepository<RateNeighborho
             "LEFT JOIN Department d ON r.departmentId = d.id " +
             "LEFT JOIN City c ON r.cityId = c.id " +
             "WHERE r.status = 'ACTIVE' " +
-            "AND (:id IS NULL OR CAST(r.id AS string) LIKE :id) " +
-            "AND (:cityName IS NULL OR UPPER(c.cityName) LIKE UPPER(:cityName)) " +
-            "AND (:departmentName IS NULL OR UPPER(d.departmentName) LIKE UPPER(:departmentName)) " +
-            "AND (:neighborhood IS NULL OR UPPER(r.neighborhood) LIKE UPPER(:neighborhood)) " +
-            "AND (:rate IS NULL OR CAST(r.rate AS string) LIKE :rate) " +
-            "AND (:status IS NULL OR UPPER(r.status) LIKE UPPER(:status))",
+            "AND (CAST(r.id AS string) LIKE :id " +
+            "OR UPPER(c.cityName) LIKE UPPER(:cityName) " +
+            "OR UPPER(d.departmentName) LIKE UPPER(:departmentName) " +
+            "OR UPPER(r.neighborhood) LIKE UPPER(:neighborhood) " +
+            "OR CAST(r.rate AS string) LIKE :rate)",
             countQuery = "SELECT COUNT(r) " +
                     "FROM RateNeighborhood r " +
                     "LEFT JOIN Department d ON r.departmentId = d.id " +
                     "LEFT JOIN City c ON r.cityId = c.id " +
                     "WHERE r.status = 'ACTIVE' " +
-                    "AND (:id IS NULL OR CAST(r.id AS string) LIKE :id) " +
-                    "AND (:cityName IS NULL OR UPPER(c.cityName) LIKE UPPER(:cityName)) " +
-                    "AND (:departmentName IS NULL OR UPPER(d.departmentName) LIKE UPPER(:departmentName)) " +
-                    "AND (:neighborhood IS NULL OR UPPER(r.neighborhood) LIKE UPPER(:neighborhood)) " +
-                    "AND (:rate IS NULL OR CAST(r.rate AS string) LIKE :rate) " +
-                    "AND (:status IS NULL OR UPPER(r.status) LIKE UPPER(:status))")
+                    "AND (CAST(r.id AS string) LIKE :id " +
+                    "OR UPPER(c.cityName) LIKE UPPER(:cityName) " +
+                    "OR UPPER(d.departmentName) LIKE UPPER(:departmentName) " +
+                    "OR UPPER(r.neighborhood) LIKE UPPER(:neighborhood) " +
+                    "OR CAST(r.rate AS string) LIKE :rate)")
     Page<RateNeighborhoodDtoResponse> searchRateNeighborhood(
             @Param("id") String id,
             @Param("cityName") String cityName,
             @Param("departmentName") String departmentName,
             @Param("neighborhood") String neighborhood,
             @Param("rate") String rate,
-            @Param("status") String status,
             Pageable pageable);
+
 
     @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.RateNeighborhoodDtoResponse(r.id, r.cityId, c.cityName,r.departmentId,d.departmentName,r.neighborhood,r.rate, c.status) " +
             "FROM RateNeighborhood r " +

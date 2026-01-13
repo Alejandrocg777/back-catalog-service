@@ -178,16 +178,9 @@ public class CategoryService implements ICategoryBusiness {
         Sort sort = Sort.by(direction, sortBy);
         Pageable pagingSort = PageRequest.of(page, size, sort);
 
-        log.info("id: {}", id);
-        log.info("nameCategory: {}", nameCategory);
-        log.info("soldOutValue: {}", soldOutValue);
-        log.info("fewUnits: {}", fewUnits);
-        log.info("page: {}", page);
-        log.info("size: {}", size);
-        log.info("orders: {}", orders);
-        log.info("sortBy: {}", sortBy);
 
-        Page<CategoryResponseDto> result = repository.search(id, nameCategory, soldOutValue, fewUnits, pagingSort);
+        Page<CategoryResponseDto> result = repository.search(
+                id, nameCategory, soldOutValue, fewUnits, pagingSort);
         log.info("Resultados encontrados: {}", result.getContent());
         return result;
     }

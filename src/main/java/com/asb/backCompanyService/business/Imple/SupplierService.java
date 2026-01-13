@@ -123,7 +123,7 @@ public class SupplierService implements SupplierBusiness {
         String orders = "ASC";
         String sortBy = "id";
         int page = 0;
-        int size = 10;
+        int size = 6;
         String id = null;
         String name = null;
         String email = null;
