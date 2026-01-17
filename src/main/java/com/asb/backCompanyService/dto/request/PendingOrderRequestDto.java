@@ -1,0 +1,24 @@
+package com.asb.backCompanyService.dto.request;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class PendingOrderRequestDto {
+
+    private Long billId;
+    private Long customerId;
+    private String address;
+    private String phone;
+    private String observations;
+    private LocalDateTime date;
+    private Double total;
+    private List<PendingOrderDetailDto> pendingOrderDetails;
+}

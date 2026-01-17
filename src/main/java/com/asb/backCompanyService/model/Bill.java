@@ -19,6 +19,12 @@ public class Bill {
     @Column(name = "customer_id", nullable = false)
     private Long customerId;
 
+    @Column(name = "address")
+    private String address;
+
+    @Column(name = "phone")
+    private String phone;
+
     @Column(name = "invoice_date", nullable = false)
     private LocalDateTime invoiceDate;
 
@@ -45,6 +51,9 @@ public class Bill {
 
     @Column(name = "status")
     private String status;
+
+    @Column(name = "status_bill")
+    private String statusBill;
 
     @Column(name = "subtotal")
     private Double subtotal;

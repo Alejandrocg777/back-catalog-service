@@ -45,6 +45,7 @@ public interface NumerationRepository extends JpaRepository<Numeration, Long> {
             @Param("finalNumber") String finalNumber,
             @Param("currentNumber") String currentNumber,
             Pageable pageable);
+
     @Query(
             value = "SELECT new com.asb.backCompanyService.dto.responde.NumerationResponseDto(n.id, n.authNumber, n.prefix, n.startDate, n.finishDate, n.status, n.initialNumber, n.finalNumber, n.currentNumber) " +
                     "FROM Numeration n " +
@@ -76,10 +77,26 @@ public interface NumerationRepository extends JpaRepository<Numeration, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT n FROM Numeration n " +
             "JOIN Terminal t ON n.id = t.numerationId " +
-           // "WHERE t.userId = :userId " +
+            // "WHERE t.userId = :userId " +
             "AND n.status = 'ACTIVE' " +
             "AND :currentDate BETWEEN n.startDate AND n.finishDate " +
             "AND n.currentNumber < n.finalNumber")
     Optional<Numeration> findActiveNumerationForType(
-                                                     @Param("currentDate") LocalDate currentDate);
+            @Param("currentDate") LocalDate currentDate);
+
+
+    @Query("""
+    SELECT n FROM Numeration n 
+    INNER JOIN Terminal t ON t.numerationId = n.id 
+    INNER JOIN TerminalDetails td ON td.terminalId = t.id 
+    WHERE td.userId = :userId 
+    AND n.status = 'ACTIVE' 
+    AND :currentDate BETWEEN n.startDate AND n.finishDate 
+    AND n.currentNumber < n.finalNumber
+    """)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<Numeration> findActiveNumerationForUser(
+            @Param("userId") Long userId,
+            @Param("currentDate") LocalDate currentDate
+    );
 }

@@ -8,12 +8,8 @@ import com.asb.backCompanyService.dto.responde.GenerateInvoiceResponseDto;
 import com.asb.backCompanyService.dto.responde.InvoiceResponseDto;
 import com.asb.backCompanyService.exception.CustomErrorException;
 import com.asb.backCompanyService.exception.GenericException;
-import com.asb.backCompanyService.model.Bill;
-import com.asb.backCompanyService.model.BillDetails;
-import com.asb.backCompanyService.model.GenerateInvoice;
-import com.asb.backCompanyService.repository.BillDetailsRepopsitory;
-import com.asb.backCompanyService.repository.BillRepository;
-import com.asb.backCompanyService.repository.GenerateInvoiceRepository;
+import com.asb.backCompanyService.model.*;
+import com.asb.backCompanyService.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -26,6 +22,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,12 +37,26 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
     private final BillRepository billRepository;
     private final BillDetailsRepopsitory billDetailsRepopsitory;
     private final NumerationService numerationService;
+    private final ProductRepository productRepository;
+    private final TransactionsService transactionsService;
+    private final TransactionProductRepository transactionProductRepository;
 
     @Override
     @Transactional
     public InvoiceRequestDTO save(InvoiceRequestDTO dto) {
+        String billStatus = calculateBillStatus(dto.getTotal(), dto.getInitialPayment(), dto.getDueDate());
+
+        if (dto.getStatusBill() != null && dto.getStatusBill().equalsIgnoreCase("COTIZACION")) {
+            billStatus = "COTIZACION";
+        }
+        if (!"COTIZACION".equalsIgnoreCase(billStatus)) {
+            validateAndCheckInventory(dto.getInvoiceDetails());
+        }
+
         Bill factura = new Bill();
         factura.setCustomerId(dto.getCustomerId());
+        factura.setAddress(dto.getAddress());
+        factura.setPhone(dto.getPhone());
         factura.setInvoiceDate(dto.getInvoiceDate());
         factura.setDueDate(dto.getDueDate());
         factura.setPaymentTypeId(dto.getPaymentTypeId());
@@ -64,12 +76,33 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
         String invoiceNumber = numerationService.generateInvoiceNumber(dto.getUserId());
         factura.setInvoiceNumber(invoiceNumber);
         factura.setStatus("ACTIVE");
+        factura.setStatusBill(billStatus);
 
         Bill newBill = billRepository.save(factura);
 
+        Transaction transaction = null;
+        if (!"COTIZACION".equalsIgnoreCase(billStatus)) {
+            String dateStr = dto.getInvoiceDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            String observation = "Factura #" + invoiceNumber +
+                    (dto.getObservations() != null && !dto.getObservations().isEmpty()
+                            ? " - " + dto.getObservations()
+                            : "");
+
+            transaction = transactionsService.insertTransaction(
+                    "SALIDA",
+                    dto.getTotal(),
+                    dto.getUserId(),
+                    dateStr,
+                    observation,
+                    "ACTIVE"
+            );
+
+            log.info("Transacción creada - ID: {} para factura {}", transaction.getId(), invoiceNumber);
+        }
+
         for (InvoiceDetailDTO detailDto : dto.getInvoiceDetails()) {
             BillDetails detalle = new BillDetails();
-            detalle.setFacturaId(newBill.getId());  // Asignar el ID de la factura
+            detalle.setFacturaId(newBill.getId());
             detalle.setProductId(detailDto.getProductId());
             detalle.setQuantity(detailDto.getQuantity());
             detalle.setUnitPrice(detailDto.getUnitPrice());
@@ -79,10 +112,73 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
             detalle.setSubtotal(detailDto.getSubtotal());
             detalle.setTotal(detailDto.getTotal());
 
-            // Guardar cada detalle (asumiendo que tienes un BillDetailsRepository)
             billDetailsRepopsitory.save(detalle);
+
+            if (transaction != null) {
+                TransactionProduct tp = new TransactionProduct();
+                tp.setTransactionId(transaction.getId());
+                tp.setProductId(detailDto.getProductId());
+                tp.setPurchasePrice(detailDto.getUnitPrice());
+                tp.setTotal(detailDto.getTotal());
+                tp.setQuantity(Long.valueOf(detailDto.getQuantity()));
+                transactionProductRepository.save(tp);
+            }
         }
+
+        if (!"COTIZACION".equalsIgnoreCase(billStatus)) {
+            updateInventory(dto.getInvoiceDetails());
+            log.info("Inventario actualizado para factura {} - Tipo: {}", invoiceNumber, billStatus);
+        } else {
+            log.info("Cotización creada {} - NO se afectó el inventario ni se creó transacción", invoiceNumber);
+        }
+
+        dto.setInvoiceNumber(invoiceNumber);
+        dto.setBillId(newBill.getId());
+
+        log.info("Factura creada - ID: {}, Número: {}, Estado: {}",
+                newBill.getId(), invoiceNumber, billStatus);
+
         return dto;
+    }
+
+
+    private void validateAndCheckInventory(List<InvoiceDetailDTO> details) {
+        for (InvoiceDetailDTO detail : details) {
+            Product product = productRepository.findById(detail.getProductId())
+                    .orElseThrow(() -> new GenericException(
+                            "Producto no encontrado con ID: " + detail.getProductId(),
+                            HttpStatus.NOT_FOUND));
+
+            if (product.getQuantity() < detail.getQuantity()) {
+                throw new GenericException(
+                        String.format("Stock insuficiente para el producto '%s'. Disponible: %.2f, Solicitado: %.2f",
+                                product.getProductName(),
+                                product.getQuantity(),
+                                detail.getQuantity()),
+                        HttpStatus.BAD_REQUEST);
+            }
+        }
+    }
+
+
+    private void updateInventory(List<InvoiceDetailDTO> details) {
+        for (InvoiceDetailDTO detail : details) {
+            Product product = productRepository.findById(detail.getProductId())
+                    .orElseThrow(() -> new GenericException(
+                            "Producto no encontrado con ID: " + detail.getProductId(),
+                            HttpStatus.NOT_FOUND));
+
+            Long newQuantity = (product.getQuantity() - detail.getQuantity());
+            product.setQuantity(newQuantity);
+
+            productRepository.save(product);
+
+            log.debug("Producto {} - Cantidad anterior: {}, Vendido: {}, Nuevo stock: {}",
+                    product.getProductName(),
+                    product.getQuantity() + detail.getQuantity(),
+                    detail.getQuantity(),
+                    newQuantity);
+        }
     }
 
     @Override
@@ -106,21 +202,73 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
     @Override
     @Transactional
     public boolean delete(Long id) {
-       Bill generateInvoice = billRepository.findById(id).get();
+        Bill bill = billRepository.findById(id)
+                .orElseThrow(() -> new GenericException("Factura no encontrada con ID: " + id, HttpStatus.NOT_FOUND));
 
-       generateInvoice.setStatus("INCATIVE");
+        if (!"COTIZACION".equalsIgnoreCase(bill.getStatusBill())) {
+            List<BillDetails> details = billDetailsRepopsitory.findByFacturaId(id);
+            restoreInventory(details);
+            log.info("Inventario restaurado al eliminar factura {}", bill.getInvoiceNumber());
+        }
 
-        billRepository.save(generateInvoice);
+        bill.setStatusBill("INACTIVO");
+        billRepository.save(bill);
         return true;
+    }
+
+
+    private void restoreInventory(List<BillDetails> details) {
+        for (BillDetails detail : details) {
+            Product product = productRepository.findById(detail.getProductId())
+                    .orElseThrow(() -> new GenericException(
+                            "Producto no encontrado con ID: " + detail.getProductId(),
+                            HttpStatus.NOT_FOUND));
+
+            Long restoredQuantity = product.getQuantity() + detail.getQuantity();
+            product.setQuantity(restoredQuantity);
+
+            productRepository.save(product);
+
+            log.debug("Producto {} - Inventario restaurado: +{}, Nuevo stock: {}",
+                    product.getProductName(),
+                    detail.getQuantity(),
+                    restoredQuantity);
+        }
     }
 
     @Override
     public GenerateInvoiceResponseDto get(Long id) {
-        GenerateInvoice generateInvoice = generateInvoiceRepository.findById(id)
+        GenerateInvoiceResponseDto responseDto = billRepository.findByIdWithNames(id)
                 .orElseThrow(() -> new GenericException("No existe la factura con id " + id, HttpStatus.NOT_FOUND));
 
-        GenerateInvoiceResponseDto responseDto = new GenerateInvoiceResponseDto();
-        BeanUtils.copyProperties(generateInvoice, responseDto);
+        List<InvoiceDetailDTO> details;
+
+        try {
+            details = billDetailsRepopsitory.findDetailsByBillId(id);
+        } catch (Exception e) {
+            log.warn("No se pudo obtener detalles con nombres de productos, usando query simple");
+            List<BillDetails> billDetails = billDetailsRepopsitory.findByFacturaId(id);
+            details = billDetails.stream()
+                    .map(bd -> new InvoiceDetailDTO(
+                            bd.getId(),
+                            bd.getProductId(),
+                            "",
+                            bd.getQuantity(),
+                            bd.getUnitPrice(),
+                            bd.getDiscountPercent(),
+                            bd.getDiscountFixed(),
+                            bd.getTotalDiscount(),
+                            bd.getSubtotal(),
+                            bd.getTotal()
+                    ))
+                    .toList();
+        }
+
+        responseDto.setInvoiceDetails(details);
+
+        log.info("Factura obtenida - ID: {}, Número: {}, Detalles: {}",
+                id, responseDto.getInvoiceNumber(), details.size());
+
         return responseDto;
     }
 
@@ -145,17 +293,105 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
         Sort sort = Sort.by(direction, sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<Bill> result = billRepository.findAll(pageable);
-        return result.map(generateInvoice -> {
-            InvoiceResponseDto dto = new InvoiceResponseDto();  // Cambiado a InvoiceResponseDto
-            BeanUtils.copyProperties(generateInvoice, dto);
-            return dto;
-        });
+        return billRepository.findAllWithDetails(pageable);
+    }
+
+    private String calculateBillStatus(Double total, Double initialPayment, LocalDate dueDate) {
+        if (initialPayment == null || initialPayment == 0.0) {
+            return "PENDIENTE";
+        }
+
+        if (initialPayment.compareTo(total) >= 0) {
+            return "PAGADO";
+        }
+
+        if (initialPayment > 0.0 && initialPayment < total) {
+            return "ABONO";
+        }
+
+        if (dueDate != null && (initialPayment == null || initialPayment == 0.0)) {
+            return "PENDIENTE";
+        }
+
+        return "PENDIENTE";
     }
 
     @Override
-    public Page<GenerateInvoice> searchGenerateInvoice(Map<String, String> customQuery) {
-        return null;
+    public Page<InvoiceResponseDto> searchGenerateInvoice(Map<String, String> customQuery) {
+        String orders = "ASC";
+        String sortBy = "id";
+        int page = 0;
+        int size = 6;
+        String id = null;
+        String invoiceNumber = null;
+        String customerName = null;
+        String paymentMethodName = null;
+        String userName = null;
+        String statusBill = null;
+        String total = null;
+
+        if (customQuery.containsKey("orders")) {
+            orders = customQuery.get("orders");
+        }
+
+        if (customQuery.containsKey("sortBy")) {
+            sortBy = customQuery.get("sortBy");
+        }
+
+        if (customQuery.containsKey("page")) {
+            page = Integer.parseInt(customQuery.get("page"));
+        }
+
+        if (customQuery.containsKey("size")) {
+            size = Integer.parseInt(customQuery.get("size"));
+        }
+
+        if (customQuery.containsKey("id")) {
+            id = "%" + customQuery.get("id") + "%";
+        }
+
+        if (customQuery.containsKey("invoiceNumber")) {
+            invoiceNumber = "%" + customQuery.get("invoiceNumber") + "%";
+        }
+
+        if (customQuery.containsKey("customerName")) {
+            customerName = "%" + customQuery.get("customerName") + "%";
+        }
+
+        if (customQuery.containsKey("paymentMethodName")) {
+            paymentMethodName = "%" + customQuery.get("paymentMethodName") + "%";
+        }
+
+        if (customQuery.containsKey("userName")) {
+            userName = "%" + customQuery.get("userName") + "%";
+        }
+
+        if (customQuery.containsKey("statusBill")) {
+            statusBill = "%" + customQuery.get("statusBill").toUpperCase() + "%";
+        }
+
+        if (customQuery.containsKey("total")) {
+            total = "%" + customQuery.get("total").toUpperCase() + "%";
+        }
+
+        Sort.Direction direction = Sort.Direction.fromString(orders);
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pagingSort = PageRequest.of(page, size, sort);
+
+        Page<InvoiceResponseDto> searchResult = billRepository.searchInvoices(
+                id,
+                invoiceNumber,
+                customerName,
+                paymentMethodName,
+                userName,
+                statusBill,
+                total,
+                pagingSort
+        );
+
+        log.info("Búsqueda de facturas - Resultados: {} registros", searchResult.getTotalElements());
+
+        return searchResult;
     }
 
     @Override

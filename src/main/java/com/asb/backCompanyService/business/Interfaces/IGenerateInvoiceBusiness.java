@@ -27,6 +27,6 @@ public interface IGenerateInvoiceBusiness {
 
     Page<InvoiceResponseDto> getAll(int page, int size, String orders, String sortBy);
 
-    Page<GenerateInvoice> searchGenerateInvoice(Map<String, String> customQuery);
+    Page<InvoiceResponseDto> searchGenerateInvoice(Map<String, String> customQuery);
 
 }

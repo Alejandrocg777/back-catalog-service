@@ -12,12 +12,15 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class InvoiceResponseDto {
 
+    private Long id;
     private Long customerId;
+    private String customerName;
     private String invoiceNumber;
     private LocalDateTime invoiceDate;
     private LocalDate dueDate;
     private Long paymentTypeId;
     private Long paymentMethodId;
+    private String paymentMethodName;
     private String deliveryType;
     private Double deliveryCost;
     private String observations;
@@ -28,5 +31,8 @@ public class InvoiceResponseDto {
     private Double remainingBalance;
     private Double cashReceived;
     private Long userId;
+    private String userName;
     private Double changeGiven;
+    private String status;
+    private String statusBill;
 }

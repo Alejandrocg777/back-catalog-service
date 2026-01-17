@@ -10,6 +10,7 @@ public class BillDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "bill_details_id")
     private Long id;
 
     @Column(name = "factura_id")

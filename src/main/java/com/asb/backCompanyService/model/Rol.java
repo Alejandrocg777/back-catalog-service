@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class Rol {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Para MySQL (autoincrement). Cambiar a SEQUENCE para Oracle si es necesario
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "rol_id", nullable = false)
     private Long id;
 

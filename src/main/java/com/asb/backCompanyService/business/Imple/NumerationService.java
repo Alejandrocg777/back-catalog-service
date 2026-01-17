@@ -225,34 +225,34 @@ public class NumerationService implements INumerationBusiness {
 
     @Transactional
     public String generateInvoiceNumber(Long userId) {
-        LocalDate currentDate = LocalDate.now();  // Fecha actual para validar vigencia
+        LocalDate currentDate = LocalDate.now();
 
-        // Encontrar la numeración vigente con lock
-        Optional<Numeration> optionalNumeration = repository.findActiveNumerationForType( currentDate);
+        // Encontrar la numeración vigente para el usuario específico con lock pesimista
+        Optional<Numeration> optionalNumeration = repository.findActiveNumerationForUser(userId, currentDate);
 
         if (optionalNumeration.isEmpty()) {
-            throw new RuntimeException("No hay numeración vigente para el usuario " + userId +
-                    " en la fecha actual. Verifica fechas, rango y status.");
+            throw new RuntimeException("No hay numeración vigente asignada al usuario " + userId +
+                    " en la fecha actual. Verifica que el usuario tenga un terminal asignado con numeración activa.");
         }
 
         Numeration numeration = optionalNumeration.get();
 
-        // Validar explícitamente (aunque la query ya lo hace)
+        // Validar que no se haya alcanzado el límite
         if (numeration.getCurrentNumber() >= numeration.getFinalNumber()) {
-            throw new RuntimeException("Se ha alcanzado el número final en la numeración ID: " + numeration.getId());
+            throw new RuntimeException("Se ha alcanzado el número final en la numeración ID: " +
+                    numeration.getId() + " (Prefijo: " + numeration.getPrefix() + ")");
         }
 
-        if (currentDate.isBefore(numeration.getStartDate()) || currentDate.isAfter(numeration.getFinishDate())) {
-            throw new RuntimeException("La numeración ID: " + numeration.getId() + " no está vigente en la fecha actual.");
-        }
-
-        // Generar el número: prefix + current_number (formateado con 6 dígitos, ajusta según necesidades)
+        // Generar el número de factura
         int current = numeration.getCurrentNumber();
         String invoiceNumber = numeration.getPrefix() + "-" + String.format("%06d", current);
 
-        // Incrementar y guardar
+        // Incrementar el número actual y guardar
         numeration.setCurrentNumber(current + 1);
         repository.save(numeration);
+
+        log.info("Factura generada: {} para usuario: {} desde numeración ID: {}",
+                invoiceNumber, userId, numeration.getId());
 
         return invoiceNumber;
     }

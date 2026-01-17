@@ -80,8 +80,8 @@ public class GenerateInvoiceController {
 
 
     @GetMapping("/search")
-    public ResponseEntity<Page<GenerateInvoice>> search(@RequestParam Map<String, String> customQuery) {
-        Page<GenerateInvoice> generateInvoicePage = iGenerateInvoiceBusiness.searchGenerateInvoice(customQuery);
+    public ResponseEntity<Page<InvoiceResponseDto>> search(@RequestParam Map<String, String> customQuery) {
+        Page<InvoiceResponseDto> generateInvoicePage = iGenerateInvoiceBusiness.searchGenerateInvoice(customQuery);
         return ResponseEntity.ok(generateInvoicePage);
     }
 

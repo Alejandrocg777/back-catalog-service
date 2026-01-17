@@ -13,7 +13,11 @@ import java.util.List;
 @NoArgsConstructor
 public class InvoiceRequestDTO {
 
+    private String invoiceNumber;
+    private Long billId;
     private Long customerId;
+    private String address;
+    private String phone;
     private LocalDateTime invoiceDate;
     private LocalDate dueDate;
     private Long paymentTypeId;
@@ -29,5 +33,6 @@ public class InvoiceRequestDTO {
     private Double cashReceived;
     private Long userId;
     private Double changeGiven;
+    private String statusBill;
     private List<InvoiceDetailDTO> invoiceDetails;
 }
