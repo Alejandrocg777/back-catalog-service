@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -45,12 +46,13 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
                     "OR UPPER(s.status) LIKE UPPER(:status)")
     Page<SupplierDtoResponse> searchSuppliers(String id, String name, String email, String phone, String categoryId, String warehouseName, String status, Pageable pageable);
 
-
-
-    @Query(value = "SELECT s " +
-            "FROM Supplier s " +
+    @Query("SELECT new com.asb.backCompanyService.dto.responde.SupplierDtoResponse(" +
+            "s.id, s.name, s.email, s.phone, s.categoryId, " +
+            "w.warehouseName, w.id, s.status) " +
+            "FROM Supplier s JOIN Warehouse w ON s.warehouseId = w.id " +
             "WHERE s.status = 'ACTIVE'")
-    List<Supplier> getAllSupplier();
+    List<SupplierDtoResponse> getAllSupplier();
+
 
     @Query(value = "SELECT distinct new com.asb.backCompanyService.dto.responde.SuppliersWhoMustDTO(s.id, s.name, w.warehouseName, s.status) " +
             "FROM Supplier s " +
@@ -59,5 +61,31 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
             "WHERE s.status = 'ACTIVE' " +
             "AND pw.reservedQuantity > 0 ")
     Page<SuppliersWhoMustDTO> getAllSupplierWithDebt(Pageable pageable);
+
+
+    @Query(value = "SELECT distinct new com.asb.backCompanyService.dto.responde.SuppliersWhoMustDTO(s.id, s.name, w.warehouseName, s.status) " +
+            "FROM Supplier s " +
+            "JOIN Warehouse w ON s.warehouseId = w.id " +
+            "JOIN ProductWarehouse pw ON s.id = pw.supplierId " +
+            "WHERE s.status = 'ACTIVE' " +
+            "AND pw.reservedQuantity > 0 " +
+            "AND (CAST(s.id AS string) LIKE :id " +
+            "OR UPPER(s.name) LIKE :supplierName " +
+            "OR UPPER(w.warehouseName) LIKE :warehouseName)",
+            countQuery = "SELECT COUNT(DISTINCT s.id) " +
+                    "FROM Supplier s " +
+                    "JOIN Warehouse w ON s.warehouseId = w.id " +
+                    "JOIN ProductWarehouse pw ON s.id = pw.supplierId " +
+                    "WHERE s.status = 'ACTIVE' " +
+                    "AND pw.reservedQuantity > 0 " +
+                    "AND (CAST(s.id AS string) LIKE :id " +
+                    "OR UPPER(s.name) LIKE :supplierName " +
+                    "OR UPPER(w.warehouseName) LIKE :warehouseName)")
+    Page<SuppliersWhoMustDTO> searchSupplierWithDebt(
+            @Param("id") String id,
+            @Param("supplierName") String supplierName,
+            @Param("warehouseName") String warehouseName,
+            Pageable pageable
+    );
 
 }

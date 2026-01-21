@@ -71,8 +71,8 @@ public class RateNeighborhoodController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/no-page/getAllCities")
-    public ResponseEntity<List<RateNeighborhood>> getAllCities() {
+    @GetMapping("/no-page/getAll")
+    public ResponseEntity<List<RateNeighborhood>> getAllNoPage() {
         log.info("Iniciando endpoint para obtener todas las ciudades");
         List<RateNeighborhood> cities = iRateNeighborhoodBusiness.getAllRateNeighborhood();
         return new ResponseEntity<>(cities, HttpStatus.OK);

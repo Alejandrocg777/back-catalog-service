@@ -14,13 +14,16 @@ import java.util.List;
 @AllArgsConstructor
 public class PendingOrderResponseDto {
 
+    private Long id;
     private Long billId;
     private Long customerId;
     private String customerName;
+    private String cityName;
     private String neighborhood;
     private String address;
     private String phone;
     private String observations;
-    private LocalDateTime date;
+    private String date;
     private Double total;
+    private String statusOrder;
 }

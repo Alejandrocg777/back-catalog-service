@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
@@ -38,18 +39,37 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     Page<TransactionResponseDTO> search(String id, String productName, String transactionType, String quantity, String typeUser, String userName, String value, String status, Pageable pageable);
 
 
-
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.TransactionResponseNewDTO(t.id, r.id, r.name, u.id, u.name, t.transactionDate, t.transactionType, t.observation) " +
-            "FROM User u " +
-            "JOIN Rol r ON u.rolId = r.id " +
-            "JOIN Transaction t ON u.id = t.userId " +
-            "WHERE  (:transactionType IS NULL OR UPPER(t.transactionType) LIKE UPPER(:transactionType)) " +
-            "AND (:observation IS NULL OR UPPER(t.observation) LIKE UPPER(:observation)) " +
-            "AND (:typeUser IS NULL OR UPPER(r.name) LIKE UPPER(:typeUser)) " +
-            "AND (:userName IS NULL OR UPPER(u.name) LIKE UPPER(:userName)) ")
-    Page<TransactionResponseNewDTO> searchTransaction(String transactionType, String typeUser, String userName, String observation,Pageable pageable);
-
-
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.TransactionResponseNewDTO(" +
+            "t.id, r.id, r.name, u.id, u.name, t.transactionDate, t.transactionType, t.observation) " +
+            "FROM Transaction t " +
+            "INNER JOIN User u ON t.userId = u.id " +
+            "INNER JOIN Rol r ON u.rolId = r.id " +
+            "WHERE t.status = 'ACTIVE' " +
+            "AND (CAST(t.id AS string) LIKE :id " +
+            "OR UPPER(t.transactionType) LIKE UPPER(:transactionType) " +
+            "OR CAST(t.transactionDate AS string) LIKE :transactionDate " +
+            "OR UPPER(r.name) LIKE UPPER(:typeUser) " +
+            "OR UPPER(u.name) LIKE UPPER(:userName) " +
+            "OR UPPER(t.observation) LIKE UPPER(:observation))",
+            countQuery = "SELECT COUNT(t) " +
+                    "FROM Transaction t " +
+                    "INNER JOIN User u ON t.userId = u.id " +
+                    "INNER JOIN Rol r ON u.rolId = r.id " +
+                    "WHERE t.status = 'ACTIVE' " +
+                    "AND (CAST(t.id AS string) LIKE :id " +
+                    "OR UPPER(t.transactionType) LIKE UPPER(:transactionType) " +
+                    "OR CAST(t.transactionDate AS string) LIKE :transactionDate " +
+                    "OR UPPER(r.name) LIKE UPPER(:typeUser) " +
+                    "OR UPPER(u.name) LIKE UPPER(:userName) " +
+                    "OR UPPER(t.observation) LIKE UPPER(:observation))")
+    Page<TransactionResponseNewDTO> searchTransaction(
+            @Param("id") String id,
+            @Param("transactionType") String transactionType,
+            @Param("transactionDate") String transactionDate,
+            @Param("typeUser") String typeUser,
+            @Param("userName") String userName,
+            @Param("observation") String observation,
+            Pageable pageable);
 
     @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.TransactionResponseNewDTO(t.id, r.id, r.name, u.id,u.name, t.transactionDate, t.transactionType, t.observation) " +
             "FROM Transaction t " +

@@ -16,7 +16,7 @@ public class PendingOrder {
     @Column(name = "pending_order_id")
     private Long id;
 
-    @Column(name = "bill_id", nullable = false)
+    @Column(name = "bill_id", nullable = true)
     private Long billId;
 
     @Column(name = "customer_id", nullable = false)
@@ -28,7 +28,7 @@ public class PendingOrder {
     @Column(name = "phone")
     private String phone;
 
-    @Column(name = "observations")
+    @Column(name = "observation")
     private String observations;
 
     @Column(name = "date_pending_order")

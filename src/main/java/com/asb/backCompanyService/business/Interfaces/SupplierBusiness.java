@@ -33,7 +33,7 @@ public interface SupplierBusiness {
 
      Supplier updateSupplier(Long supplierId, SupplierCreateDTO updateDTO);
 
-    List<Supplier> getAllNoPage();
+    List<SupplierDtoResponse> getAllNoPage();
 
     BigDecimal getPurchasePrice(Long supplierId, Long productId);
 
@@ -51,6 +51,10 @@ public interface SupplierBusiness {
 
     Page<SuppliersWhoMustDTO> getAllSupplierOwes( int page, int size, String orders, String sortBy);
 
+    Page<PurchaseProductsSupplier>searchProductByPurchase(Long purchaseSupplierId, Map<String , String>customQuery);
 
+    Page<SuppliersWhoMustDTO> searchSupplierWithDebt(Map<String, String> customQuery);
+
+    Page<AmountOwesSupplierDTO>searchProductByAmountThatSupplierOwes(Long supplierId, Map<String , String>customQuery);
 
 }

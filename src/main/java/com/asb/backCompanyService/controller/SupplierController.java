@@ -64,8 +64,8 @@ public class SupplierController {
 
 
     @GetMapping("/get-all/no-page")
-    public ResponseEntity<List<Supplier>> getAllNoPage() {
-        List<Supplier> suppliers = supplierService.getAllNoPage();
+    public ResponseEntity<List<SupplierDtoResponse>> getAllNoPage() {
+        List<SupplierDtoResponse> suppliers = supplierService.getAllNoPage();
         return new ResponseEntity<>(suppliers, HttpStatus.OK);
     }
 
@@ -153,8 +153,8 @@ public class SupplierController {
     }
 
     @GetMapping("/get-all/amountThatSupplierOwes/{supplierId}")
-    public ResponseEntity<Page<AmountOwesSupplierDTO>> getAllAmountThatSupplierOwes(@RequestParam(defaultValue = "0") int page,
-                                                            @RequestParam(defaultValue = "10") int size,
+    public ResponseEntity<Page< AmountOwesSupplierDTO>> getAllAmountThatSupplierOwes(@RequestParam(defaultValue = "0") int page,
+                                                            @RequestParam(defaultValue = "6") int size,
                                                             @RequestParam(defaultValue = "ASC") String orders,
                                                             @RequestParam(defaultValue = "id") String sortBy,
                                                             @PathVariable("supplierId")Long supplierId) {
@@ -170,5 +170,23 @@ public class SupplierController {
                                                                         @RequestParam(defaultValue = "id") String sortBy) {
         Page<SuppliersWhoMustDTO> suppliers = supplierService.getAllSupplierOwes(page, size, orders, sortBy);
         return new ResponseEntity<>(suppliers, HttpStatus.OK);
+    }
+
+    @GetMapping("/products/searchProductByPurchase/{purchaseSupplierId}")
+    public ResponseEntity<Page<PurchaseProductsSupplier>> searchProductsByPendingOrder(@PathVariable Long purchaseSupplierId, @RequestParam Map<String, String> customQuery) {
+        Page<PurchaseProductsSupplier> products = supplierService.searchProductByPurchase(purchaseSupplierId, customQuery);
+        return new ResponseEntity<>(products, HttpStatus.OK);
+    }
+
+    @GetMapping("/search-supplier-with-debt")
+    public ResponseEntity<Page<SuppliersWhoMustDTO>> searchSupplierWithDebt(@RequestParam Map<String, String> customQuery) {
+        Page<SuppliersWhoMustDTO> result = supplierService.searchSupplierWithDebt(customQuery);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/products/searchProductByAmountThatSupplierOwes/{supplierId}")
+    public ResponseEntity<Page<AmountOwesSupplierDTO>> searchProductByAmountThatSupplierOwes(@PathVariable Long supplierId, @RequestParam Map<String, String> customQuery) {
+        Page<AmountOwesSupplierDTO> products = supplierService.searchProductByAmountThatSupplierOwes(supplierId, customQuery);
+        return new ResponseEntity<>(products, HttpStatus.OK);
     }
 }

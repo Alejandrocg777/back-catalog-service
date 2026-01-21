@@ -1,9 +1,12 @@
 package com.asb.backCompanyService.business.Imple;
 
 import com.asb.backCompanyService.business.Interfaces.IGenerateInvoiceBusiness;
+import com.asb.backCompanyService.business.Interfaces.IPendingOrderBusiness;
 import com.asb.backCompanyService.dto.request.GenerateInvoiceDto;
 import com.asb.backCompanyService.dto.request.InvoiceDetailDTO;
 import com.asb.backCompanyService.dto.request.InvoiceRequestDTO;
+import com.asb.backCompanyService.dto.request.PendingOrderDetailDto;
+import com.asb.backCompanyService.dto.request.PendingOrderRequestDto;
 import com.asb.backCompanyService.dto.responde.GenerateInvoiceResponseDto;
 import com.asb.backCompanyService.dto.responde.InvoiceResponseDto;
 import com.asb.backCompanyService.exception.CustomErrorException;
@@ -26,7 +29,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -40,6 +43,7 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
     private final ProductRepository productRepository;
     private final TransactionsService transactionsService;
     private final TransactionProductRepository transactionProductRepository;
+    private final IPendingOrderBusiness pendingOrderBusiness;
 
     @Override
     @Transactional
@@ -132,15 +136,76 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
             log.info("Cotización creada {} - NO se afectó el inventario ni se creó transacción", invoiceNumber);
         }
 
+        if ("LLEVAR".equalsIgnoreCase(dto.getDeliveryType()) && !"COTIZACION".equalsIgnoreCase(billStatus)) {
+            createPendingOrderFromInvoice(newBill, dto);
+            log.info("Pedido pendiente creado automáticamente para factura {} - Delivery Type: LLEVAR - Estado: {}",
+                    invoiceNumber, billStatus);
+        } else if ("LLEVAR".equalsIgnoreCase(dto.getDeliveryType()) && "COTIZACION".equalsIgnoreCase(billStatus)) {
+            log.info("NO se creó pedido pendiente para factura {} - Es una COTIZACIÓN", invoiceNumber);
+        }
         dto.setInvoiceNumber(invoiceNumber);
         dto.setBillId(newBill.getId());
 
-        log.info("Factura creada - ID: {}, Número: {}, Estado: {}",
-                newBill.getId(), invoiceNumber, billStatus);
+        log.info("Factura creada - ID: {}, Número: {}, Estado: {}, Delivery: {}",
+                newBill.getId(), invoiceNumber, billStatus, dto.getDeliveryType());
 
         return dto;
     }
 
+    private void createPendingOrderFromInvoice(Bill bill, InvoiceRequestDTO invoiceDto) {
+        try {
+            PendingOrderRequestDto pendingOrderDto = new PendingOrderRequestDto();
+            pendingOrderDto.setBillId(bill.getId());
+            pendingOrderDto.setCustomerId(bill.getCustomerId());
+            pendingOrderDto.setAddress(invoiceDto.getAddress());
+            pendingOrderDto.setPhone(invoiceDto.getPhone());
+            pendingOrderDto.setObservations(invoiceDto.getObservations() != null
+                    ? invoiceDto.getObservations()
+                    : "Pedido generado desde factura " + bill.getInvoiceNumber());
+
+            String dateStr = bill.getInvoiceDate() != null
+                    ? bill.getInvoiceDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                    : LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            pendingOrderDto.setDate(dateStr);
+
+            Double totalToSave;
+            String billStatus = bill.getStatusBill();
+
+            if ("ABONO".equalsIgnoreCase(billStatus) || "PENDIENTE".equalsIgnoreCase(billStatus)) {
+                totalToSave = bill.getRemainingBalance() != null ? bill.getRemainingBalance() : bill.getTotal();
+                log.info("Pedido pendiente - Tipo: {} - Total a cobrar (deuda): ${}",
+                        billStatus, totalToSave);
+            } else {
+                totalToSave = bill.getTotal();
+                log.info("Pedido pendiente - Tipo: CONTADO - Total a cobrar: ${}", totalToSave);
+            }
+
+            pendingOrderDto.setTotal(totalToSave);
+
+            List<PendingOrderDetailDto> pendingDetails = invoiceDto.getInvoiceDetails().stream()
+                    .map(invoiceDetail -> {
+                        PendingOrderDetailDto detailDto = new PendingOrderDetailDto();
+                        detailDto.setProductId(invoiceDetail.getProductId());
+                        detailDto.setQuantity(invoiceDetail.getQuantity());
+                        detailDto.setUnitPrice(invoiceDetail.getUnitPrice());
+                        detailDto.setTotal(invoiceDetail.getTotal());
+                        return detailDto;
+                    })
+                    .collect(Collectors.toList());
+
+            pendingOrderDto.setPendingOrderDetails(pendingDetails);
+
+            pendingOrderBusiness.save(pendingOrderDto);
+
+            log.info("Pedido pendiente creado exitosamente para factura ID: {} - Total productos: {} - Total a cobrar: ${}",
+                    bill.getId(), pendingDetails.size(), totalToSave);
+
+        } catch (Exception e) {
+            log.error("Error al crear pedido pendiente para factura ID: {} - Error: {}",
+                    bill.getId(), e.getMessage());
+
+        }
+    }
 
     private void validateAndCheckInventory(List<InvoiceDetailDTO> details) {
         for (InvoiceDetailDTO detail : details) {
@@ -159,7 +224,6 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
             }
         }
     }
-
 
     private void updateInventory(List<InvoiceDetailDTO> details) {
         for (InvoiceDetailDTO detail : details) {
@@ -215,7 +279,6 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
         billRepository.save(bill);
         return true;
     }
-
 
     private void restoreInventory(List<BillDetails> details) {
         for (BillDetails detail : details) {

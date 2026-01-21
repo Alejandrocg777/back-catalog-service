@@ -211,9 +211,8 @@ public class SupplierService implements SupplierBusiness {
         String orders = "ASC";
         String sortBy = "id";
         int page = 0;
-        int size = 10;
-        String supplierProductId = null;
-        String productId = null;
+        int size = 6;
+        String id = null;
         String productName = null;
         String purchasePrice = null;
         String status = null;
@@ -234,13 +233,10 @@ public class SupplierService implements SupplierBusiness {
             size = Integer.parseInt(customQuery.get("size"));
         }
 
-        if (customQuery.containsKey("supplierProductId")) {
-            supplierProductId = "%" + customQuery.get("supplierProductId") + "%";
+        if (customQuery.containsKey("id")) {
+            id = "%" + customQuery.get("id") + "%";
         }
 
-        if (customQuery.containsKey("productId")) {
-            productId = "%" + customQuery.get("productId") + "%";
-        }
 
         if (customQuery.containsKey("productName")) {
             productName = "%" + customQuery.get("productName").toUpperCase() + "%";
@@ -254,22 +250,41 @@ public class SupplierService implements SupplierBusiness {
             status = "%" + customQuery.get("status").toUpperCase() + "%";
         }
 
-        Sort.Direction direction = Sort.Direction.fromString(orders);
-        Sort sort = Sort.by(direction, sortBy);
+        String actualSortField = sortBy;
+        switch (sortBy) {
+            case "id":
+                actualSortField = "sp.id";
+                break;
+            case "productId":
+                actualSortField = "sp.productId";
+                break;
+            case "productName":
+                actualSortField = "p.productName";
+                break;
+            case "purchasePrice":
+                actualSortField = "sp.purchasePrice";
+                break;
+            case "status":
+                actualSortField = "sp.status";
+                break;
+            default:
+                actualSortField = "sp.id";
+                break;
+        }
 
+        Sort.Direction direction = Sort.Direction.fromString(orders);
+        Sort sort = Sort.by(direction, actualSortField);
         Pageable pagingSort = PageRequest.of(page, size, sort);
 
-        log.info("supplierProductId: " + supplierProductId);
-        log.info("productId: " + productId);
-        log.info("productName: " + productName);
-        log.info("purchasePrice: " + purchasePrice);
-        log.info("status: " + status);
-        log.info("Page: " + page);
-        log.info("Size: " + size);
-        log.info("Orders: " + orders);
-        log.info("SortBy: " + sortBy);
+        Page<SupplierProductDtoResponse> searchResult = supplierProductRepository.searchSupplierProducts(
+                supplierId,
+                id,
+                productName,
+                purchasePrice,
+                status,
+                pagingSort
+        );
 
-        Page<SupplierProductDtoResponse> searchResult = supplierProductRepository.searchSupplierProducts(supplierId, supplierProductId, productId, productName, purchasePrice, status, pagingSort);
         log.info("Search results: " + searchResult.getContent());
         return searchResult;
     }
@@ -309,7 +324,6 @@ public class SupplierService implements SupplierBusiness {
         Supplier supplier = supplierRepository.findById(supplierId)
                 .orElseThrow(() -> new RuntimeException("Proveedor con ID " + supplierId + " no existe"));
 
-        // Actualizar solo si el valor no es null
         if (updateDTO.getName() != null) {
             supplier.setName(updateDTO.getName());
         }
@@ -328,22 +342,18 @@ public class SupplierService implements SupplierBusiness {
             }
             supplier.setWarehouseId(updateDTO.getWarehouseId());
         }
-        // Actualizar timestamp
         supplier.setUpdatedAt(LocalDateTime.now());
 
         Supplier savedSupplier = supplierRepository.save(supplier);
 
-        // Manejar productos si la lista no es null o vacía
         if (updateDTO.getProducts() != null && !updateDTO.getProducts().isEmpty()) {
             for (SupplierProductDTO addDTO : updateDTO.getProducts()) {
                 if (!productRepository.existsById(addDTO.getProductId())) {
                     throw new GenericException("Producto con ID " + addDTO.getProductId() + " no existe", HttpStatus.BAD_REQUEST);
                 }
 
-                // Verificar si ya existe un SupplierProduct para este supplier y product
                 SupplierProduct existingDetail = supplierProductRepository.findBySupplierIdAndProductId(savedSupplier.getId(), addDTO.getProductId());
                 if (existingDetail != null) {
-                    // Actualizar si existe
                     existingDetail.setPurchasePrice(addDTO.getPurchasePrice() != null ? addDTO.getPurchasePrice() : BigDecimal.ZERO);
                     existingDetail.setUpdatedAt(LocalDateTime.now());
                     supplierProductRepository.save(existingDetail);
@@ -364,8 +374,7 @@ public class SupplierService implements SupplierBusiness {
         return savedSupplier;
     }
 
-    @Override
-    public List<Supplier> getAllNoPage() {
+    public List<SupplierDtoResponse> getAllNoPage() {
         return supplierRepository.getAllSupplier();
     }
 
@@ -393,7 +402,6 @@ public class SupplierService implements SupplierBusiness {
         );
 
         for (PurchaseSupplierProductsDTO productDTO : purchase.getProducts()) {
-            // Validar producto
             if (!productRepository.existsById(productDTO.getProductId())) {
                 throw new CustomErrorException(HttpStatus.BAD_REQUEST,
                         "Producto no existe: " + productDTO.getProductId());
@@ -402,13 +410,11 @@ public class SupplierService implements SupplierBusiness {
             Product product = productRepository.findById(productDTO.getProductId())
                     .orElseThrow(() -> new CustomErrorException(HttpStatus.NOT_FOUND, "Producto no encontrado"));
 
-            // Actualizar cantidad
             Long newQuantity = product.getQuantity() + productDTO.getQuantity();
             product.setQuantity(newQuantity);
             product.setProductStatus(productService.calculateProductStatus(product.getCategoryId(), newQuantity));
             productRepository.save(product);
 
-            // Insertar en transaction_product
             TransactionProduct tp = new TransactionProduct();
             tp.setTransactionId(transaction.getId());
             tp.setProductId(product.getId());
@@ -418,7 +424,6 @@ public class SupplierService implements SupplierBusiness {
             transactionProductRepository.save(tp);
 
 
-            // mandar los productos a la bodega
             addQuantityProductToSupplier(productDTO.getProductId(), purchase.getSupplierId(), productDTO.getQuantity());
 
         }
@@ -433,10 +438,40 @@ public class SupplierService implements SupplierBusiness {
         return new GenericResponse("Venta guardad con exito", 200);
     }
 
+
     @Override
     public Page<PurchaseSupplierResponseDTO> getAllPurshaseSupplier(int page, int size, String orders, String sortBy) {
+        // Mapear sortBy a los campos correctos
+        String actualSortField = sortBy;
+        switch (sortBy) {
+            case "id":
+                actualSortField = "ps.id";
+                break;
+            case "userId":
+                actualSortField = "t.userId";
+                break;
+            case "supplierId":
+                actualSortField = "ps.supplierId";
+                break;
+            case "supplierName":
+                actualSortField = "s.name";
+                break;
+            case "date":
+                actualSortField = "t.transactionDate";
+                break;
+            case "purchaseStatus":
+                actualSortField = "ps.purchaseStatus";
+                break;
+            case "observation":
+                actualSortField = "t.observation";
+                break;
+            default:
+                actualSortField = "ps.id";
+                break;
+        }
+
         Sort.Direction direction = Sort.Direction.fromString(orders);
-        Sort sort = Sort.by(direction, sortBy);
+        Sort sort = Sort.by(direction, actualSortField);
         Pageable pagingSort = PageRequest.of(page, size, sort);
         return purchaseSupplierRepository.findAllPurchaseSuppliers(pagingSort);
     }
@@ -444,9 +479,9 @@ public class SupplierService implements SupplierBusiness {
     @Override
     public Page<PurchaseSupplierResponseDTO> searchPPurchaseSupplier(Map<String, String> customQuery) {
         String orders = "ASC";
-        String sortBy = "id";  // Default sort by id
+        String sortBy = "id";
         int page = 0;
-        int size = 10;
+        int size = 6;
         Long id = null;
         Long userId = null;
         Long supplierId = null;
@@ -471,59 +506,82 @@ public class SupplierService implements SupplierBusiness {
             size = Integer.parseInt(customQuery.get("size"));
         }
 
-        if (customQuery.containsKey("id")) {
-            id = Long.parseLong(customQuery.get("id"));  // Exacto para Long
+        if (customQuery.containsKey("id") && !customQuery.get("id").isEmpty()) {
+            try {
+                id = Long.parseLong(customQuery.get("id"));
+            } catch (NumberFormatException e) {
+                log.warn("Invalid id format: " + customQuery.get("id"));
+            }
         }
 
-        if (customQuery.containsKey("userId")) {
-            userId = Long.parseLong(customQuery.get("userId"));
+        if (customQuery.containsKey("userId") && !customQuery.get("userId").isEmpty()) {
+            try {
+                userId = Long.parseLong(customQuery.get("userId"));
+            } catch (NumberFormatException e) {
+                log.warn("Invalid userId format: " + customQuery.get("userId"));
+            }
         }
 
-        if (customQuery.containsKey("supplierId")) {
-            supplierId = Long.parseLong(customQuery.get("supplierId"));
+        if (customQuery.containsKey("supplierId") && !customQuery.get("supplierId").isEmpty()) {
+            try {
+                supplierId = Long.parseLong(customQuery.get("supplierId"));
+            } catch (NumberFormatException e) {
+                log.warn("Invalid supplierId format: " + customQuery.get("supplierId"));
+            }
         }
 
-        if (customQuery.containsKey("supplierName")) {
+        if (customQuery.containsKey("supplierName") && !customQuery.get("supplierName").isEmpty()) {
             supplierName = "%" + customQuery.get("supplierName").toUpperCase() + "%";
         }
 
-        if (customQuery.containsKey("date")) {
-            // Parsear string a LocalDateTime (asumiendo formato dd/MM/yyyy; ajusta si necesitas HH:mm)
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            date = LocalDate.parse(customQuery.get("date"), formatter).atStartOfDay();  // O ajusta para hora si necesario
+        if (customQuery.containsKey("date") && !customQuery.get("date").isEmpty()) {
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                date = LocalDate.parse(customQuery.get("date"), formatter).atStartOfDay();
+            } catch (Exception e) {
+                log.warn("Invalid date format: " + customQuery.get("date") + ". Expected format: dd/MM/yyyy");
+            }
         }
 
-        if (customQuery.containsKey("purchaseStatus")) {
+        if (customQuery.containsKey("purchaseStatus") && !customQuery.get("purchaseStatus").isEmpty()) {
             purchaseStatus = "%" + customQuery.get("purchaseStatus").toUpperCase() + "%";
         }
 
-        if (customQuery.containsKey("observation")) {  // Asumiendo "status" en DTO es observation
+        if (customQuery.containsKey("observation") && !customQuery.get("observation").isEmpty()) {
             observation = "%" + customQuery.get("observation").toUpperCase() + "%";
         }
 
-        // Validar sortBy contra campos válidos para evitar errores (opcional pero recomendado)
-        Set<String> validSortFields = Set.of("id", "userId", "supplierId", "supplierName", "date", "purchaseStatus", "observation");
-        if (!validSortFields.contains(sortBy)) {
-            sortBy = "id";  // Fallback
+        String actualSortField = sortBy;
+        switch (sortBy) {
+            case "id":
+                actualSortField = "ps.id";
+                break;
+            case "userId":
+                actualSortField = "t.userId";
+                break;
+            case "supplierId":
+                actualSortField = "ps.supplierId";
+                break;
+            case "supplierName":
+                actualSortField = "s.name";
+                break;
+            case "date":
+                actualSortField = "t.transactionDate";
+                break;
+            case "purchaseStatus":
+                actualSortField = "ps.purchaseStatus";
+                break;
+            case "observation":
+                actualSortField = "t.observation";
+                break;
+            default:
+                actualSortField = "ps.id";
+                break;
         }
 
         Sort.Direction direction = Sort.Direction.fromString(orders);
-        Sort sort = Sort.by(direction, sortBy);  // Ajusta alias si necesario (e.g., "supplierName" -> "s.name" internamente en JPA)
-
+        Sort sort = Sort.by(direction, actualSortField);
         Pageable pagingSort = PageRequest.of(page, size, sort);
-
-        // Logs para depuración (como en el ejemplo)
-        log.info("id: " + id);
-        log.info("userId: " + userId);
-        log.info("supplierId: " + supplierId);
-        log.info("supplierName: " + supplierName);
-        log.info("date: " + date);
-        log.info("purchaseStatus: " + purchaseStatus);
-        log.info("observation: " + observation);
-        log.info("Page: " + page);
-        log.info("Size: " + size);
-        log.info("Orders: " + orders);
-        log.info("SortBy: " + sortBy);
 
         Page<PurchaseSupplierResponseDTO> searchResult = purchaseSupplierRepository.searchPurchaseSuppliers(
                 id, userId, supplierId, supplierName, date, purchaseStatus, observation, pagingSort
@@ -532,7 +590,6 @@ public class SupplierService implements SupplierBusiness {
         log.info("Search results: " + searchResult.getContent());
         return searchResult;
     }
-
     @Override
     public GenericResponse deletePurchase(Long purchase) {
 
@@ -565,7 +622,7 @@ public class SupplierService implements SupplierBusiness {
         Sort.Direction direction = Sort.Direction.fromString(orders);
         Sort sort = Sort.by(direction, sortBy);
         Pageable pagingSort = PageRequest.of(page, size, sort);
-        return purchaseSupplierRepository.findAllPurchaseProducts(pagingSort, purchaseSupplierId);
+        return purchaseSupplierRepository.findAllPurchaseProducts(purchaseSupplierId,pagingSort);
     }
 
     @Override
@@ -578,9 +635,29 @@ public class SupplierService implements SupplierBusiness {
 
     @Override
     public Page<SuppliersWhoMustDTO> getAllSupplierOwes(int page, int size, String orders, String sortBy) {
+        String actualSortField = sortBy;
+        switch (sortBy) {
+            case "id":
+                actualSortField = "s.id";
+                break;
+            case "supplierName":
+                actualSortField = "s.name";
+                break;
+            case "warehouseName":
+                actualSortField = "w.warehouseName";
+                break;
+            case "status":
+                actualSortField = "s.status";
+                break;
+            default:
+                actualSortField = "s.id";
+                break;
+        }
+
         Sort.Direction direction = Sort.Direction.fromString(orders);
-        Sort sort = Sort.by(direction, sortBy);
+        Sort sort = Sort.by(direction, actualSortField);
         Pageable pagingSort = PageRequest.of(page, size, sort);
+
         return supplierRepository.getAllSupplierWithDebt(pagingSort);
     }
 
@@ -603,11 +680,195 @@ public class SupplierService implements SupplierBusiness {
             productWareHouseRepository.save(productWarehouse);
         }
 
-
-
-
-
     }
 
+
+    @Override
+    public Page<PurchaseProductsSupplier> searchProductByPurchase(Long purchaseSupplierId, Map<String, String> customQuery) {
+        String orders = "ASC";
+        String sortBy = "id";
+        int page = 0;
+        int size = 6;
+        String id = null;
+        String productName = null;
+        String quantity = null;
+        String purchasePrice = null;
+        String total = null;
+
+        if (customQuery.containsKey("orders")) {
+            orders = customQuery.get("orders");
+        }
+
+        if (customQuery.containsKey("sortBy")) {
+            sortBy = customQuery.get("sortBy");
+        }
+
+        if (customQuery.containsKey("page")) {
+            page = Integer.parseInt(customQuery.get("page"));
+        }
+
+        if (customQuery.containsKey("size")) {
+            size = Integer.parseInt(customQuery.get("size"));
+        }
+
+        if (customQuery.containsKey("id") && !customQuery.get("id").isEmpty()) {
+            id = "%" + customQuery.get("id") + "%";
+        }
+        if (customQuery.containsKey("productName")) {
+            productName = "%" + customQuery.get("productName") + "%";
+        }
+        if (customQuery.containsKey("purchasePrice")) {
+            purchasePrice = "%" + customQuery.get("purchasePrice") + "%";
+        }
+
+        if (customQuery.containsKey("quantity")) {
+            quantity = "%" + customQuery.get("quantity") + "%";
+        }
+
+
+        if (customQuery.containsKey("total")) {
+            total = "%" + customQuery.get("total") + "%";
+        }
+
+        String actualSortField = sortBy;
+        if ("productName".equals(sortBy)) {
+            actualSortField = "p.productName";
+        } else if ("purchasePrice".equals(sortBy)) {
+            actualSortField = "op.purchasePrice";
+        }
+
+        Sort.Direction direction = Sort.Direction.fromString(orders);
+        Sort sort = Sort.by(direction, actualSortField);
+        Pageable pagingSort = PageRequest.of(page, size, sort);
+
+        Page<PurchaseProductsSupplier> searchResult =
+                purchaseSupplierRepository.searchProductByPurchase(
+                        purchaseSupplierId, id, productName, purchasePrice,quantity, total, pagingSort);
+
+        log.info("Search results: " + searchResult.getContent());
+        return searchResult;
+    }
+
+
+
+    @Override
+    public Page<AmountOwesSupplierDTO> searchProductByAmountThatSupplierOwes(Long supplierId, Map<String, String> customQuery) {
+        String orders = "ASC";
+        String sortBy = "id";
+        int page = 0;
+        int size = 6;
+        String id = null;
+        String productName = null;
+        String remainingAmount = null;
+
+        if (customQuery.containsKey("orders")) {
+            orders = customQuery.get("orders");
+        }
+
+        if (customQuery.containsKey("sortBy")) {
+            sortBy = customQuery.get("sortBy");
+        }
+
+        if (customQuery.containsKey("page")) {
+            page = Integer.parseInt(customQuery.get("page"));
+        }
+
+        if (customQuery.containsKey("size")) {
+            size = Integer.parseInt(customQuery.get("size"));
+        }
+
+        if (customQuery.containsKey("id") && !customQuery.get("id").isEmpty()) {
+            id = "%" + customQuery.get("id") + "%";
+        }
+        if (customQuery.containsKey("productName")) {
+            productName = "%" + customQuery.get("productName") + "%";
+        }
+        if (customQuery.containsKey("remainingAmount")) {
+            remainingAmount = "%" + customQuery.get("remainingAmount") + "%";
+        }
+
+        String actualSortField = sortBy;
+        if ("productName".equals(sortBy)) {
+            actualSortField = "p.productName";
+        } else if ("remainingAmount".equals(sortBy)) {
+            actualSortField = "op.remainingAmount";
+        }
+
+        Sort.Direction direction = Sort.Direction.fromString(orders);
+        Sort sort = Sort.by(direction, actualSortField);
+        Pageable pagingSort = PageRequest.of(page, size, sort);
+
+        Page<AmountOwesSupplierDTO> searchResult =
+                productWareHouseRepository.searchProductByAmountThatSupplierOwes(
+                        supplierId, id, productName, remainingAmount, pagingSort);
+
+        log.info("Search results: " + searchResult.getContent());
+        return searchResult;
+    }
+    @Override
+    public Page<SuppliersWhoMustDTO> searchSupplierWithDebt(Map<String, String> customQuery) {
+        String orders = "ASC";
+        String sortBy = "id";
+        int page = 0;
+        int size = 6;
+        String id = null;
+        String supplierName = null;
+        String warehouseName = null;
+
+        if (customQuery.containsKey("orders")) {
+            orders = customQuery.get("orders");
+        }
+
+        if (customQuery.containsKey("sortBy")) {
+            sortBy = customQuery.get("sortBy");
+        }
+
+        if (customQuery.containsKey("page")) {
+            page = Integer.parseInt(customQuery.get("page"));
+        }
+
+        if (customQuery.containsKey("size")) {
+            size = Integer.parseInt(customQuery.get("size"));
+        }
+
+        if (customQuery.containsKey("id") && !customQuery.get("id").isEmpty()) {
+            id = "%" + customQuery.get("id") + "%";
+        }
+
+        if (customQuery.containsKey("supplierName") && !customQuery.get("supplierName").isEmpty()) {
+            supplierName = "%" + customQuery.get("supplierName").toUpperCase() + "%";
+        }
+
+        if (customQuery.containsKey("warehouseName") && !customQuery.get("warehouseName").isEmpty()) {
+            warehouseName = "%" + customQuery.get("warehouseName").toUpperCase() + "%";
+        }
+
+        String actualSortField;
+        switch (sortBy) {
+            case "id":
+                actualSortField = "s.id";
+                break;
+            case "supplierName":
+                actualSortField = "s.name";
+                break;
+            case "warehouseName":
+                actualSortField = "w.warehouseName";
+                break;
+            default:
+                actualSortField = "s.id";
+                break;
+        }
+
+        Sort.Direction direction = Sort.Direction.fromString(orders);
+        Sort sort = org.springframework.data.jpa.domain.JpaSort.unsafe(direction, actualSortField);
+        Pageable pagingSort = PageRequest.of(page, size, sort);
+
+        Page<SuppliersWhoMustDTO> searchResult = supplierRepository.searchSupplierWithDebt(
+                id, supplierName, warehouseName, pagingSort
+        );
+
+        log.info("Search results: " + searchResult.getContent());
+        return searchResult;
+    }
 
 }

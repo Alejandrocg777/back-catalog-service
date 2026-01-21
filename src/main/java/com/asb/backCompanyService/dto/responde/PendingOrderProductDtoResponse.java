@@ -1,18 +1,20 @@
-package com.asb.backCompanyService.dto.request;
+package com.asb.backCompanyService.dto.responde;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PendingOrderDetailDto {
+public class PendingOrderProductDtoResponse {
 
+    private Long id;
     private Long productId;
-    private Integer quantity;
     private String productName;
-    private Double unitPrice;
+    private Integer quantity;
+    private Double salePrice;
     private Double total;
-
 }

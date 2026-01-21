@@ -13,12 +13,17 @@ import java.util.List;
 @NoArgsConstructor
 public class PendingOrderRequestDto {
 
+    private Long id;
     private Long billId;
     private Long customerId;
+    private String customerName;
+    private String neighborhood;
+    private String cityName;
     private String address;
     private String phone;
     private String observations;
-    private LocalDateTime date;
+    private String date;
     private Double total;
+    private String statusOrder;
     private List<PendingOrderDetailDto> pendingOrderDetails;
 }

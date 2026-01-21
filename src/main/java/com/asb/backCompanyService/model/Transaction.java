@@ -28,7 +28,6 @@ public class Transaction {
     @Column(name = "user_id")
     private Long userId;
 
-
     @Column(name = "transaction_date")
     private LocalDateTime transactionDate;
 

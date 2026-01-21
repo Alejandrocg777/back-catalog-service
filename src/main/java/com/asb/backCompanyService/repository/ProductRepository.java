@@ -65,25 +65,47 @@ public interface ProductRepository extends CrudRepository<Product, Long> {
             Pageable pageable);
 
     @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ProductOfTransactionDTO(p.id, p.productName, tp.purchasePrice, tp.quantity,tp.total) " +
-            "FROM Product p " +
-            "JOIN TransactionProduct tp ON p.id = tp.productId " +
+            "FROM TransactionProduct tp " +
+            "JOIN Product p ON tp.productId = p.id " +
             "JOIN Transaction t ON tp.transactionId = t.id " +
             "WHERE t.id = :id " +
-            "AND t.status = 'ACTIVE' ")
+            "AND t.status = 'ACTIVE' " ,
+            countQuery = "SELECT COUNT(*) " +
+            "FROM PendingOrderDetails op " +
+            "JOIN Product p ON op.productId = p.id " +
+            "WHERE op.pendingOrderId = :pendingOrderId " +
+            "AND p.status = 'ACTIVE'")
     Page<ProductOfTransactionDTO> getProductOfTransaction(Long id, Pageable pageable);
 
-
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ProductOfTransactionDTO(p.id, p.productName, tp.purchasePrice, tp.quantity, tp.total) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.ProductOfTransactionDTO(" +
+            "p.id, p.productName, tp.purchasePrice, tp.quantity, tp.total) " +
             "FROM Product p " +
             "JOIN TransactionProduct tp ON p.id = tp.productId " +
             "JOIN Transaction t ON tp.transactionId = t.id " +
             "WHERE t.id = :transactionId " +
-            "AND (:id IS NULL OR CAST(t.userId AS string) LIKE :id)" +
-            "AND (:productName IS NULL OR UPPER(p.productName) LIKE UPPER(:productName)) " +
-            "AND (:purchasePrice IS NULL OR STR(tp.purchasePrice) LIKE UPPER(:purchasePrice)) " +
-            "AND (:total IS NULL OR STR(tp.total) LIKE UPPER(:total)) " +
-            "AND t.status = 'ACTIVE' ")
-    Page<ProductOfTransactionDTO> searchProductsTransaction(Long transactionId, String id, String productName, String purchasePrice, String total,Pageable pageable);
-
-    Object findAll(Specification<Product> spec, Pageable pagingSort);
+            "AND (:id IS NULL OR CAST(t.userId AS string) LIKE :id) " +
+            "AND (:productName IS NULL OR UPPER(p.productName) LIKE :productName) " +
+            "AND (:purchasePrice IS NULL OR CAST(tp.purchasePrice AS string) LIKE :purchasePrice) " +
+            "AND (:quantity IS NULL OR CAST(tp.quantity AS string) LIKE :quantity) " +
+            "AND (:total IS NULL OR CAST(tp.total AS string) LIKE :total) " +
+            "AND t.status = 'ACTIVE'",
+            countQuery = "SELECT COUNT(p) " +
+                    "FROM Product p " +
+                    "JOIN TransactionProduct tp ON p.id = tp.productId " +
+                    "JOIN Transaction t ON tp.transactionId = t.id " +
+                    "WHERE t.id = :transactionId " +
+                    "AND (:id IS NULL OR CAST(t.userId AS string) LIKE :id) " +
+                    "AND (:productName IS NULL OR UPPER(p.productName) LIKE :productName) " +
+                    "AND (:purchasePrice IS NULL OR CAST(tp.purchasePrice AS string) LIKE :purchasePrice) " +
+                    "AND (:quantity IS NULL OR CAST(tp.quantity AS string) LIKE :quantity) " +
+                    "AND (:total IS NULL OR CAST(tp.total AS string) LIKE :total) " +
+                    "AND t.status = 'ACTIVE'")
+    Page<ProductOfTransactionDTO> searchProductsTransaction(
+            @Param("transactionId") Long transactionId,
+            @Param("id") String id,
+            @Param("productName") String productName,
+            @Param("purchasePrice") String purchasePrice,
+            @Param("quantity") String quantity,
+            @Param("total") String total,
+            Pageable pageable);
 }
