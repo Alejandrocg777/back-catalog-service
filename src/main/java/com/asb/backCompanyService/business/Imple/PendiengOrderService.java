@@ -18,6 +18,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,6 +40,7 @@ public class PendiengOrderService implements IPendingOrderBusiness {
         PendingOrder pendingOrder = new PendingOrder();
         pendingOrder.setBillId(request.getBillId());
         pendingOrder.setCustomerId(request.getCustomerId());
+        pendingOrder.setPaymentMethodId(request.getPaymentMethodId());
         pendingOrder.setAddress(request.getAddress());
         pendingOrder.setPhone(request.getPhone());
         pendingOrder.setObservations(request.getObservations());
@@ -60,6 +63,7 @@ public class PendiengOrderService implements IPendingOrderBusiness {
                 detail.setProductId(detailDto.getProductId());
                 detail.setQuantity(detailDto.getQuantity());
                 detail.setUnitPrice(detailDto.getUnitPrice());
+                detail.setDiscount(detailDto.getDiscount());
                 detail.setTotal(detailDto.getTotal());
 
                 PendingOrderDetails savedDetail = pendingOrderDetailRepository.save(detail);
@@ -68,6 +72,7 @@ public class PendiengOrderService implements IPendingOrderBusiness {
                 savedDetailDto.setProductId(savedDetail.getProductId());
                 savedDetailDto.setQuantity(savedDetail.getQuantity());
                 savedDetailDto.setUnitPrice(savedDetail.getUnitPrice());
+                savedDetailDto.setDiscount(savedDetail.getDiscount());
                 savedDetailDto.setTotal(savedDetail.getTotal());
 
                 savedDetails.add(savedDetailDto);
@@ -150,6 +155,8 @@ public class PendiengOrderService implements IPendingOrderBusiness {
             actualSortField = "city.cityName";
         } else if ("customerName".equals(sortBy)) {
             actualSortField = "c.name";
+        } else if ("paymentMethodName".equals(sortBy)) {
+            actualSortField = "m.description";
         } else if ("neighborhood".equals(sortBy)) {
             actualSortField = "c.neighborhood";
         }
@@ -246,12 +253,14 @@ public class PendiengOrderService implements IPendingOrderBusiness {
         int page = 0;
         int size = 6;
         String id = null;
+        String paymentMethodName = null;
         String customerName = null;
         String neighborhood = null;
         String cityName = null;
         String address = null;
         String phone = null;
         String observations = null;
+        LocalDateTime date = null;
         String total = null;
         String statusOrder = null;
 
@@ -274,6 +283,11 @@ public class PendiengOrderService implements IPendingOrderBusiness {
         if (customQuery.containsKey("id")) {
             id = "%" + customQuery.get("id") + "%";
         }
+
+        if (customQuery.containsKey("paymentMethodName")) {
+            paymentMethodName = "%" + customQuery.get("paymentMethodName") + "%";
+        }
+
         if (customQuery.containsKey("customerName")) {
             customerName = "%" + customQuery.get("customerName") + "%";
         }
@@ -292,6 +306,15 @@ public class PendiengOrderService implements IPendingOrderBusiness {
         if (customQuery.containsKey("observations")) {
             observations = "%" + customQuery.get("observations") + "%";
         }
+
+        if (customQuery.containsKey("date") && !customQuery.get("date").isEmpty()) {
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                date = LocalDate.parse(customQuery.get("date"), formatter).atStartOfDay();
+            } catch (Exception e) {
+                log.warn("Invalid date format: " + customQuery.get("date") + ". Expected format: yyyy-MM-dd");
+            }
+        }
         if (customQuery.containsKey("total")) {
             total = "%" + customQuery.get("total") + "%";
         }
@@ -304,6 +327,8 @@ public class PendiengOrderService implements IPendingOrderBusiness {
             actualSortField = "city.cityName";
         } else if ("customerName".equals(sortBy)) {
             actualSortField = "c.name";
+        } else if ("paymentMethodName".equals(sortBy)) {
+            actualSortField = "m.description";
         } else if ("neighborhood".equals(sortBy)) {
             actualSortField = "c.neighborhood";
         }
@@ -313,8 +338,8 @@ public class PendiengOrderService implements IPendingOrderBusiness {
         Pageable pagingSort = PageRequest.of(page, size, sort);
 
         Page<PendingOrderResponseDto> searchResult = pendingOrderRepository.searchPendingOrder(
-                id, customerName, neighborhood, cityName, address, phone,
-                observations, total, statusOrder, pagingSort);
+                id,paymentMethodName, customerName, neighborhood, cityName, address, phone,
+                observations, date,total, statusOrder, pagingSort);
 
         log.info("Search results: " + searchResult.getContent());
         return searchResult;

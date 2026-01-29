@@ -56,25 +56,25 @@ public interface PurchaseSupplierRepository extends JpaRepository<PurchaseSuppli
             "JOIN Transaction t ON t.id = ps.transactionId " +
             "JOIN Supplier s ON s.id = ps.supplierId " +
             "WHERE ps.status = 'ACTIVE' " +
-            "AND (CAST(ps.id AS string) LIKE :id " +
-            "OR CAST(t.userId AS string) LIKE :userId " +
-            "OR CAST(ps.supplierId AS string) LIKE :supplierId " +
-            "OR UPPER(s.name) LIKE :supplierName " +
-            "OR CAST(t.transactionDate AS string) LIKE :date " +
-            "OR UPPER(ps.purchaseStatus) LIKE :purchaseStatus " +
-            "OR UPPER(t.observation) LIKE :observation)",
+            "AND (:id IS NULL OR ps.id = :id) " +
+            "AND (:userId IS NULL OR t.userId = :userId) " +
+            "AND (:supplierId IS NULL OR ps.supplierId = :supplierId) " +
+            "AND (:supplierName IS NULL OR UPPER(s.name) LIKE :supplierName) " +
+            "AND (FUNCTION('DATE', t.transactionDate) = COALESCE(FUNCTION('DATE', :date), FUNCTION('DATE', t.transactionDate))) " +
+            "AND (:purchaseStatus IS NULL OR UPPER(ps.purchaseStatus) LIKE :purchaseStatus) " +
+            "AND (:observation IS NULL OR UPPER(t.observation) LIKE :observation)",
             countQuery = "SELECT COUNT(ps) " +
                     "FROM PurchaseSupplier ps " +
                     "JOIN Transaction t ON t.id = ps.transactionId " +
                     "JOIN Supplier s ON s.id = ps.supplierId " +
                     "WHERE ps.status = 'ACTIVE' " +
-                    "AND (CAST(ps.id AS string) LIKE :id " +
-                    "OR CAST(t.userId AS string) LIKE :userId " +
-                    "OR CAST(ps.supplierId AS string) LIKE :supplierId " +
-                    "OR UPPER(s.name) LIKE :supplierName " +
-                    "OR CAST(t.transactionDate AS string) LIKE :date " +
-                    "OR UPPER(ps.purchaseStatus) LIKE :purchaseStatus " +
-                    "OR UPPER(t.observation) LIKE :observation)")
+                    "AND (:id IS NULL OR ps.id = :id) " +
+                    "AND (:userId IS NULL OR t.userId = :userId) " +
+                    "AND (:supplierId IS NULL OR ps.supplierId = :supplierId) " +
+                    "AND (:supplierName IS NULL OR UPPER(s.name) LIKE :supplierName) " +
+                    "AND (FUNCTION('DATE', t.transactionDate) = COALESCE(FUNCTION('DATE', :date), FUNCTION('DATE', t.transactionDate))) " +
+                    "AND (:purchaseStatus IS NULL OR UPPER(ps.purchaseStatus) LIKE :purchaseStatus) " +
+                    "AND (:observation IS NULL OR UPPER(t.observation) LIKE :observation)")
     Page<PurchaseSupplierResponseDTO> searchPurchaseSuppliers(
             @Param("id") Long id,
             @Param("userId") Long userId,

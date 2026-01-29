@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface BillRepository extends JpaRepository<Bill, Long> {
@@ -123,6 +124,7 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
     OR UPPER(c.name) LIKE UPPER(:customerName)
     OR UPPER(pm.description) LIKE UPPER(:paymentMethodName)
     OR UPPER(u.name) LIKE UPPER(:userName)
+    OR (FUNCTION('DATE', b.invoiceDate) = COALESCE(FUNCTION('DATE', :invoiceDate), FUNCTION('DATE', b.invoiceDate)))
     OR UPPER(b.statusBill) LIKE UPPER(:statusBill)
     OR CAST(b.total AS string) LIKE :total)
     """,
@@ -138,6 +140,7 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
     OR UPPER(c.name) LIKE UPPER(:customerName)
     OR UPPER(pm.description) LIKE UPPER(:paymentMethodName)
     OR UPPER(u.name) LIKE UPPER(:userName)
+    OR (FUNCTION('DATE', b.invoiceDate) = COALESCE(FUNCTION('DATE', :invoiceDate), FUNCTION('DATE', b.invoiceDate)))
     OR UPPER(b.statusBill) LIKE UPPER(:statusBill)
     OR CAST(b.total AS string) LIKE :total)
     """)
@@ -147,6 +150,7 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
             @Param("customerName") String customerName,
             @Param("paymentMethodName") String paymentMethodName,
             @Param("userName") String userName,
+            @Param("invoiceDate") LocalDateTime invoiceDate,
             @Param("statusBill") String statusBill,
             @Param("total") String total,
             Pageable pageable

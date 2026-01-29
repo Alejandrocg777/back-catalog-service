@@ -536,10 +536,10 @@ public class SupplierService implements SupplierBusiness {
 
         if (customQuery.containsKey("date") && !customQuery.get("date").isEmpty()) {
             try {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 date = LocalDate.parse(customQuery.get("date"), formatter).atStartOfDay();
             } catch (Exception e) {
-                log.warn("Invalid date format: " + customQuery.get("date") + ". Expected format: dd/MM/yyyy");
+                log.warn("Invalid date format: " + customQuery.get("date") + ". Expected format: yyyy-MM-dd");
             }
         }
 

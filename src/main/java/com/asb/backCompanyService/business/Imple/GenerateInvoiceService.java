@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -157,6 +158,7 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
             PendingOrderRequestDto pendingOrderDto = new PendingOrderRequestDto();
             pendingOrderDto.setBillId(bill.getId());
             pendingOrderDto.setCustomerId(bill.getCustomerId());
+            pendingOrderDto.setPaymentMethodId(bill.getPaymentMethodId());
             pendingOrderDto.setAddress(invoiceDto.getAddress());
             pendingOrderDto.setPhone(invoiceDto.getPhone());
             pendingOrderDto.setObservations(invoiceDto.getObservations() != null
@@ -188,7 +190,14 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
                         detailDto.setProductId(invoiceDetail.getProductId());
                         detailDto.setQuantity(invoiceDetail.getQuantity());
                         detailDto.setUnitPrice(invoiceDetail.getUnitPrice());
+
+                        Double discount = invoiceDetail.getTotalDiscount() != null
+                                ? invoiceDetail.getTotalDiscount()
+                                : 0.0;
+                        detailDto.setDiscount(discount);
+
                         detailDto.setTotal(invoiceDetail.getTotal());
+
                         return detailDto;
                     })
                     .collect(Collectors.toList());
@@ -197,13 +206,22 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
 
             pendingOrderBusiness.save(pendingOrderDto);
 
-            log.info("Pedido pendiente creado exitosamente para factura ID: {} - Total productos: {} - Total a cobrar: ${}",
-                    bill.getId(), pendingDetails.size(), totalToSave);
+            log.info("Pedido pendiente creado exitosamente para factura ID: {} - Total productos: {} - Total a cobrar: ${} - Descuento total: ${}",
+                    bill.getId(),
+                    pendingDetails.size(),
+                    totalToSave,
+                    invoiceDto.getTotalDiscount());
 
         } catch (Exception e) {
-            log.error("Error al crear pedido pendiente para factura ID: {} - Error: {}",
-                    bill.getId(), e.getMessage());
+            log.error("Error al crear pedido pendiente para factura ID: {} - Error: {} - Causa: {}",
+                    bill.getId(),
+                    e.getMessage(),
+                    e.getCause() != null ? e.getCause().getMessage() : "Sin causa específica");
 
+            throw new GenericException(
+                    "Error al crear pedido pendiente: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
     }
 
@@ -216,7 +234,7 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
 
             if (product.getQuantity() < detail.getQuantity()) {
                 throw new GenericException(
-                        String.format("Stock insuficiente para el producto '%s'. Disponible: %.2f, Solicitado: %.2f",
+                        String.format("Stock insuficiente para el producto '%s'. Disponible: %d, Solicitado: %d",
                                 product.getProductName(),
                                 product.getQuantity(),
                                 detail.getQuantity()),
@@ -390,6 +408,7 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
         String customerName = null;
         String paymentMethodName = null;
         String userName = null;
+        LocalDateTime invoiceDate = null;
         String statusBill = null;
         String total = null;
 
@@ -429,6 +448,14 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
             userName = "%" + customQuery.get("userName") + "%";
         }
 
+        if (customQuery.containsKey("invoiceDate") && !customQuery.get("invoiceDate").isEmpty()) {
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                invoiceDate = LocalDate.parse(customQuery.get("invoiceDate"), formatter).atStartOfDay();
+            } catch (Exception e) {
+                log.warn("Invalid date format: " + customQuery.get("invoiceDate") + ". Expected format: yyyy-MM-dd");
+            }
+        }
         if (customQuery.containsKey("statusBill")) {
             statusBill = "%" + customQuery.get("statusBill").toUpperCase() + "%";
         }
@@ -447,6 +474,7 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
                 customerName,
                 paymentMethodName,
                 userName,
+                invoiceDate,
                 statusBill,
                 total,
                 pagingSort

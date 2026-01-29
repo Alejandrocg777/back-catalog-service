@@ -15,7 +15,7 @@ public interface PendingOrderDetailRepository extends JpaRepository<PendingOrder
 
     List<PendingOrderDetails> findByPendingOrderId(Long pendingOrderId);
     @Query("SELECT new com.asb.backCompanyService.dto.request.PendingOrderDetailDto(" +
-            "pod.productId, pod.quantity, p.productName, pod.unitPrice, pod.total) " +
+            "pod.id,pod.productId, pod.quantity, p.productName, pod.unitPrice,pod.discount, pod.total) " +
             "FROM PendingOrderDetails pod " +
             "INNER JOIN Product p ON pod.productId = p.id " +
             "WHERE pod.pendingOrderId = :pendingOrderId")

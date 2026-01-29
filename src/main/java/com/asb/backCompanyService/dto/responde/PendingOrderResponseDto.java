@@ -17,6 +17,8 @@ public class PendingOrderResponseDto {
     private Long id;
     private Long billId;
     private Long customerId;
+    private Long paymentMethodId;
+    private String paymentMethodName;
     private String customerName;
     private String cityName;
     private String neighborhood;

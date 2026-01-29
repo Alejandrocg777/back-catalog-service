@@ -11,19 +11,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -135,13 +135,14 @@ public class NumerationService implements INumerationBusiness {
     @Override
     public Page<NumerationResponseDto> searchCustom(Map<String, String> customQuery) {
         String orders = "ASC";
-        String sortBy = "id";
+        String sortBy = "startDate";
         int page = 0;
         int size = 6;
         String id = null;
         String authNumber = null;
         String prefix = null;
-        String status = null;
+        String startDate = null;
+        String finishDate = null;
         String initialNumber = null;
         String finalNumber = null;
         String currentNumber = null;
@@ -174,8 +175,30 @@ public class NumerationService implements INumerationBusiness {
             prefix = "%" + customQuery.get("prefix") + "%";
         }
 
-        if (customQuery.containsKey("status")) {
-            status = "%" + customQuery.get("status").toUpperCase() + "%";
+        if (customQuery.containsKey("startDate") && !customQuery.get("startDate").isEmpty()) {
+            try {
+                // Convertir de yyyy-MM-dd a yyyy-MM-dd (ya está en el formato correcto)
+                String dateStr = customQuery.get("startDate");
+                // Validar que sea una fecha válida
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                LocalDate.parse(dateStr, formatter);
+                startDate = dateStr;
+            } catch (Exception e) {
+                log.warn("Invalid date format for startDate: " + customQuery.get("startDate") + ". Expected format: yyyy-MM-dd");
+            }
+        }
+
+        if (customQuery.containsKey("finishDate") && !customQuery.get("finishDate").isEmpty()) {
+            try {
+                // Convertir de yyyy-MM-dd a yyyy-MM-dd (ya está en el formato correcto)
+                String dateStr = customQuery.get("finishDate");
+                // Validar que sea una fecha válida
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                LocalDate.parse(dateStr, formatter);
+                finishDate = dateStr;
+            } catch (Exception e) {
+                log.warn("Invalid date format for finishDate: " + customQuery.get("finishDate") + ". Expected format: yyyy-MM-dd");
+            }
         }
 
         if (customQuery.containsKey("initialNumber")) {
@@ -190,24 +213,71 @@ public class NumerationService implements INumerationBusiness {
             currentNumber = "%" + customQuery.get("currentNumber") + "%";
         }
 
-        Sort.Direction direction = Sort.Direction.fromString(orders);
-        Sort sort = Sort.by(direction, sortBy);
+        int offset = page * size;
 
-        Pageable pagingSort = PageRequest.of(page, size, sort);
+        log.info(">>> PARAMETROS DE BUSQUEDA <<<");
+        log.info("id: " + id);
+        log.info("authNumber: " + authNumber);
+        log.info("prefix: " + prefix);
+        log.info("startDate: " + startDate);  // ← ESTE ES EL MÁS IMPORTANTE
+        log.info("finishDate: " + finishDate);
+        log.info("initialNumber: " + initialNumber);
+        log.info("finalNumber: " + finalNumber);
+        log.info("currentNumber: " + currentNumber);
+        log.info("sortBy: " + sortBy);
+        log.info(">>> FIN PARAMETROS <<<");
 
-
-        Page<NumerationResponseDto> searchResult = repository.searchNumeration(
+// Ejecutar query nativa
+        List<Object[]> results = repository.searchNumerationNative(
                 id,
                 authNumber,
                 prefix,
+                startDate,
+                finishDate,
                 initialNumber,
                 finalNumber,
                 currentNumber,
-                pagingSort
+                sortBy,
+                size,
+                offset
         );
 
+        // Contar total
+        Long total = repository.countSearchNumerationNative(
+                id,
+                authNumber,
+                prefix,
+                startDate,
+                finishDate,
+                initialNumber,
+                finalNumber,
+                currentNumber
+        );
+
+        // Mapear resultados a DTO
+        List<NumerationResponseDto> dtos = results.stream()
+                .map(row -> new NumerationResponseDto(
+                        ((Number) row[0]).longValue(),
+                        (String) row[1],
+                        (String) row[2],
+                        row[3] != null ? ((java.sql.Date) row[3]).toLocalDate() : null,
+                        row[4] != null ? ((java.sql.Date) row[4]).toLocalDate() : null,
+                        (String) row[5],
+                        (Integer) row[6],
+                        (Integer) row[7],
+                        (Integer) row[8]
+                ))
+                .collect(Collectors.toList());
+
+        // Aplicar ordenamiento en memoria si es necesario
+        if ("DESC".equalsIgnoreCase(orders)) {
+            Collections.reverse(dtos);
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<NumerationResponseDto> searchResult = new PageImpl<>(dtos, pageable, total);
+
         log.info("Search results found: " + searchResult.getTotalElements() + " records");
-        log.info("Search results: " + searchResult.getContent());
 
         return searchResult;
     }

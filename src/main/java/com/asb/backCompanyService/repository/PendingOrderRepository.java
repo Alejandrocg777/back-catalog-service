@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -18,18 +19,19 @@ public interface PendingOrderRepository extends JpaRepository<PendingOrder, Long
     Page<PendingOrder> findByStatus(String status, Pageable pageable);
 
     @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.PendingOrderResponseDto(" +
-            "po.id, po.billId, po.customerId, c.name, city.cityName, c.neighborhood, po.address, po.phone, " +
+            "po.id, po.billId, po.customerId, po.paymentMethodId,m.description, c.name, city.cityName, c.neighborhood, po.address, po.phone, " +
             "po.observations, CAST(po.date AS string), po.total, po.statusPendingOrder) " +
             "FROM PendingOrder po " +
             "INNER JOIN Client c ON po.customerId = c.id " +
             "LEFT JOIN City city ON c.cityId = city.id " +
+            "LEFT JOIN PaymentMethod m ON m.id = po.paymentMethodId " +
             "WHERE po.status = 'ACTIVE'",
             countQuery = "SELECT COUNT(po) " +
                     "FROM PendingOrder po " +
                     "WHERE po.status = 'ACTIVE'")
     Page<PendingOrderResponseDto> getActivePendingOrders(Pageable pageable);
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.PendingOrderProductDtoResponse(op.id, op.productId, p.productName,op.quantity, op.unitPrice, op.total) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.PendingOrderProductDtoResponse(op.id, op.productId, p.productName,op.quantity, op.unitPrice, op.discount,op.total) " +
             "FROM PendingOrderDetails op " +
             "JOIN Product p ON op.productId = p.id " +
             "WHERE op.pendingOrderId = :pendingOrderId " +
@@ -54,44 +56,52 @@ public interface PendingOrderRepository extends JpaRepository<PendingOrder, Long
     List<Object[]> findActiveAndPendingOrdersData();
 
     @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.PendingOrderResponseDto(" +
-            "po.id, po.billId, po.customerId, c.name, city.cityName, c.neighborhood, " +
+            "po.id, po.billId, po.customerId, po.paymentMethodId,m.description, c.name, city.cityName, c.neighborhood, " +
             "po.address, po.phone, po.observations, CAST(po.date AS string), " +
             "po.total, po.statusPendingOrder) " +
             "FROM PendingOrder po " +
             "INNER JOIN Client c ON po.customerId = c.id " +
             "LEFT JOIN City city ON c.cityId = city.id " +
+            "LEFT JOIN PaymentMethod m ON m.id = po.id " +
             "WHERE po.status = 'ACTIVE' " +
             "AND (CAST(po.id AS string) LIKE :id " +
+            "OR UPPER(m.description) LIKE UPPER(:paymentMethodName) " +
             "OR UPPER(c.name) LIKE UPPER(:customerName) " +
             "OR UPPER(c.neighborhood) LIKE UPPER(:neighborhood) " +
             "OR UPPER(city.cityName) LIKE UPPER(:cityName) " +
             "OR UPPER(po.address) LIKE UPPER(:address) " +
             "OR po.phone LIKE :phone " +
             "OR UPPER(po.observations) LIKE UPPER(:observations) " +
+            "OR (FUNCTION('DATE', po.date) = COALESCE(FUNCTION('DATE', :date), FUNCTION('DATE', po.date)))" +
             "OR CAST(po.total AS string) LIKE :total " +
             "OR UPPER(po.statusPendingOrder) LIKE UPPER(:statusOrder))",
             countQuery = "SELECT COUNT(po) " +
                     "FROM PendingOrder po " +
                     "INNER JOIN Client c ON po.customerId = c.id " +
                     "LEFT JOIN City city ON c.cityId = city.id " +
+                    "LEFT JOIN PaymentMethod m ON m.id = po.id " +
                     "WHERE po.status = 'ACTIVE' " +
                     "AND (CAST(po.id AS string) LIKE :id " +
+                    "OR UPPER(m.description) LIKE UPPER(:paymentMethodName) " +
                     "OR UPPER(c.name) LIKE UPPER(:customerName) " +
                     "OR UPPER(c.neighborhood) LIKE UPPER(:neighborhood) " +
                     "OR UPPER(city.cityName) LIKE UPPER(:cityName) " +
                     "OR UPPER(po.address) LIKE UPPER(:address) " +
                     "OR po.phone LIKE :phone " +
                     "OR UPPER(po.observations) LIKE UPPER(:observations) " +
+                    "OR (FUNCTION('DATE', po.date) = COALESCE(FUNCTION('DATE', :date), FUNCTION('DATE', po.date)))" +
                     "OR CAST(po.total AS string) LIKE :total " +
                     "OR UPPER(po.statusPendingOrder) LIKE UPPER(:statusOrder))")
     Page<PendingOrderResponseDto> searchPendingOrder(
             @Param("id") String id,
+            @Param("paymentMethodName") String paymentMethodName,
             @Param("customerName") String customerName,
             @Param("neighborhood") String neighborhood,
             @Param("cityName") String cityName,
             @Param("address") String address,
             @Param("phone") String phone,
             @Param("observations") String observations,
+            @Param("date") LocalDateTime date,
             @Param("total") String total,
             @Param("statusOrder") String statusOrder,
             Pageable pageable);

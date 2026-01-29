@@ -55,7 +55,7 @@ public class TransactionsService implements TransactionBusiness {
         int size = 6;
         String id = null;
         String transactionType = null;
-        String transactionDate = null;
+        LocalDate transactionDate = null;  // ✅ Cambiado de String a LocalDate
         String typeUser = null;
         String userName = null;
         String observation = null;
@@ -84,8 +84,14 @@ public class TransactionsService implements TransactionBusiness {
             transactionType = "%" + customQuery.get("transactionType") + "%";
         }
 
-        if (customQuery.containsKey("transactionDate")) {
-            transactionDate = "%" + customQuery.get("transactionDate") + "%";
+        // ✅ NUEVO: Parsear la fecha correctamente
+        if (customQuery.containsKey("date") && customQuery.get("date") != null && !customQuery.get("date").isEmpty()) {
+            try {
+                transactionDate = LocalDate.parse(customQuery.get("date"));
+            } catch (Exception e) {
+                log.warn("Error parsing date: {}", customQuery.get("date"), e);
+                transactionDate = null;
+            }
         }
 
         if (customQuery.containsKey("typeUser")) {

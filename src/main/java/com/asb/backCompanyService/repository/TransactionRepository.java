@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
+
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
     @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.TransactionResponseDTO(t.id, p.productName, t.transactionType, p.quantity, t.transactionDate, r.name, u.name, p.price, t.status, t.observation) " +
@@ -47,7 +49,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             "WHERE t.status = 'ACTIVE' " +
             "AND (CAST(t.id AS string) LIKE :id " +
             "OR UPPER(t.transactionType) LIKE UPPER(:transactionType) " +
-            "OR CAST(t.transactionDate AS string) LIKE :transactionDate " +
+            "OR FUNCTION('DATE', t.transactionDate) = COALESCE(:transactionDate, FUNCTION('DATE', t.transactionDate)) " +
             "OR UPPER(r.name) LIKE UPPER(:typeUser) " +
             "OR UPPER(u.name) LIKE UPPER(:userName) " +
             "OR UPPER(t.observation) LIKE UPPER(:observation))",
@@ -58,14 +60,14 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
                     "WHERE t.status = 'ACTIVE' " +
                     "AND (CAST(t.id AS string) LIKE :id " +
                     "OR UPPER(t.transactionType) LIKE UPPER(:transactionType) " +
-                    "OR CAST(t.transactionDate AS string) LIKE :transactionDate " +
+                    "OR FUNCTION('DATE', t.transactionDate) = COALESCE(:transactionDate, FUNCTION('DATE', t.transactionDate)) " +
                     "OR UPPER(r.name) LIKE UPPER(:typeUser) " +
                     "OR UPPER(u.name) LIKE UPPER(:userName) " +
                     "OR UPPER(t.observation) LIKE UPPER(:observation))")
     Page<TransactionResponseNewDTO> searchTransaction(
             @Param("id") String id,
             @Param("transactionType") String transactionType,
-            @Param("transactionDate") String transactionDate,
+            @Param("transactionDate") LocalDate transactionDate,
             @Param("typeUser") String typeUser,
             @Param("userName") String userName,
             @Param("observation") String observation,

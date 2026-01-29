@@ -321,6 +321,7 @@ public class EmployeeService implements IEmployeeBusiness {
         String address = null;
         String email = null;
         String baseSalary = null;
+        LocalDate date = null;  // ✅ NUEVO: Variable para fecha
         String typeIdentificationName = null;
         String areaName = null;
         String positionName = null;
@@ -358,6 +359,14 @@ public class EmployeeService implements IEmployeeBusiness {
         }
         if (customQuery.containsKey("phone") && !customQuery.get("phone").isEmpty()) {
             phone = customQuery.get("phone");
+        }
+        // ✅ NUEVO: Parsear la fecha en formato ISO (yyyy-MM-dd)
+        if (customQuery.containsKey("date") && !customQuery.get("date").isEmpty()) {
+            try {
+                date = LocalDate.parse(customQuery.get("date"));
+            } catch (Exception e) {
+                log.warn("Invalid date format: " + customQuery.get("date") + ". Expected format: yyyy-MM-dd");
+            }
         }
         if (customQuery.containsKey("typeIdentificationName") && !customQuery.get("typeIdentificationName").isEmpty()) {
             typeIdentificationName = customQuery.get("typeIdentificationName");
@@ -418,6 +427,13 @@ public class EmployeeService implements IEmployeeBusiness {
             final String salaryParam = baseSalary;
             spec = spec.and((root, query, cb) ->
                     cb.like(root.get("baseSalary").as(String.class), "%" + salaryParam + "%"));
+        }
+
+        // ✅ NUEVO: Filtro de fecha con comparación exacta
+        if (date != null) {
+            final LocalDate dateParam = date;
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("date"), dateParam));
         }
 
         if (typeIdentificationName != null) {

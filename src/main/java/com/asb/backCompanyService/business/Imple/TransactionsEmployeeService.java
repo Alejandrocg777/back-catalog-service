@@ -85,6 +85,7 @@ public class TransactionsEmployeeService implements TransactionEmployeeBusiness 
         String typeTransaction = null;
         String dateFrom = null;
         String dateTo = null;
+        LocalDate date = null;  // ✅ NUEVO: Variable para fecha exacta
         String paymentAmount = null;
         String observation = null;
 
@@ -114,6 +115,14 @@ public class TransactionsEmployeeService implements TransactionEmployeeBusiness 
         }
         if (customQuery.containsKey("dateTo") && !customQuery.get("dateTo").isEmpty()) {
             dateTo = customQuery.get("dateTo");
+        }
+        // ✅ NUEVO: Parsear fecha exacta
+        if (customQuery.containsKey("date") && !customQuery.get("date").isEmpty()) {
+            try {
+                date = LocalDate.parse(customQuery.get("date"));
+            } catch (Exception e) {
+                log.warn("Fecha inválida: {}", customQuery.get("date"));
+            }
         }
         if (customQuery.containsKey("paymentAmount") && !customQuery.get("paymentAmount").isEmpty()) {
             paymentAmount = customQuery.get("paymentAmount");
@@ -147,23 +156,31 @@ public class TransactionsEmployeeService implements TransactionEmployeeBusiness 
             }
         }
 
-        if (dateFrom != null) {
-            try {
-                final LocalDate dateFromParam = LocalDate.parse(dateFrom);
-                spec = spec.and((root, query, cb) ->
-                        cb.greaterThanOrEqualTo(root.get("date"), dateFromParam));
-            } catch (Exception e) {
-                log.warn("Fecha desde inválida: {}", dateFrom);
+        // ✅ NUEVO: Filtro por fecha exacta (tiene prioridad sobre rango)
+        if (date != null) {
+            final LocalDate dateParam = date;
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("date"), dateParam));
+        } else {
+            // Si no hay fecha exacta, usar rango de fechas
+            if (dateFrom != null) {
+                try {
+                    final LocalDate dateFromParam = LocalDate.parse(dateFrom);
+                    spec = spec.and((root, query, cb) ->
+                            cb.greaterThanOrEqualTo(root.get("date"), dateFromParam));
+                } catch (Exception e) {
+                    log.warn("Fecha desde inválida: {}", dateFrom);
+                }
             }
-        }
 
-        if (dateTo != null) {
-            try {
-                final LocalDate dateToParam = LocalDate.parse(dateTo);
-                spec = spec.and((root, query, cb) ->
-                        cb.lessThanOrEqualTo(root.get("date"), dateToParam));
-            } catch (Exception e) {
-                log.warn("Fecha hasta inválida: {}", dateTo);
+            if (dateTo != null) {
+                try {
+                    final LocalDate dateToParam = LocalDate.parse(dateTo);
+                    spec = spec.and((root, query, cb) ->
+                            cb.lessThanOrEqualTo(root.get("date"), dateToParam));
+                } catch (Exception e) {
+                    log.warn("Fecha hasta inválida: {}", dateTo);
+                }
             }
         }
 

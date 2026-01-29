@@ -16,5 +16,6 @@ public class PendingOrderProductDtoResponse {
     private String productName;
     private Integer quantity;
     private Double salePrice;
+    private Double discount;
     private Double total;
 }

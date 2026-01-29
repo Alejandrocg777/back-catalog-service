@@ -22,6 +22,9 @@ public class PendingOrder {
     @Column(name = "customer_id", nullable = false)
     private Long customerId;
 
+    @Column(name = "payment_method_id", nullable = true)
+    private Long paymentMethodId;
+
     @Column(name = "address")
     private String address;
 

@@ -27,4 +27,7 @@ public class PendingOrderDetails {
 
     @Column(name = "total", nullable = false)
     private Double total;
+
+    @Column(name = "discount", nullable = true)
+    private Double discount;
 }
