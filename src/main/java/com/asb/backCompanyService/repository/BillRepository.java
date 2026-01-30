@@ -5,6 +5,7 @@ import com.asb.backCompanyService.dto.responde.InvoiceResponseDto;
 import com.asb.backCompanyService.model.Bill;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -155,4 +156,47 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
             @Param("total") String total,
             Pageable pageable
     );
+
+
+    @Query("""
+    SELECT COALESCE(SUM(b.total), 0.0)
+    FROM Bill b
+    WHERE b.status = 'ACTIVE'
+    AND b.statusBill != 'COTIZACION'
+    AND b.statusBill != 'INACTIVO'
+    AND FUNCTION('DATE', b.invoiceDate) = CURRENT_DATE
+""")
+    Double getSalesToday();
+
+
+    @Query("""
+    SELECT COUNT(b)
+    FROM Bill b
+    WHERE b.status = 'ACTIVE'
+    AND (b.statusBill = 'PENDIENTE' OR b.statusBill = 'ABONO')
+    AND b.statusBill != 'COTIZACION'
+""")
+    Long countPendingInvoices();
+
+    @Query("""
+    SELECT COUNT(b)
+    FROM Bill b
+    WHERE b.status = 'ACTIVE'
+    AND (b.statusBill = 'PENDIENTE' OR b.statusBill = 'ABONO')
+    AND b.dueDate <= CURRENT_DATE
+    AND b.statusBill != 'COTIZACION'
+""")
+    Long countUrgentInvoices();
+
+
+    @Query("""
+    SELECT COUNT(DISTINCT b.customerId)
+    FROM Bill b
+    WHERE b.status = 'ACTIVE'
+    AND (b.statusBill = 'PENDIENTE' OR b.statusBill = 'ABONO')
+    AND b.statusBill != 'COTIZACION'
+""")
+    Long countClientsWithPendingInvoices();
+
+    Page<Bill> findAll(Specification<Bill> spec, Pageable pagingSort);
 }

@@ -108,4 +108,30 @@ public interface ProductRepository extends CrudRepository<Product, Long> {
             @Param("quantity") String quantity,
             @Param("total") String total,
             Pageable pageable);
+
+
+
+    @Query("""
+    SELECT COUNT(p)
+    FROM Product p
+    WHERE p.status = 'ACTIVE'
+""")
+    Long countActiveProducts();
+
+    @Query("""
+    SELECT COUNT(p)
+    FROM Product p
+    WHERE p.status = 'ACTIVE'
+    AND p.quantity < 10
+""")
+    Long countLowStockProducts();
+
+
+    @Query("""
+    SELECT COUNT(p)
+    FROM Product p
+    WHERE p.status = 'ACTIVE'
+    AND p.quantity = 0
+""")
+    Long countOutOfStockProducts();
 }

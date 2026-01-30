@@ -7,6 +7,7 @@ import com.asb.backCompanyService.exception.CustomErrorException;
 import com.asb.backCompanyService.exception.GenericException;
 import com.asb.backCompanyService.model.*;
 import com.asb.backCompanyService.repository.*;
+import jakarta.persistence.criteria.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -493,19 +495,15 @@ public class SupplierService implements SupplierBusiness {
         if (customQuery.containsKey("orders")) {
             orders = customQuery.get("orders");
         }
-
         if (customQuery.containsKey("sortBy")) {
             sortBy = customQuery.get("sortBy");
         }
-
         if (customQuery.containsKey("page")) {
             page = Integer.parseInt(customQuery.get("page"));
         }
-
         if (customQuery.containsKey("size")) {
             size = Integer.parseInt(customQuery.get("size"));
         }
-
         if (customQuery.containsKey("id") && !customQuery.get("id").isEmpty()) {
             try {
                 id = Long.parseLong(customQuery.get("id"));
@@ -513,7 +511,6 @@ public class SupplierService implements SupplierBusiness {
                 log.warn("Invalid id format: " + customQuery.get("id"));
             }
         }
-
         if (customQuery.containsKey("userId") && !customQuery.get("userId").isEmpty()) {
             try {
                 userId = Long.parseLong(customQuery.get("userId"));
@@ -521,7 +518,6 @@ public class SupplierService implements SupplierBusiness {
                 log.warn("Invalid userId format: " + customQuery.get("userId"));
             }
         }
-
         if (customQuery.containsKey("supplierId") && !customQuery.get("supplierId").isEmpty()) {
             try {
                 supplierId = Long.parseLong(customQuery.get("supplierId"));
@@ -529,11 +525,9 @@ public class SupplierService implements SupplierBusiness {
                 log.warn("Invalid supplierId format: " + customQuery.get("supplierId"));
             }
         }
-
         if (customQuery.containsKey("supplierName") && !customQuery.get("supplierName").isEmpty()) {
-            supplierName = "%" + customQuery.get("supplierName").toUpperCase() + "%";
+            supplierName = customQuery.get("supplierName");
         }
-
         if (customQuery.containsKey("date") && !customQuery.get("date").isEmpty()) {
             try {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -542,54 +536,160 @@ public class SupplierService implements SupplierBusiness {
                 log.warn("Invalid date format: " + customQuery.get("date") + ". Expected format: yyyy-MM-dd");
             }
         }
-
         if (customQuery.containsKey("purchaseStatus") && !customQuery.get("purchaseStatus").isEmpty()) {
-            purchaseStatus = "%" + customQuery.get("purchaseStatus").toUpperCase() + "%";
+            purchaseStatus = customQuery.get("purchaseStatus");
         }
-
         if (customQuery.containsKey("observation") && !customQuery.get("observation").isEmpty()) {
-            observation = "%" + customQuery.get("observation").toUpperCase() + "%";
+            observation = customQuery.get("observation");
         }
 
-        String actualSortField = sortBy;
-        switch (sortBy) {
+        String validSortBy = sortBy;
+        switch (sortBy.toLowerCase()) {
             case "id":
-                actualSortField = "ps.id";
+            case "purchasesupplierid":
+                validSortBy = "id";
                 break;
-            case "userId":
-                actualSortField = "t.userId";
+            case "supplierid":
+                validSortBy = "supplierId";
                 break;
-            case "supplierId":
-                actualSortField = "ps.supplierId";
+            case "purchasestatus":
+            case "status":
+                validSortBy = "purchaseStatus";
                 break;
-            case "supplierName":
-                actualSortField = "s.name";
+            case "transactionid":
+                validSortBy = "transactionId";
                 break;
             case "date":
-                actualSortField = "t.transactionDate";
-                break;
-            case "purchaseStatus":
-                actualSortField = "ps.purchaseStatus";
-                break;
+            case "userid":
+            case "suppliername":
             case "observation":
-                actualSortField = "t.observation";
+                log.warn("Cannot sort by '{}' - field not in PurchaseSupplier. Using default sort by 'id'", sortBy);
+                validSortBy = "id";
                 break;
             default:
-                actualSortField = "ps.id";
+                validSortBy = "id";
                 break;
         }
 
         Sort.Direction direction = Sort.Direction.fromString(orders);
-        Sort sort = Sort.by(direction, actualSortField);
-        Pageable pagingSort = PageRequest.of(page, size, sort);
+        Pageable pagingSort = PageRequest.of(page, size, Sort.by(direction, validSortBy));
 
-        Page<PurchaseSupplierResponseDTO> searchResult = purchaseSupplierRepository.searchPurchaseSuppliers(
-                id, userId, supplierId, supplierName, date, purchaseStatus, observation, pagingSort
-        );
 
-        log.info("Search results: " + searchResult.getContent());
-        return searchResult;
+        Specification<PurchaseSupplier> spec = Specification.where(null);
+
+        spec = spec.and((root, query, cb) ->
+                cb.equal(root.get("status"), "ACTIVE"));
+
+        if (id != null) {
+            final Long idParam = id;
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("id"), idParam));
+        }
+
+        if (userId != null) {
+            final Long userIdParam = userId;
+            spec = spec.and((root, query, cb) -> {
+                Subquery<Long> subquery = query.subquery(Long.class);
+                Root<Transaction> transactionRoot = subquery.from(Transaction.class);
+                subquery.select(transactionRoot.get("id"))
+                        .where(cb.equal(transactionRoot.get("userId"), userIdParam));
+                return cb.in(root.get("transactionId")).value(subquery);
+            });
+        }
+
+        if (supplierId != null) {
+            final Long supplierIdParam = supplierId;
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("supplierId"), supplierIdParam));
+        }
+
+
+        if (supplierName != null) {
+            final String supplierNameParam = supplierName;
+            spec = spec.and((root, query, cb) -> {
+                Subquery<Long> subquery = query.subquery(Long.class);
+                Root<Supplier> supplierRoot = subquery.from(Supplier.class);
+                subquery.select(supplierRoot.get("id"))
+                        .where(cb.like(cb.upper(supplierRoot.get("name")), "%" + supplierNameParam.toUpperCase() + "%"));
+                return cb.in(root.get("supplierId")).value(subquery);
+            });
+        }
+
+
+        if (date != null) {
+            final LocalDateTime dateParam = date;
+            spec = spec.and((root, query, cb) -> {
+                Subquery<Long> subquery = query.subquery(Long.class);
+                Root<Transaction> transactionRoot = subquery.from(Transaction.class);
+                Expression<LocalDate> dateExpression = cb.function(
+                        "DATE",
+                        LocalDate.class,
+                        transactionRoot.get("transactionDate")
+                );
+                LocalDate searchDate = dateParam.toLocalDate();
+                subquery.select(transactionRoot.get("id"))
+                        .where(cb.equal(dateExpression, searchDate));
+                return cb.in(root.get("transactionId")).value(subquery);
+            });
+        }
+
+        if (purchaseStatus != null) {
+            final String statusParam = purchaseStatus;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.upper(root.get("purchaseStatus")), "%" + statusParam.toUpperCase() + "%"));
+        }
+
+        if (observation != null) {
+            final String obsParam = observation;
+            spec = spec.and((root, query, cb) -> {
+                Subquery<Long> subquery = query.subquery(Long.class);
+                Root<Transaction> transactionRoot = subquery.from(Transaction.class);
+                subquery.select(transactionRoot.get("id"))
+                        .where(cb.like(cb.upper(transactionRoot.get("observation")), "%" + obsParam.toUpperCase() + "%"));
+                return cb.in(root.get("transactionId")).value(subquery);
+            });
+        }
+
+        Page<PurchaseSupplier> entityPage = purchaseSupplierRepository.findAll(spec, pagingSort);
+
+        log.info("Resultados encontrados: {}", entityPage.getContent().size());
+
+        return entityPage.map(this::mapToPurchaseSupplierResponseDTO);
     }
+
+    private PurchaseSupplierResponseDTO mapToPurchaseSupplierResponseDTO(PurchaseSupplier entity) {
+        Long userIdValue = null;
+        String supplierNameValue = null;
+        LocalDateTime transactionDateValue = null;
+        String observationValue = null;
+
+        if (entity.getTransactionId() != null) {
+            Transaction transaction = transactionRepository.findById(entity.getTransactionId()).orElse(null);
+            if (transaction != null) {
+                userIdValue = transaction.getUserId();
+                transactionDateValue = transaction.getTransactionDate();
+                observationValue = transaction.getObservation();
+            }
+        }
+
+
+        if (entity.getSupplierId() != null) {
+            supplierNameValue = supplierRepository.findById(entity.getSupplierId())
+                    .map(Supplier::getName)
+                    .orElse(null);
+        }
+
+        return new PurchaseSupplierResponseDTO(
+                entity.getId(),
+                userIdValue,
+                entity.getSupplierId(),
+                supplierNameValue,
+                transactionDateValue,
+                entity.getPurchaseStatus(),
+                observationValue
+        );
+    }
+
     @Override
     public GenericResponse deletePurchase(Long purchase) {
 

@@ -136,4 +136,41 @@ public interface PendingOrderRepository extends JpaRepository<PendingOrder, Long
             @Param("total") String total,
             Pageable pageable);
 
+
+
+    @Query("""
+    SELECT COUNT(po)
+    FROM PendingOrder po
+    WHERE po.status = 'ACTIVE'
+    AND po.statusPendingOrder IN ('PENDIENTE', 'EN_PROCESO')
+""")
+    Long countPendingDeliveries();
+
+    @Query("""
+    SELECT COUNT(po)
+    FROM PendingOrder po
+    WHERE po.status = 'ACTIVE'
+    AND po.statusPendingOrder IN ('PENDIENTE', 'EN_PROCESO')
+    AND po.date <= CURRENT_DATE
+""")
+    Long countUrgentDeliveries();
+
+    @Query("""
+    SELECT COUNT(po)
+    FROM PendingOrder po
+    WHERE po.status = 'ACTIVE'
+    AND po.statusPendingOrder IN ('PENDIENTE', 'EN_PROCESO')
+""")
+    Long countAllPending();
+
+
+    @Query("""
+    SELECT COUNT(po)
+    FROM PendingOrder po
+    WHERE po.status = 'ACTIVE'
+    AND po.statusPendingOrder IN ('PENDIENTE', 'EN_PROCESO')
+    AND FUNCTION('DATE', po.date) = CURRENT_DATE
+""")
+    Long countPendingToday();
+
 }

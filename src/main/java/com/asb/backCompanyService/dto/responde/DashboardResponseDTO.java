@@ -1,0 +1,13 @@
+package com.asb.backCompanyService.dto.responde;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class DashboardResponseDTO {
+    private DashboardMetricsDTO metrics;
+    private DashboardModulesDTO modules;
+}

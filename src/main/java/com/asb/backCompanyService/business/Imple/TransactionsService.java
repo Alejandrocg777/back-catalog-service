@@ -3,9 +3,14 @@ package com.asb.backCompanyService.business.Imple;
 import com.asb.backCompanyService.business.Interfaces.TransactionBusiness;
 import com.asb.backCompanyService.dto.responde.ProductOfTransactionDTO;
 import com.asb.backCompanyService.dto.responde.TransactionResponseNewDTO;
+import com.asb.backCompanyService.model.Rol;
 import com.asb.backCompanyService.model.Transaction;
+import com.asb.backCompanyService.model.User;
 import com.asb.backCompanyService.repository.ProductRepository;
+import com.asb.backCompanyService.repository.RolRepository;
 import com.asb.backCompanyService.repository.TransactionRepository;
+import com.asb.backCompanyService.repository.UserRepository;
+import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +35,8 @@ public class TransactionsService implements TransactionBusiness {
 
     private final TransactionRepository transactionRepository;
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
+    private final RolRepository rolRepository;
 
     @Override
     public Page<TransactionResponseNewDTO> getTransactions(Integer page,
@@ -55,7 +63,7 @@ public class TransactionsService implements TransactionBusiness {
         int size = 6;
         String id = null;
         String transactionType = null;
-        LocalDate transactionDate = null;  // ✅ Cambiado de String a LocalDate
+        LocalDate transactionDate = null;
         String typeUser = null;
         String userName = null;
         String observation = null;
@@ -63,67 +71,145 @@ public class TransactionsService implements TransactionBusiness {
         if (customQuery.containsKey("orders")) {
             orders = customQuery.get("orders");
         }
-
         if (customQuery.containsKey("sortBy")) {
             sortBy = customQuery.get("sortBy");
         }
-
         if (customQuery.containsKey("page")) {
             page = Integer.parseInt(customQuery.get("page"));
         }
-
         if (customQuery.containsKey("size")) {
             size = Integer.parseInt(customQuery.get("size"));
         }
-
-        if (customQuery.containsKey("id")) {
-            id = "%" + customQuery.get("id") + "%";
+        if (customQuery.containsKey("id") && !customQuery.get("id").isEmpty()) {
+            id = customQuery.get("id");
         }
-
-        if (customQuery.containsKey("transactionType")) {
-            transactionType = "%" + customQuery.get("transactionType") + "%";
+        if (customQuery.containsKey("transactionType") && !customQuery.get("transactionType").isEmpty()) {
+            transactionType = customQuery.get("transactionType");
         }
-
-        // ✅ NUEVO: Parsear la fecha correctamente
-        if (customQuery.containsKey("date") && customQuery.get("date") != null && !customQuery.get("date").isEmpty()) {
+        if (customQuery.containsKey("date") && !customQuery.get("date").isEmpty()) {
             try {
                 transactionDate = LocalDate.parse(customQuery.get("date"));
             } catch (Exception e) {
-                log.warn("Error parsing date: {}", customQuery.get("date"), e);
-                transactionDate = null;
+                log.warn("Invalid date format: " + customQuery.get("date") + ". Expected format: yyyy-MM-dd");
             }
         }
-
-        if (customQuery.containsKey("typeUser")) {
-            typeUser = "%" + customQuery.get("typeUser") + "%";
+        if (customQuery.containsKey("typeUser") && !customQuery.get("typeUser").isEmpty()) {
+            typeUser = customQuery.get("typeUser");
         }
-
-        if (customQuery.containsKey("userName")) {
-            userName = "%" + customQuery.get("userName") + "%";
+        if (customQuery.containsKey("userName") && !customQuery.get("userName").isEmpty()) {
+            userName = customQuery.get("userName");
         }
-
-        if (customQuery.containsKey("observation")) {
-            observation = "%" + customQuery.get("observation") + "%";
-        }
-
-        String actualSortField = sortBy;
-        if ("typeUser".equals(sortBy)) {
-            actualSortField = "r.name";
-        } else if ("userName".equals(sortBy)) {
-            actualSortField = "u.name";
-        } else if ("transactionDate".equals(sortBy)) {
-            actualSortField = "t.transactionDate";
+        if (customQuery.containsKey("observation") && !customQuery.get("observation").isEmpty()) {
+            observation = customQuery.get("observation");
         }
 
         Sort.Direction direction = Sort.Direction.fromString(orders);
-        Sort sort = Sort.by(direction, actualSortField);
-        Pageable pagingSort = PageRequest.of(page, size, sort);
+        Pageable pagingSort = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        Page<TransactionResponseNewDTO> result = transactionRepository.searchTransaction(
-                id, transactionType, transactionDate, typeUser, userName, observation, pagingSort);
+        Specification<Transaction> spec = Specification.where(null);
 
-        log.info("Resultados encontrados: {}", result.getContent());
-        return result;
+        spec = spec.and((root, query, cb) ->
+                cb.equal(root.get("status"), "ACTIVE"));
+
+        if (id != null) {
+            final String idParam = id;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(root.get("id").as(String.class), "%" + idParam + "%"));
+        }
+
+        if (transactionType != null) {
+            final String typeParam = transactionType;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.upper(root.get("transactionType")), "%" + typeParam.toUpperCase() + "%"));
+        }
+
+        if (transactionDate != null) {
+            final LocalDate dateParam = transactionDate;
+            spec = spec.and((root, query, cb) -> {
+                Expression<LocalDate> dateExpression = cb.function(
+                        "DATE",
+                        LocalDate.class,
+                        root.get("transactionDate")
+                );
+                return cb.equal(dateExpression, dateParam);
+            });
+        }
+
+        if (userName != null) {
+            final String userParam = userName;
+            spec = spec.and((root, query, cb) -> {
+                Subquery<Long> subquery = query.subquery(Long.class);
+                Root<User> userRoot = subquery.from(User.class);
+                subquery.select(userRoot.get("id"))
+                        .where(cb.like(cb.upper(userRoot.get("name")), "%" + userParam.toUpperCase() + "%"));
+                return cb.in(root.get("userId")).value(subquery);
+            });
+        }
+
+        if (typeUser != null) {
+            final String rolParam = typeUser;
+            spec = spec.and((root, query, cb) -> {
+                Subquery<Long> userSubquery = query.subquery(Long.class);
+                Root<User> userRoot = userSubquery.from(User.class);
+
+                Subquery<Long> rolSubquery = query.subquery(Long.class);
+                Root<Rol> rolRoot = rolSubquery.from(Rol.class);
+                rolSubquery.select(rolRoot.get("id"))
+                        .where(cb.like(cb.upper(rolRoot.get("name")), "%" + rolParam.toUpperCase() + "%"));
+
+                userSubquery.select(userRoot.get("id"))
+                        .where(cb.in(userRoot.get("rolId")).value(rolSubquery));
+
+                return cb.in(root.get("userId")).value(userSubquery);
+            });
+        }
+
+
+        if (observation != null) {
+            final String obsParam = observation;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.upper(root.get("observation")), "%" + obsParam.toUpperCase() + "%"));
+        }
+
+        Page<Transaction> entityPage = transactionRepository.findAll(spec, pagingSort);
+
+        log.info("Resultados encontrados: {}", entityPage.getContent().size());
+
+        return entityPage.map(this::mapToTransactionResponseNewDTO);
+    }
+
+    private TransactionResponseNewDTO mapToTransactionResponseNewDTO(Transaction entity) {
+        Long rolIdValue = null;
+        String rolNameValue = null;
+        Long userIdValue = null;
+        String userNameValue = null;
+
+        if (entity.getUserId() != null) {
+            User user = userRepository.findById(entity.getUserId()).orElse(null);
+            if (user != null) {
+                userIdValue = user.getId();
+                userNameValue = user.getName();
+
+                if (user.getRolId() != null) {
+                    Rol rol = rolRepository.findById(user.getRolId()).orElse(null);
+                    if (rol != null) {
+                        rolIdValue = rol.getId();
+                        rolNameValue = rol.getName();
+                    }
+                }
+            }
+        }
+
+        return new TransactionResponseNewDTO(
+                entity.getId(),
+                rolIdValue,
+                rolNameValue,
+                userIdValue,
+                userNameValue,
+                entity.getTransactionDate(),
+                entity.getTransactionType(),
+                entity.getObservation()
+        );
     }
     @Override
     public Page<ProductOfTransactionDTO> searchProducts(Long transactionId, Map<String, String> customQuery) {

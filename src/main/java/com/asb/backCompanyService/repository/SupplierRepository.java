@@ -88,4 +88,20 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
             Pageable pageable
     );
 
+    @Query("""
+    SELECT COUNT(s)
+    FROM Supplier s
+    WHERE s.status = 'ACTIVE'
+""")
+    Long countActiveSuppliers();
+
+    @Query("""
+    SELECT COUNT(DISTINCT s.id)
+    FROM Supplier s
+    JOIN ProductWarehouse pw ON s.id = pw.supplierId
+    WHERE s.status = 'ACTIVE'
+    AND pw.reservedQuantity > 0
+""")
+    Long countSuppliersWithDebt();
+
 }

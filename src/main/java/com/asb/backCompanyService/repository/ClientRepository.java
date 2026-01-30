@@ -81,4 +81,8 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
             "where c.status = 'ACTIVE' ")
     List<Client> getAllNoPage();
 
+
+    @Query("SELECT COUNT(c) FROM Client c WHERE c.status = 'ACTIVE'")
+    Long countActiveClients();
+
 }

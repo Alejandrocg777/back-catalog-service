@@ -255,4 +255,37 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> getAllNoPage();
 
     Page<Employee> findAll(Specification<Employee> spec, Pageable pagingSort);
+
+
+    @Query("""
+    SELECT COUNT(e)
+    FROM Employee e
+    WHERE e.status = 'ACTIVE'
+""")
+    Long countActiveEmployees();
+
+    @Query(value = """
+    SELECT CASE 
+        WHEN COUNT(*) > 0 THEN true 
+        ELSE false 
+    END
+    FROM (
+        SELECT e.employee_id
+        FROM employee e
+        LEFT JOIN employee_transaction et ON e.employee_id = et.employee_id AND et.status = 'ACTIVE'
+        WHERE e.status = 'ACTIVE'
+        GROUP BY e.employee_id
+        HAVING (
+            COALESCE(e.base_salary, 0) + 
+            COALESCE(SUM(
+                CASE 
+                    WHEN et.transaction_type = 'ENTRADA' THEN et.amount
+                    WHEN et.transaction_type IN ('PAGO', 'PRESTAMO') THEN -et.amount
+                    ELSE 0
+                END
+            ), 0)
+        ) > 0
+    ) AS pending_employees
+""", nativeQuery = true)
+    Boolean hasPendingPayroll();
 }

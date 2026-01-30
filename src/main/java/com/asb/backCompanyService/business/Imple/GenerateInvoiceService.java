@@ -13,6 +13,9 @@ import com.asb.backCompanyService.exception.CustomErrorException;
 import com.asb.backCompanyService.exception.GenericException;
 import com.asb.backCompanyService.model.*;
 import com.asb.backCompanyService.repository.*;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -21,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +43,9 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
 
     private final GenerateInvoiceRepository generateInvoiceRepository;
     private final BillRepository billRepository;
+    private final ClientRepository clientRepository;
+    private final PaymentMethodRepository paymentMethodRepository;
+    private final UserRepository userRepository;
     private final BillDetailsRepopsitory billDetailsRepopsitory;
     private final NumerationService numerationService;
     private final ProductRepository productRepository;
@@ -415,39 +422,30 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
         if (customQuery.containsKey("orders")) {
             orders = customQuery.get("orders");
         }
-
         if (customQuery.containsKey("sortBy")) {
             sortBy = customQuery.get("sortBy");
         }
-
         if (customQuery.containsKey("page")) {
             page = Integer.parseInt(customQuery.get("page"));
         }
-
         if (customQuery.containsKey("size")) {
             size = Integer.parseInt(customQuery.get("size"));
         }
-
-        if (customQuery.containsKey("id")) {
-            id = "%" + customQuery.get("id") + "%";
+        if (customQuery.containsKey("id") && !customQuery.get("id").isEmpty()) {
+            id = customQuery.get("id");
         }
-
-        if (customQuery.containsKey("invoiceNumber")) {
-            invoiceNumber = "%" + customQuery.get("invoiceNumber") + "%";
+        if (customQuery.containsKey("invoiceNumber") && !customQuery.get("invoiceNumber").isEmpty()) {
+            invoiceNumber = customQuery.get("invoiceNumber");
         }
-
-        if (customQuery.containsKey("customerName")) {
-            customerName = "%" + customQuery.get("customerName") + "%";
+        if (customQuery.containsKey("customerName") && !customQuery.get("customerName").isEmpty()) {
+            customerName = customQuery.get("customerName");
         }
-
-        if (customQuery.containsKey("paymentMethodName")) {
-            paymentMethodName = "%" + customQuery.get("paymentMethodName") + "%";
+        if (customQuery.containsKey("paymentMethodName") && !customQuery.get("paymentMethodName").isEmpty()) {
+            paymentMethodName = customQuery.get("paymentMethodName");
         }
-
-        if (customQuery.containsKey("userName")) {
-            userName = "%" + customQuery.get("userName") + "%";
+        if (customQuery.containsKey("userName") && !customQuery.get("userName").isEmpty()) {
+            userName = customQuery.get("userName");
         }
-
         if (customQuery.containsKey("invoiceDate") && !customQuery.get("invoiceDate").isEmpty()) {
             try {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -456,33 +454,160 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
                 log.warn("Invalid date format: " + customQuery.get("invoiceDate") + ". Expected format: yyyy-MM-dd");
             }
         }
-        if (customQuery.containsKey("statusBill")) {
-            statusBill = "%" + customQuery.get("statusBill").toUpperCase() + "%";
+        if (customQuery.containsKey("statusBill") && !customQuery.get("statusBill").isEmpty()) {
+            statusBill = customQuery.get("statusBill");
         }
-
-        if (customQuery.containsKey("total")) {
-            total = "%" + customQuery.get("total").toUpperCase() + "%";
+        if (customQuery.containsKey("total") && !customQuery.get("total").isEmpty()) {
+            total = customQuery.get("total");
         }
 
         Sort.Direction direction = Sort.Direction.fromString(orders);
-        Sort sort = Sort.by(direction, sortBy);
-        Pageable pagingSort = PageRequest.of(page, size, sort);
+        Pageable pagingSort = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        Page<InvoiceResponseDto> searchResult = billRepository.searchInvoices(
-                id,
-                invoiceNumber,
-                customerName,
-                paymentMethodName,
-                userName,
-                invoiceDate,
-                statusBill,
-                total,
-                pagingSort
+        // Construir Specification
+        Specification<Bill> spec = Specification.where(null);
+
+        // Filtro obligatorio: status ACTIVE
+        spec = spec.and((root, query, cb) ->
+                cb.equal(root.get("status"), "ACTIVE"));
+
+        // Filtro por ID
+        if (id != null) {
+            final String idParam = id;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(root.get("id").as(String.class), "%" + idParam + "%"));
+        }
+
+        // Filtro por número de factura
+        if (invoiceNumber != null) {
+            final String invoiceNumParam = invoiceNumber;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.upper(root.get("invoiceNumber")), "%" + invoiceNumParam.toUpperCase() + "%"));
+        }
+
+        // Filtro por nombre de cliente (usando Subquery)
+        if (customerName != null) {
+            final String customerParam = customerName;
+            spec = spec.and((root, query, cb) -> {
+                Subquery<Long> subquery = query.subquery(Long.class);
+                Root<Client> clientRoot = subquery.from(Client.class);
+                subquery.select(clientRoot.get("id"))
+                        .where(cb.like(cb.upper(clientRoot.get("name")), "%" + customerParam.toUpperCase() + "%"));
+                return cb.in(root.get("customerId")).value(subquery);
+            });
+        }
+
+        // Filtro por método de pago (usando Subquery)
+        if (paymentMethodName != null) {
+            final String paymentMethodParam = paymentMethodName;
+            spec = spec.and((root, query, cb) -> {
+                Subquery<Long> subquery = query.subquery(Long.class);
+                Root<PaymentMethod> paymentMethodRoot = subquery.from(PaymentMethod.class);
+                subquery.select(paymentMethodRoot.get("id"))
+                        .where(cb.like(cb.upper(paymentMethodRoot.get("description")), "%" + paymentMethodParam.toUpperCase() + "%"));
+                return cb.in(root.get("paymentMethodId")).value(subquery);
+            });
+        }
+
+        // Filtro por nombre de usuario (usando Subquery)
+        if (userName != null) {
+            final String userParam = userName;
+            spec = spec.and((root, query, cb) -> {
+                Subquery<Long> subquery = query.subquery(Long.class);
+                Root<User> userRoot = subquery.from(User.class);
+                subquery.select(userRoot.get("id"))
+                        .where(cb.like(cb.upper(userRoot.get("name")), "%" + userParam.toUpperCase() + "%"));
+                return cb.in(root.get("userId")).value(subquery);
+            });
+        }
+
+        // Filtro por fecha de factura
+        if (invoiceDate != null) {
+            final LocalDateTime dateParam = invoiceDate;
+            spec = spec.and((root, query, cb) -> {
+                Expression<LocalDate> dateExpression = cb.function(
+                        "DATE",
+                        LocalDate.class,
+                        root.get("invoiceDate")
+                );
+                LocalDate searchDate = dateParam.toLocalDate();
+                return cb.equal(dateExpression, searchDate);
+            });
+        }
+
+        // Filtro por estado de factura
+        if (statusBill != null) {
+            final String statusParam = statusBill;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.upper(root.get("statusBill")), "%" + statusParam.toUpperCase() + "%"));
+        }
+
+        // Filtro por total
+        if (total != null) {
+            final String totalParam = total;
+            spec = spec.and((root, query, cb) ->
+                    cb.like(root.get("total").as(String.class), "%" + totalParam + "%"));
+        }
+
+        Page<Bill> entityPage = billRepository.findAll(spec, pagingSort);
+
+        log.info("Búsqueda de facturas - Resultados: {} registros", entityPage.getTotalElements());
+
+        return entityPage.map(this::mapToInvoiceResponseDto);
+    }
+
+    // Método de mapeo
+    private InvoiceResponseDto mapToInvoiceResponseDto(Bill entity) {
+        String customerNameValue = null;
+        String paymentMethodNameValue = null;
+        String userNameValue = null;
+
+        // Obtener nombre de cliente
+        if (entity.getCustomerId() != null) {
+            customerNameValue = clientRepository.findById(entity.getCustomerId())
+                    .map(Client::getName)
+                    .orElse(null);
+        }
+
+        // Obtener descripción de método de pago
+        if (entity.getPaymentMethodId() != null) {
+            paymentMethodNameValue = paymentMethodRepository.findById(entity.getPaymentMethodId())
+                    .map(PaymentMethod::getDescription)
+                    .orElse(null);
+        }
+
+        // Obtener nombre de usuario
+        if (entity.getUserId() != null) {
+            userNameValue = userRepository.findById(entity.getUserId())
+                    .map(User::getName)
+                    .orElse(null);
+        }
+
+        return new InvoiceResponseDto(
+                entity.getId(),
+                entity.getCustomerId(),
+                customerNameValue,
+                entity.getInvoiceNumber(),
+                entity.getInvoiceDate(),
+                entity.getDueDate(),
+                entity.getPaymentTypeId(),
+                entity.getPaymentMethodId(),
+                paymentMethodNameValue,
+                entity.getDeliveryType(),
+                entity.getDeliveryCost(),
+                entity.getObservations(),
+                entity.getTotalDiscount(),
+                entity.getTotal(),
+                entity.getSubtotal(),
+                entity.getInitialPayment(),
+                entity.getRemainingBalance(),
+                entity.getCashReceived(),
+                entity.getUserId(),
+                userNameValue,
+                entity.getChangeGiven(),
+                entity.getStatus(),
+                entity.getStatusBill()
         );
-
-        log.info("Búsqueda de facturas - Resultados: {} registros", searchResult.getTotalElements());
-
-        return searchResult;
     }
 
     @Override

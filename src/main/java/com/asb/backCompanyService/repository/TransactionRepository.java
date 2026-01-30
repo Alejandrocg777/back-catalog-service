@@ -5,6 +5,7 @@ import com.asb.backCompanyService.dto.responde.TransactionResponseNewDTO;
 import com.asb.backCompanyService.model.Transaction;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -47,23 +48,23 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             "INNER JOIN User u ON t.userId = u.id " +
             "INNER JOIN Rol r ON u.rolId = r.id " +
             "WHERE t.status = 'ACTIVE' " +
-            "AND (CAST(t.id AS string) LIKE :id " +
-            "OR UPPER(t.transactionType) LIKE UPPER(:transactionType) " +
-            "OR FUNCTION('DATE', t.transactionDate) = COALESCE(:transactionDate, FUNCTION('DATE', t.transactionDate)) " +
-            "OR UPPER(r.name) LIKE UPPER(:typeUser) " +
-            "OR UPPER(u.name) LIKE UPPER(:userName) " +
-            "OR UPPER(t.observation) LIKE UPPER(:observation))",
+            "AND (:id IS NULL OR CAST(t.id AS string) LIKE :id) " +
+            "AND (:transactionType IS NULL OR UPPER(t.transactionType) LIKE UPPER(:transactionType)) " +
+            "AND (:transactionDate IS NULL OR t.transactionDate = :transactionDate) " +
+            "AND (:typeUser IS NULL OR UPPER(r.name) LIKE UPPER(:typeUser)) " +
+            "AND (:userName IS NULL OR UPPER(u.name) LIKE UPPER(:userName)) " +
+            "AND (:observation IS NULL OR UPPER(t.observation) LIKE UPPER(:observation))",
             countQuery = "SELECT COUNT(t) " +
                     "FROM Transaction t " +
                     "INNER JOIN User u ON t.userId = u.id " +
                     "INNER JOIN Rol r ON u.rolId = r.id " +
                     "WHERE t.status = 'ACTIVE' " +
-                    "AND (CAST(t.id AS string) LIKE :id " +
-                    "OR UPPER(t.transactionType) LIKE UPPER(:transactionType) " +
-                    "OR FUNCTION('DATE', t.transactionDate) = COALESCE(:transactionDate, FUNCTION('DATE', t.transactionDate)) " +
-                    "OR UPPER(r.name) LIKE UPPER(:typeUser) " +
-                    "OR UPPER(u.name) LIKE UPPER(:userName) " +
-                    "OR UPPER(t.observation) LIKE UPPER(:observation))")
+                    "AND (:id IS NULL OR CAST(t.id AS string) LIKE :id) " +
+                    "AND (:transactionType IS NULL OR UPPER(t.transactionType) LIKE UPPER(:transactionType)) " +
+                    "AND (:transactionDate IS NULL OR t.transactionDate = :transactionDate) " +
+                    "AND (:typeUser IS NULL OR UPPER(r.name) LIKE UPPER(:typeUser)) " +
+                    "AND (:userName IS NULL OR UPPER(u.name) LIKE UPPER(:userName)) " +
+                    "AND (:observation IS NULL OR UPPER(t.observation) LIKE UPPER(:observation))")
     Page<TransactionResponseNewDTO> searchTransaction(
             @Param("id") String id,
             @Param("transactionType") String transactionType,
@@ -85,4 +86,5 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
                     "WHERE t.status = 'ACTIVE' ")
     Page<TransactionResponseNewDTO> getActiveTransactionsMaster(Pageable pageable);
 
+    Page<Transaction> findAll(Specification<Transaction> spec, Pageable pagingSort);
 }
