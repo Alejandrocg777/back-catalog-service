@@ -138,15 +138,17 @@ public class EmployeeService implements IEmployeeBusiness {
                         java.sql.Date sqlDate = (java.sql.Date) row[7];
                         hireDateStr = sqlDate.toLocalDate().format(formatter);
                     }
+
                     Double baseSalary = null;
                     if (row[13] != null) {
-                        baseSalary = ((BigDecimal) row[13]).doubleValue();
+                        baseSalary = ((Number) row[13]).doubleValue();
                     }
 
                     Double transactionBalance = 0.0;
                     if (row[15] != null) {
-                        transactionBalance = ((BigDecimal) row[15]).doubleValue();
+                        transactionBalance = ((Number) row[15]).doubleValue();
                     }
+
                     Double totalToPay = transactionBalance;
                     if (baseSalary != null) {
                         totalToPay += baseSalary;
@@ -162,18 +164,18 @@ public class EmployeeService implements IEmployeeBusiness {
                     }
 
                     return new EmployeePaymentDTO(
-                            (Long) row[0],
+                            row[0] != null ? ((Number) row[0]).longValue() : null,
                             (String) row[1],
                             (String) row[2],
                             (String) row[3],
-                            (Long) row[4],
+                            row[4] != null ? ((Number) row[4]).longValue() : null,
                             (String) row[5],
                             (String) row[6],
                             hireDateStr,
                             (String) row[8],
-                            (Long) row[9],
+                            row[9] != null ? ((Number) row[9]).longValue() : null,
                             (String) row[10],
-                            (Long) row[11],
+                            row[11] != null ? ((Number) row[11]).longValue() : null,
                             (String) row[12],
                             baseSalary,
                             totalToPay,
@@ -185,7 +187,6 @@ public class EmployeeService implements IEmployeeBusiness {
 
         return new PageImpl<>(dtoList, pageable, rawPage.getTotalElements());
     }
-
     @Override
     public List<EmployeePaymentDTO> getAllEmployeePaymentNoPage(String orders, String sortBy) {
         Sort sort = Sort.unsorted();
@@ -215,12 +216,12 @@ public class EmployeeService implements IEmployeeBusiness {
 
                     Double baseSalary = null;
                     if (row[13] != null) {
-                        baseSalary = ((BigDecimal) row[13]).doubleValue();
+                        baseSalary = ((Number) row[13]).doubleValue();
                     }
 
                     Double transactionBalance = 0.0;
                     if (row[15] != null) {
-                        transactionBalance = ((BigDecimal) row[15]).doubleValue();
+                        transactionBalance = ((Number) row[15]).doubleValue();
                     }
 
                     Double totalToPay = transactionBalance;
@@ -238,18 +239,18 @@ public class EmployeeService implements IEmployeeBusiness {
                     }
 
                     return new EmployeePaymentDTO(
-                            (Long) row[0],
+                            row[0] != null ? ((Number) row[0]).longValue() : null,
                             (String) row[1],
                             (String) row[2],
                             (String) row[3],
-                            (Long) row[4],
+                            row[4] != null ? ((Number) row[4]).longValue() : null,
                             (String) row[5],
                             (String) row[6],
                             hireDateStr,
                             (String) row[8],
-                            (Long) row[9],
+                            row[9] != null ? ((Number) row[9]).longValue() : null,
                             (String) row[10],
-                            (Long) row[11],
+                            row[11] != null ? ((Number) row[11]).longValue() : null,
                             (String) row[12],
                             baseSalary,
                             totalToPay,
