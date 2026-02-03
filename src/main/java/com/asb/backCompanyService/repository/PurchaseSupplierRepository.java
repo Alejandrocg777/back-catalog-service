@@ -31,17 +31,17 @@ public interface PurchaseSupplierRepository extends JpaRepository<PurchaseSuppli
             "WHERE t.transactionId = :transactionId")
     List<PurchaseProductsSupplier> findAllPurchaseProducts(@Param("transactionId") Long transactionId);
 
-    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.PurchaseProductsSupplier(p.id , p.productName, t.purchasePrice, t.quantity, t.total) " +
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.PurchaseProductsSupplier(" +
+            "p.id, p.productName, t.purchasePrice, t.quantity, t.total) " +
             "FROM TransactionProduct t " +
             "INNER JOIN Product p ON t.productId = p.id " +
-            "WHERE t.transactionId = :purchaseSupplierId " +
-            "AND p.status = 'ACTIVE'",
-            countQuery = "SELECT COUNT(*) " +
-                    "FROM TransactionProduct t " +
-                    "INNER JOIN Product p ON t.productId = p.id " +
-                    "WHERE t.transactionId = :purchaseSupplierId " +
-                    "AND p.status = 'ACTIVE'")
-    Page<PurchaseProductsSupplier> findAllPurchaseProducts(Long purchaseSupplierId, Pageable pageable);
+            "INNER JOIN PurchaseSupplier ps ON t.transactionId = ps.transactionId " +
+            "WHERE ps.id = :purchaseSupplierId " +
+            "AND p.status = 'ACTIVE'")
+    Page<PurchaseProductsSupplier> findAllPurchaseProducts(
+            @Param("purchaseSupplierId") Long purchaseSupplierId,
+            Pageable pageable
+    );
 
     @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.PurchaseSupplierResponseDTO(ps.id , t.userId, ps.supplierId, s.name, t.transactionDate, ps.purchaseStatus, t.observation) " +
             "FROM PurchaseSupplier ps " +

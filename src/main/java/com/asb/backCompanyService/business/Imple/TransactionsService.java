@@ -38,14 +38,21 @@ public class TransactionsService implements TransactionBusiness {
     private final UserRepository userRepository;
     private final RolRepository rolRepository;
 
-    @Override
-    public Page<TransactionResponseNewDTO> getTransactions(Integer page,
-                                                           Integer size,
-                                                           String orders,
-                                                           String sortBy){
-        Sort.Direction direction = Sort.Direction.fromString(orders);
-        Pageable pagingSort = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        return transactionRepository.getActiveTransactionsMaster(pagingSort);
+    public Page<TransactionResponseNewDTO> getTransactions(Integer page, Integer size,
+                                                           String orders, String sortBy,
+                                                           LocalDate startDate, LocalDate endDate) {
+
+        Sort.Direction direction = orders.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        if (startDate != null && endDate != null) {
+            LocalDateTime startDateTime = startDate.atStartOfDay();
+            LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+            return transactionRepository.getActiveTransactionsByDateRange(startDateTime, endDateTime, pageable);
+        }
+
+        // Si no hay fechas, retornar todas las transacciones activas
+        return transactionRepository.getActiveTransactionsMaster(pageable);
     }
 
     @Override
@@ -56,7 +63,9 @@ public class TransactionsService implements TransactionBusiness {
     }
 
     @Override
-    public Page<TransactionResponseNewDTO> searchCustom(Map<String, String> customQuery) {
+    public Page<TransactionResponseNewDTO> searchCustom(Map<String, String> customQuery,
+                                                        LocalDate startDate,
+                                                        LocalDate endDate) {
         String orders = "ASC";
         String sortBy = "id";
         int page = 0;
@@ -111,6 +120,16 @@ public class TransactionsService implements TransactionBusiness {
         spec = spec.and((root, query, cb) ->
                 cb.equal(root.get("status"), "ACTIVE"));
 
+        // 🔥 AGREGAR FILTRO POR RANGO DE FECHAS
+        if (startDate != null && endDate != null) {
+            final LocalDateTime startDateTime = startDate.atStartOfDay();
+            final LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+
+            spec = spec.and((root, query, cb) ->
+                    cb.between(root.get("transactionDate"), startDateTime, endDateTime)
+            );
+        }
+
         if (id != null) {
             final String idParam = id;
             spec = spec.and((root, query, cb) ->
@@ -163,7 +182,6 @@ public class TransactionsService implements TransactionBusiness {
                 return cb.in(root.get("userId")).value(userSubquery);
             });
         }
-
 
         if (observation != null) {
             final String obsParam = observation;

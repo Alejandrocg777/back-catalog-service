@@ -122,7 +122,7 @@ public interface ProductRepository extends CrudRepository<Product, Long> {
     SELECT COUNT(p)
     FROM Product p
     WHERE p.status = 'ACTIVE'
-    AND p.quantity < 10
+    AND p.productStatus = 'agotado'
 """)
     Long countLowStockProducts();
 

@@ -7,6 +7,7 @@ import com.asb.backCompanyService.dto.responde.TransactionResponseDTO;
 import com.asb.backCompanyService.dto.responde.TransactionResponseNewDTO;
 import org.springframework.data.domain.Page;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 public interface TransactionBusiness {
@@ -15,7 +16,9 @@ public interface TransactionBusiness {
     Page<TransactionResponseNewDTO> getTransactions(Integer page,
                                                     Integer size,
                                                     String orders,
-                                                    String sortBy);
+                                                    String sortBy,
+                                                    LocalDate startDate,
+                                                    LocalDate endDate);
 
     Page<ProductOfTransactionDTO> getProductsOfTransaction(Long transactionId,
                                                            Integer page,
@@ -23,7 +26,9 @@ public interface TransactionBusiness {
                                                            String orders,
                                                            String sortBy);
 
-    Page<TransactionResponseNewDTO> searchCustom(Map<String, String> customQuery);
+    Page<TransactionResponseNewDTO> searchCustom(Map<String, String> customQuery,
+                                                 LocalDate startDate,
+                                                 LocalDate endDate);
 
 
     Page<ProductOfTransactionDTO> searchProducts(Long transactionId, Map<String, String> customQuery);

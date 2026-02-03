@@ -32,7 +32,7 @@ public class Client {
     @Column(name = "address")
     private String address;
 
-    @Column(name = "neighborhood")
+    @Column(name = "neighborhood", nullable = true)
     private String neighborhood;
 
     @Column(name = "email")

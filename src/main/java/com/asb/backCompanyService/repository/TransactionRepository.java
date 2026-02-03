@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
@@ -85,6 +86,25 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
                     "INNER JOIN Rol r ON u.rolId = r.id " +
                     "WHERE t.status = 'ACTIVE' ")
     Page<TransactionResponseNewDTO> getActiveTransactionsMaster(Pageable pageable);
+
+
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.TransactionResponseNewDTO(" +
+            "t.id, r.id, r.name, u.id, u.name, t.transactionDate, t.transactionType, t.observation) " +
+            "FROM Transaction t " +
+            "INNER JOIN User u ON t.userId = u.id " +
+            "INNER JOIN Rol r ON u.rolId = r.id " +
+            "WHERE t.status = 'ACTIVE' " +
+            "AND t.transactionDate BETWEEN :startDate AND :endDate",
+            countQuery = "SELECT COUNT(*) " +
+                    "FROM Transaction t " +
+                    "INNER JOIN User u ON t.userId = u.id " +
+                    "INNER JOIN Rol r ON u.rolId = r.id " +
+                    "WHERE t.status = 'ACTIVE' " +
+                    "AND t.transactionDate BETWEEN :startDate AND :endDate")
+    Page<TransactionResponseNewDTO> getActiveTransactionsByDateRange(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            Pageable pageable);
 
     Page<Transaction> findAll(Specification<Transaction> spec, Pageable pagingSort);
 }

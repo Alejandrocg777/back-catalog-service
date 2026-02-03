@@ -174,7 +174,6 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
     FROM Bill b
     WHERE b.status = 'ACTIVE'
     AND (b.statusBill = 'PENDIENTE' OR b.statusBill = 'ABONO')
-    AND b.statusBill != 'COTIZACION'
 """)
     Long countPendingInvoices();
 
@@ -182,19 +181,15 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
     SELECT COUNT(b)
     FROM Bill b
     WHERE b.status = 'ACTIVE'
-    AND (b.statusBill = 'PENDIENTE' OR b.statusBill = 'ABONO')
-    AND b.dueDate <= CURRENT_DATE
-    AND b.statusBill != 'COTIZACION'
+    AND b.statusBill = 'PENDIENTE'
 """)
     Long countUrgentInvoices();
-
 
     @Query("""
     SELECT COUNT(DISTINCT b.customerId)
     FROM Bill b
     WHERE b.status = 'ACTIVE'
     AND (b.statusBill = 'PENDIENTE' OR b.statusBill = 'ABONO')
-    AND b.statusBill != 'COTIZACION'
 """)
     Long countClientsWithPendingInvoices();
 
