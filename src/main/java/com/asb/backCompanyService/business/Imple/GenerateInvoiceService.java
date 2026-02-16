@@ -363,11 +363,30 @@ public class GenerateInvoiceService implements IGenerateInvoiceBusiness {
     @Override
     @Transactional
     public boolean setStatus(Long id, String status) {
-        GenerateInvoice generateInvoice = generateInvoiceRepository.findById(id)
+        Bill bill = billRepository.findById(id)
                 .orElseThrow(() -> new GenericException("La factura no fue encontrada por el id " + id, HttpStatus.NOT_FOUND));
 
-        generateInvoice.setAuthorizedEnabled(status);
-        generateInvoiceRepository.save(generateInvoice);
+        bill.setStatusBill(status);
+        bill.setUpdatedAt(LocalDateTime.now());
+
+        billRepository.save(bill);
+
+        return true;
+    }
+
+    @Override
+    @Transactional
+    public boolean setStatusWithPayment(Long id, String status, Double initialPayment, Double remainingBalance) {
+        Bill bill = billRepository.findById(id)
+                .orElseThrow(() -> new GenericException("La factura no fue encontrada por el id " + id, HttpStatus.NOT_FOUND));
+
+        bill.setStatusBill(status);
+        bill.setInitialPayment(initialPayment);
+        bill.setRemainingBalance(remainingBalance);
+        bill.setUpdatedAt(LocalDateTime.now());
+
+        billRepository.save(bill);
+
         return true;
     }
 

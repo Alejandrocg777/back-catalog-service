@@ -24,6 +24,7 @@ public interface IGenerateInvoiceBusiness {
 
     boolean setStatus(Long id, String status);
 
+    boolean setStatusWithPayment(Long id, String status, Double initialPayment, Double remainingBalance);
 
     Page<InvoiceResponseDto> getAll(int page, int size, String orders, String sortBy);
 

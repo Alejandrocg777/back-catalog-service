@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -27,6 +28,21 @@ public interface TransactionEmployeeRepository extends JpaRepository<Transaction
                     "LEFT JOIN Employee e ON t.employeeId = e.id " +
                     "WHERE t.status = 'ACTIVE'")
     Page<TransactionEmployeeResponseDTO> getStatus(Pageable pageable);
+
+    @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.TransactionEmployeeResponseDTO(t.id, e.id, e.name, t.paymentAmount, t.date, t.observation, t.typeTransaction, t.status) " +
+            "FROM TransactionEmployee t " +
+            "LEFT JOIN Employee e ON t.employeeId = e.id " +
+            "WHERE t.status = 'ACTIVE' " +
+            "AND t.date BETWEEN :startDate AND :endDate",
+            countQuery = "SELECT COUNT(*) " +
+                    "FROM TransactionEmployee t " +
+                    "LEFT JOIN Employee e ON t.employeeId = e.id " +
+                    "WHERE t.status = 'ACTIVE' " +
+                    "AND t.date BETWEEN :startDate AND :endDate")
+    Page<TransactionEmployeeResponseDTO> getStatusByDateRange(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            Pageable pageable);
 
 
     @Query(value = "SELECT new com.asb.backCompanyService.dto.responde.TransactionEmployeeResponseDTO(" +

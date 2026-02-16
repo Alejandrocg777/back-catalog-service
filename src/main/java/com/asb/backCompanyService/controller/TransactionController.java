@@ -23,17 +23,6 @@ public class TransactionController {
 
     private final TransactionBusiness transactionBusiness;
 
-    /*
-
-    @GetMapping
-    public ResponseEntity<Page<TransactionResponseDTO>> getTransactions(@RequestParam(defaultValue = "0") Integer page,
-                                                                        @RequestParam(defaultValue = "6") Integer size,
-                                                                        @RequestParam(defaultValue = "ASC") String orders,
-                                                                        @RequestParam(defaultValue = "id") String sortBy) {
-        return new ResponseEntity<>(transactionBusiness.getTransactions(page, size, orders, sortBy), HttpStatus.OK);
-    }
-
-     */
 
     @GetMapping
     public ResponseEntity<Page<TransactionResponseNewDTO>> getTransactions(

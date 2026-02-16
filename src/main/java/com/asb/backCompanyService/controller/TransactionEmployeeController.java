@@ -10,10 +10,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 @RestController
@@ -39,19 +41,28 @@ public class TransactionEmployeeController {
 
 
     @GetMapping
-    public ResponseEntity<Page<TransactionEmployeeResponseDTO>> getTransactions(@RequestParam(defaultValue = "0") Integer page,
-                                                                                @RequestParam(defaultValue = "6") Integer size,
-                                                                                @RequestParam(defaultValue = "ASC") String orders,
-                                                                                @RequestParam(defaultValue = "id") String sortBy) {
-        return new ResponseEntity<>(transactionEmployeeBusiness.getTransactions(page, size, orders, sortBy), HttpStatus.OK);
-    }
+    public ResponseEntity<Page<TransactionEmployeeResponseDTO>> getTransactions(
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "6") Integer size,
+            @RequestParam(defaultValue = "ASC") String orders,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate endDate) {
 
+        return new ResponseEntity<>(
+                transactionEmployeeBusiness.getTransactions(page, size, orders, sortBy, startDate, endDate),
+                HttpStatus.OK
+        );
+    }
 
 
     @GetMapping("/search")
-    public ResponseEntity<Page<TransactionEmployeeResponseDTO>> search(@RequestParam Map<String, String> customQuery) {
-        Page<TransactionEmployeeResponseDTO> products = transactionEmployeeBusiness.search(customQuery);
+    public ResponseEntity<Page<TransactionEmployeeResponseDTO>> search(
+            @RequestParam Map<String, String> customQuery,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate endDate) {
+
+        Page<TransactionEmployeeResponseDTO> products = transactionEmployeeBusiness.search(customQuery, startDate, endDate);
         return ResponseEntity.ok(products);
     }
-
 }

@@ -51,7 +51,6 @@ public class TransactionsService implements TransactionBusiness {
             return transactionRepository.getActiveTransactionsByDateRange(startDateTime, endDateTime, pageable);
         }
 
-        // Si no hay fechas, retornar todas las transacciones activas
         return transactionRepository.getActiveTransactionsMaster(pageable);
     }
 

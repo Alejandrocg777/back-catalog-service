@@ -297,7 +297,6 @@ public class NumerationService implements INumerationBusiness {
     public String generateInvoiceNumber(Long userId) {
         LocalDate currentDate = LocalDate.now();
 
-        // Encontrar la numeración vigente para el usuario específico con lock pesimista
         Optional<Numeration> optionalNumeration = repository.findActiveNumerationForUser(userId, currentDate);
 
         if (optionalNumeration.isEmpty()) {
@@ -307,17 +306,14 @@ public class NumerationService implements INumerationBusiness {
 
         Numeration numeration = optionalNumeration.get();
 
-        // Validar que no se haya alcanzado el límite
         if (numeration.getCurrentNumber() >= numeration.getFinalNumber()) {
             throw new RuntimeException("Se ha alcanzado el número final en la numeración ID: " +
                     numeration.getId() + " (Prefijo: " + numeration.getPrefix() + ")");
         }
 
-        // Generar el número de factura
         int current = numeration.getCurrentNumber();
         String invoiceNumber = numeration.getPrefix() + "-" + String.format("%06d", current);
 
-        // Incrementar el número actual y guardar
         numeration.setCurrentNumber(current + 1);
         repository.save(numeration);
 

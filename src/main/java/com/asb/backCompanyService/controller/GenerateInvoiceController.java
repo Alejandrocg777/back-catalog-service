@@ -19,7 +19,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/${app.request.prefix}/${app.request.version}${app.request.mappings}/generate-invoice")
-@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
+@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE,RequestMethod.PATCH})
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Slf4j
 public class GenerateInvoiceController {
@@ -65,6 +65,17 @@ public class GenerateInvoiceController {
     @PatchMapping("/set-status/{id}")
     public ResponseEntity<Void> setStatus(@PathVariable("id") Long id, @RequestParam String status) {
         boolean updated = iGenerateInvoiceBusiness.setStatus(id, status);
+        return updated ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+
+    @PatchMapping("/set-status-with-payment/{id}")
+    public ResponseEntity<Void> setStatusWithPayment(
+            @PathVariable("id") Long id,
+            @RequestParam String status,
+            @RequestParam Double initialPayment,
+            @RequestParam Double remainingBalance
+    ) {
+        boolean updated = iGenerateInvoiceBusiness.setStatusWithPayment(id, status, initialPayment, remainingBalance);
         return updated ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 

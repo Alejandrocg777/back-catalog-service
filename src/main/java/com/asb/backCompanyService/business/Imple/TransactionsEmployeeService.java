@@ -67,15 +67,27 @@ public class TransactionsEmployeeService implements TransactionEmployeeBusiness 
     public Page<TransactionEmployeeResponseDTO> getTransactions(Integer page,
                                                                 Integer size,
                                                                 String orders,
-                                                                String sortBy) {
-        Sort.Direction direction = Sort.Direction.fromString(orders);
+                                                                String sortBy,
+                                                                LocalDate startDate,
+                                                                LocalDate endDate) {
+
+        Sort.Direction direction = orders.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pagingSort = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        if (startDate != null && endDate != null) {
+            LocalDate startDateTime = LocalDate.from(startDate.atStartOfDay());
+            LocalDate endDateTime = LocalDate.from(endDate.atTime(23, 59, 59));
+            return transactionEmployeeRepository.getStatusByDateRange(startDateTime, endDateTime, pagingSort);
+        }
+
         return transactionEmployeeRepository.getStatus(pagingSort);
     }
 
 
     @Override
-    public Page<TransactionEmployeeResponseDTO> search(Map<String, String> customQuery) {
+    public Page<TransactionEmployeeResponseDTO> search(Map<String, String> customQuery,
+                                                       LocalDate startDate,
+                                                       LocalDate endDate) {
         String orders = "ASC";
         String sortBy = "id";
         int page = 0;
@@ -85,7 +97,7 @@ public class TransactionsEmployeeService implements TransactionEmployeeBusiness 
         String typeTransaction = null;
         String dateFrom = null;
         String dateTo = null;
-        LocalDate date = null;  // ✅ NUEVO: Variable para fecha exacta
+        LocalDate date = null;
         String paymentAmount = null;
         String observation = null;
 
@@ -116,7 +128,6 @@ public class TransactionsEmployeeService implements TransactionEmployeeBusiness 
         if (customQuery.containsKey("dateTo") && !customQuery.get("dateTo").isEmpty()) {
             dateTo = customQuery.get("dateTo");
         }
-        // ✅ NUEVO: Parsear fecha exacta
         if (customQuery.containsKey("date") && !customQuery.get("date").isEmpty()) {
             try {
                 date = LocalDate.parse(customQuery.get("date"));
@@ -127,7 +138,6 @@ public class TransactionsEmployeeService implements TransactionEmployeeBusiness 
         if (customQuery.containsKey("paymentAmount") && !customQuery.get("paymentAmount").isEmpty()) {
             paymentAmount = customQuery.get("paymentAmount");
         }
-
         if (customQuery.containsKey("observation") && !customQuery.get("observation").isEmpty()) {
             observation = customQuery.get("observation");
         }
@@ -139,6 +149,43 @@ public class TransactionsEmployeeService implements TransactionEmployeeBusiness 
 
         spec = spec.and((root, query, cb) ->
                 cb.equal(root.get("status"), "ACTIVE"));
+
+        // 🔥 AGREGAR FILTRO POR RANGO DE FECHAS (tiene prioridad)
+        if (startDate != null && endDate != null) {
+            final LocalDate startParam = startDate;
+            final LocalDate endParam = endDate;
+            spec = spec.and((root, query, cb) ->
+                    cb.between(root.get("date"), startParam, endParam)
+            );
+        } else {
+            // Si no hay rango de fechas del filtro principal, usar fecha exacta o rango manual
+            if (date != null) {
+                final LocalDate dateParam = date;
+                spec = spec.and((root, query, cb) ->
+                        cb.equal(root.get("date"), dateParam));
+            } else {
+                // Si no hay fecha exacta, usar rango de fechas manual
+                if (dateFrom != null) {
+                    try {
+                        final LocalDate dateFromParam = LocalDate.parse(dateFrom);
+                        spec = spec.and((root, query, cb) ->
+                                cb.greaterThanOrEqualTo(root.get("date"), dateFromParam));
+                    } catch (Exception e) {
+                        log.warn("Fecha desde inválida: {}", dateFrom);
+                    }
+                }
+
+                if (dateTo != null) {
+                    try {
+                        final LocalDate dateToParam = LocalDate.parse(dateTo);
+                        spec = spec.and((root, query, cb) ->
+                                cb.lessThanOrEqualTo(root.get("date"), dateToParam));
+                    } catch (Exception e) {
+                        log.warn("Fecha hasta inválida: {}", dateTo);
+                    }
+                }
+            }
+        }
 
         if (id != null) {
             final String idParam = id;
@@ -156,40 +203,11 @@ public class TransactionsEmployeeService implements TransactionEmployeeBusiness 
             }
         }
 
-        // ✅ NUEVO: Filtro por fecha exacta (tiene prioridad sobre rango)
-        if (date != null) {
-            final LocalDate dateParam = date;
-            spec = spec.and((root, query, cb) ->
-                    cb.equal(root.get("date"), dateParam));
-        } else {
-            // Si no hay fecha exacta, usar rango de fechas
-            if (dateFrom != null) {
-                try {
-                    final LocalDate dateFromParam = LocalDate.parse(dateFrom);
-                    spec = spec.and((root, query, cb) ->
-                            cb.greaterThanOrEqualTo(root.get("date"), dateFromParam));
-                } catch (Exception e) {
-                    log.warn("Fecha desde inválida: {}", dateFrom);
-                }
-            }
-
-            if (dateTo != null) {
-                try {
-                    final LocalDate dateToParam = LocalDate.parse(dateTo);
-                    spec = spec.and((root, query, cb) ->
-                            cb.lessThanOrEqualTo(root.get("date"), dateToParam));
-                } catch (Exception e) {
-                    log.warn("Fecha hasta inválida: {}", dateTo);
-                }
-            }
-        }
-
         if (paymentAmount != null) {
             final String paymentAmountParam = paymentAmount;
             spec = spec.and((root, query, cb) ->
                     cb.like(root.get("paymentAmount").as(String.class), "%" + paymentAmountParam + "%"));
         }
-
 
         if (observation != null) {
             final String observationParam = observation;
