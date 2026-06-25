@@ -42,7 +42,9 @@ springdoc:
 
 cloudinary:
   api:
-    key: 341545146697844
-    secret: PvB8b7BMSd0lihsjuMeLImEsbz4
+    key: 458314325632755
+    secret: xt1RKy_u_fgDvLuyERlqMMfyNZQ
   cloud:
-    name: dfotyo6jc
+    name: dgtdyrtss
+  upload:
+    preset: landing-page
